@@ -21,8 +21,11 @@ function createWindow() {
     height: 563,
     useContentSize: true,
     width: 1000,
+    // 允许访问本地文件 测试图片可以显示
+    webPreferences: {
+      webSecurity: false,
+    },
   });
-
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {

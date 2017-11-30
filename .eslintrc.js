@@ -27,6 +27,7 @@ module.exports = {
     "no-unused-vars": [1, { "vars": "all", "args": "none" }],
     // 允许使用devDependencies中的包
     "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
+    "import/no-dynamic-require": ["error"],
     "no-empty": 1,
     // allow debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0

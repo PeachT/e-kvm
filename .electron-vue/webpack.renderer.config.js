@@ -101,7 +101,11 @@ let rendererConfig = {
             name: 'fonts/[name]--[folder].[ext]'
           }
         }
-      }
+      },
+      // {
+      //   test: /\.(png|jpg|gif|svg)$/,
+      //   loader: 'file-loader?name=img/[name].[ext]?[hash]',
+      // },
     ]
   },
   node: {

@@ -10,6 +10,7 @@
   };
 </script>
 
-<style>
-  /* CSS */
+<style lang="scss">
+@import "./css/elementUI.scss";
+@import "./css/global.scss";
 </style>
