@@ -1,0 +1,18 @@
+{
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [{
+    "name": "Attach",
+    "type": "node",
+    "request": "attach",
+    "port": 5858,
+    "address": "127.0.0.1",
+    "restart": false,
+    "sourceMaps": false,
+    "outDir": null,
+    "localRoot": "${workspaceRoot}\\src\\main\\index.js",
+    "remoteRoot": null
+  }]
+}

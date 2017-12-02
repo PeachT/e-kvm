@@ -1,7 +1,8 @@
-html, body, div, ul, li, h1, h2, h3, h4, h5, h6, p, dl, dt, dd, ol, form, input, textarea, th, td, select, section, header, main
+html, body, div, ul, li, h1, h2, h3, h4, h5, h6, p, dl, dt, dd, ol, form, input, textarea, th, td, select, section, header, main, button,
 {
   margin:0;
   padding:0;
+  border: 0;
 }
 // ul, li, h1, h2, h3, h4, h5, h6, p, dl, dt, dd, ol, i, span, th, td{
 //   // 这个数据多触摸屏软键盘影响较大
@@ -21,4 +22,8 @@ body,
   height: 100%;
   width: 100%;
   // overflow: hidden;
+}
+.wh100{
+  height: 100%;
+  width: 100%;
 }

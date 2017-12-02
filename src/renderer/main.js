@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
+import {} from './js/iconfont.js';
 // import axios from 'axios';
 
 import App from './App';
@@ -13,6 +14,9 @@ Vue.use(ElementUI, {
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 // Vue.http = Vue.prototype.$http = axios;
 Vue.config.productionTip = false;
+
+// Symbol方式引用iconfont
+
 
 // 全局过滤注册
 Vue.filter('imgPath', (val, vv) => {

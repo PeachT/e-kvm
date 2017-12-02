@@ -1,6 +1,32 @@
 <template>
-  <div>
+  <div class="wh100 menu">
+    <div class="items">
+      <div class="item" v-for="(item, index) in menus" :key="index">
+        <svg aria-hidden="true">
+          <use :xlink:href="`#${item.icon}`"></use>
+        </svg>
+        {{item.name}}
+        <div class="bgk"></div>
+      </div>
+    </div>
+    <div class="operator">
+      <el-button @click="dialogState = true" icon="el-icon-more"></el-button>
+      <!-- <el-button type="warning" @click="dialogState = true">重启</el-button>
+      <el-button type="danger" @click="dialogState = true">关机</el-button> -->
+    </div>
+    <img class="bgk-img" :src="bgkimg" alt="">
 
+    <el-dialog
+      :visible.sync="dialogState"
+      width="50%"
+      >
+      <div class="dialog">
+        <el-button class="button-radius" type="primary" @click="dialogOperationFunc(1)" v-if="dialogOperation===0 || dialogOperation ===1">登陆</el-button>
+        <el-button class="button-radius" type="warning" @click="dialogOperationFunc(2)"  v-if="dialogOperation===0 || dialogOperation ===2">重启</el-button>
+        <el-button class="button-radius" type="danger"  @click="dialogOperationFunc(3)" v-if="dialogOperation===0 || dialogOperation ===3">关机</el-button>
+      </div>
+      <p style="text-align:center;" v-show="dialogOperation > 0">点击{{['登陆', '重启', '关机'][(dialogOperation-1)]}}</p>
+    </el-dialog>
   </div>
 </template>
 
@@ -8,8 +34,120 @@
   export default {
     name: 'menu',
     components: { },
+    watch: {
+      dialogState(nval) {
+        if (!nval) {
+          this.dialogOperation = 0;
+        }
+      },
+    },
+    data: () => ({
+      dialogState: false,
+      dialogOperation: 0,
+      bgkimg: 'file:///E:/KVM/UIImg/home-backage1.png',
+      menus: [
+        { name: '任务', path: '', icon: 'icon-bianji', permissions: 0 },
+        { name: '记录', path: '', icon: 'icon-bianji', permissions: 0 },
+        { name: '构件', path: '', icon: 'icon-bianji', permissions: 0 },
+        { name: '用户', path: '', icon: 'icon-bianji', permissions: 1 },
+        { name: '设备', path: '', icon: 'icon-bianji', permissions: 0 },
+        { name: '预留', path: '', icon: 'icon-bianji', permissions: 0 },
+        { name: '设备设置', path: '', icon: 'icon-bianji', permissions: 1 },
+        { name: '预览', path: '', icon: 'icon-bianji', permissions: 0 },
+        { name: '帮助', path: '', icon: 'icon-bianji', permissions: 0 },
+      ],
+    }),
     methods: {
+      dialogOperationFunc(operation) {
+        if (this.dialogOperation > 0) {
+          switch (operation) {
+            case 1:
+              this.$router.push('/');
+              break;
+            case 2:
+              this.$router.push('/');
+              break;
+            case 3:
+              this.$router.push('/');
+              break;
+            default:
+              break;
+          }
+        }
+        this.dialogOperation = operation;
+      },
     },
   };
 </script>
+
+<style lang="scss">
+.menu{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // background-image: url()
+  .items{
+    width: 783px;
+    border-bottom: 1px solid #EDF2FC;
+    border-right: 1px solid #EDF2FC;
+    z-index: 2;
+    .item{
+      position: relative;
+      float: left;
+      height: 260px;
+      width: 260px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-size: 36px;
+      border: 0;
+      border-top: 1px;
+      border-left: 1px;
+      border-color: #EDF2FC;
+      border-style: solid;
+      color: white;
+      .bgk{
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.5);
+        height: 100%;
+        width: 100%;
+        top:0;
+        left: 0;
+        z-index: -1;
+        filter: blur(15px);
+      }
+    }
+  }
+  .button-radius{
+    button{
+      height: 96px;
+      width: 96px;
+      border-radius: 48px;
+      font-size: 30px;
+      border:0;
+    }
+  }
+  .operator{
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    @extend .button-radius;
+  }
+
+  .bgk-img{
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    z-index: -1;
+    filter: blur(15px);
+  }
+  .dialog{
+    display: flex;
+    justify-content: space-around;
+    @extend .button-radius;
+  }
+}
+</style>
 

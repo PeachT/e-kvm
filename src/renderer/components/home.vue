@@ -4,13 +4,14 @@
       <ul>
         <li v-for="(item, index) in 5" :key="index" :class="{'active': index===active}" @click="active = index">
           <img src="../assets/logo.png" alt="">
-          <p>管理员{{item}}</p>
+          <p>管理员123123123{{item}}</p>
         </li>
       </ul>
     </div>
     <div class="main">
       <div class="info">
         <div>
+          <!-- <img :src="nowData.img" alt=""> -->
           <img :src="nowData.img" alt="">
           <h1>{{nowData.name}}</h1>
         </div>
@@ -19,13 +20,17 @@
         <el-form label-width="110px" size="medium">
           <h1> 登录信息</h1>
           <el-form-item label="用 户">
-            <el-autocomplete style="width:100%;" :fetch-suggestions="querySearch" placeholder="请输入内容" ></el-autocomplete>
+            <el-autocomplete style="width:100%;" v-model="user.name" :fetch-suggestions="querySearch" placeholder="请输入内容" ></el-autocomplete>
           </el-form-item>
           <el-form-item label="密 码">
-            <el-input></el-input>
+            <el-input v-model="user.pwd"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary">登录</el-button>
+            <p style="color:#67C23A;" v-if="message === 1">登陆成功！</p>
+            <p style="color:#FA5555;" v-if="message === 2">登陆错误！</p>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loginFunc()">登录</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -40,17 +45,24 @@
     components: { LocalImg },
     data: () => ({
       active: 0,
+      user: {
+        name: 'admin',
+        pwd: 'admin',
+      },
+      message: '',
     }),
     computed: {
       // 当前选择的项目
       nowData() {
         return {
-          img: 'file:///C:/Users/peach/Pictures/%E4%B8%B4%E6%97%B6%E5%9B%BE%E7%89%87/vue.png',
+          // img: 'file:///C:/Users/peach/Pictures/%E4%B8%B4%E6%97%B6%E5%9B%BE%E7%89%87/vue.png',
+          img: 'file:///E:/KVM/UIImg/home-backage1.png',
           name: this.active,
         };
       },
     },
     methods: {
+      // 提示下拉框用户名
       querySearch(queryString, cb) {
         const Results = [
           {
@@ -62,6 +74,15 @@
         ];
         // 调用 callback 返回建议列表的数据
         cb(Results);
+      },
+      loginFunc() {
+        const user = this.user;
+        if (user.name === 'admin' && user.pwd === 'admin') {
+          this.$router.push({ path: 'menu' });
+          this.message = 1;
+        } else {
+          this.message = 2;
+        }
       },
     },
   };
@@ -86,6 +107,8 @@
         }
       }
       li {
+        height: 120px;
+        width: 120px;
         color: white;
         font-size: 24px;
         float: left;
@@ -117,6 +140,9 @@
         img {
           height: 128px;
           width: 128px;
+        }
+        h1{
+          font-size: 46px;
         }
       }
       .login {
