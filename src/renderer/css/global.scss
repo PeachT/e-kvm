@@ -37,6 +37,12 @@ body,
   // overflow: hidden;
 }
 // 布局样式
+.row-flex{
+  display: flex;
+  &>div{
+    flex:1;
+  }
+}
 .flex-column{
   height: 100%;
   display: flex;

@@ -49,6 +49,7 @@
       position: absolute;
       top:0;
       left:0;
+      z-index: 99999999999;
     }
   }
 }

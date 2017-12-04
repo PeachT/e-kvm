@@ -8,6 +8,10 @@ import store from '../store/index';
 const Home = require('@/components/home').default;
 const Menu = require('@/components/menus/menu').default;
 const Task = require('@/components/task/task').default;
+const Record = require('../components/record/record.vue').default;
+const User = require('@/components/user/user.vue').default;
+const Device = require('@/components/device/device.vue').default;
+const Girder = require('@/components/girder/girder.vue').default;
 
 Vue.use(Router);
 Vue.use(Vuex);
@@ -29,6 +33,38 @@ const routes = [
     component: Root,
     children: [
       { path: '', component: Task, name: '任务' },
+    ],
+  },
+  {
+    path: '/record',
+    name: 'record',
+    component: Root,
+    children: [
+      { path: '', component: Record, name: '记录' },
+    ],
+  },
+  {
+    path: '/user',
+    name: 'task',
+    component: Root,
+    children: [
+      { path: '', component: User, name: '用户' },
+    ],
+  },
+  {
+    path: '/device',
+    name: 'device',
+    component: Root,
+    children: [
+      { path: '', component: Device, name: '设备' },
+    ],
+  },
+  {
+    path: '/girder',
+    name: 'girder',
+    component: Root,
+    children: [
+      { path: '', component: Girder, name: '构件' },
     ],
   },
   {

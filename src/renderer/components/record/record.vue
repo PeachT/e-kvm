@@ -2,7 +2,7 @@
   <div class="wh100 task-record">
     <el-container class="wh100">
       <el-aside class="task-record-menu" width="224px">
-        <task-menu></task-menu>
+        <menu-one></menu-one>
       </el-aside>
       <el-main class="task-record-main">
         <el-tabs>
@@ -10,6 +10,8 @@
             <base-top></base-top>
             <base-group></base-group>
             <base-tendon-data></base-tendon-data>
+            <base-record-data></base-record-data>
+            <base-svg></base-svg>
           </el-tab-pane>
           <el-tab-pane label="设备消息">
             <device-info></device-info>
@@ -30,18 +32,29 @@
   import BaseTop from '../task_record_template/base/baseTop.vue';
   import BaseGroup from '../task_record_template/base/baseGroup.vue';
   import BaseTendonData from '../task_record_template/base/baseTendonData.vue';
+  import BaseRecordData from '../task_record_template/base/baseRecordData.vue';
+  import BaseSvg from '../task_record_template/base/svg.vue';
   import OtherInfo from '../task_record_template/otherInfo.vue';
-  import TaskMenu from '../menus/menuOne.vue';
+  import MenuOne from '../menus/menuOne.vue';
   import DeviceInfo from '../device/template/deviceInfo.vue';
   import UserInfo from '../user/template/userInfo.vue';
 
   export default {
     name: 'task',
     components: {
-      TaskMenu, BaseTop, BaseGroup, BaseTendonData, DeviceInfo, OtherInfo, UserInfo,
+      MenuOne,
+      BaseTop,
+      BaseGroup,
+      BaseTendonData,
+      BaseRecordData,
+      BaseSvg,
+      DeviceInfo,
+      OtherInfo,
+      UserInfo,
     },
     data: () => ({
     }),
   };
 
 </script>
+
