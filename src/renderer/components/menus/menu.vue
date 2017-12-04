@@ -1,7 +1,8 @@
 <template>
   <div class="wh100 menu">
+    <img class="bgk-img" :src="bgkimg" alt="">
     <div class="items">
-      <div class="item" v-for="(item, index) in menus" :key="index">
+      <div class="item" v-for="(item, index) in menus" :key="index" @click="$router.push(item.path)">
         <svg aria-hidden="true">
           <use :xlink:href="`#${item.icon}`"></use>
         </svg>
@@ -10,22 +11,21 @@
       </div>
     </div>
     <div class="operator">
-      <el-button @click="dialogState = true" icon="el-icon-more"></el-button>
-      <!-- <el-button type="warning" @click="dialogState = true">重启</el-button>
-      <el-button type="danger" @click="dialogState = true">关机</el-button> -->
+      <el-button @click.stop="dialogState = true" icon="el-icon-more"></el-button>
     </div>
-    <img class="bgk-img" :src="bgkimg" alt="">
 
     <el-dialog
       :visible.sync="dialogState"
       width="50%"
       >
-      <div class="dialog">
-        <el-button class="button-radius" type="primary" @click="dialogOperationFunc(1)" v-if="dialogOperation===0 || dialogOperation ===1">登陆</el-button>
-        <el-button class="button-radius" type="warning" @click="dialogOperationFunc(2)"  v-if="dialogOperation===0 || dialogOperation ===2">重启</el-button>
-        <el-button class="button-radius" type="danger"  @click="dialogOperationFunc(3)" v-if="dialogOperation===0 || dialogOperation ===3">关机</el-button>
+      <div>
+        <div class="dialog">
+          <el-button class="button-radius" type="primary" @click.stop="dialogOperationFunc(1)" v-if="dialogOperation===0 || dialogOperation ===1">登陆</el-button>
+          <el-button class="button-radius" type="warning" @click.stop="dialogOperationFunc(2)"  v-if="dialogOperation===0 || dialogOperation ===2">重启</el-button>
+          <el-button class="button-radius" type="danger"  @click.stop="dialogOperationFunc(3)" v-if="dialogOperation===0 || dialogOperation ===3">关机</el-button>
+        </div>
+        <p style="text-align:center;" v-show="dialogOperation > 0">点击{{['登陆', '重启', '关机'][(dialogOperation-1)]}}</p>
       </div>
-      <p style="text-align:center;" v-show="dialogOperation > 0">点击{{['登陆', '重启', '关机'][(dialogOperation-1)]}}</p>
     </el-dialog>
   </div>
 </template>
@@ -46,7 +46,7 @@
       dialogOperation: 0,
       bgkimg: 'file:///E:/KVM/UIImg/home-backage1.png',
       menus: [
-        { name: '任务', path: '', icon: 'icon-bianji', permissions: 0 },
+        { name: '任务', path: '/task', icon: 'icon-bianji', permissions: 0 },
         { name: '记录', path: '', icon: 'icon-bianji', permissions: 0 },
         { name: '构件', path: '', icon: 'icon-bianji', permissions: 0 },
         { name: '用户', path: '', icon: 'icon-bianji', permissions: 1 },
@@ -85,12 +85,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   // background-image: url()
   .items{
     width: 783px;
     border-bottom: 1px solid #EDF2FC;
     border-right: 1px solid #EDF2FC;
-    z-index: 2;
+    z-index: 3;
     .item{
       position: relative;
       float: left;
@@ -127,12 +128,14 @@
       border-radius: 48px;
       font-size: 30px;
       border:0;
+      transition: 10s;
     }
   }
   .operator{
     position: fixed;
     bottom: 0;
     right: 0;
+    z-index: 3;
     @extend .button-radius;
   }
 
@@ -140,7 +143,7 @@
     height: 100%;
     width: 100%;
     position: absolute;
-    z-index: -1;
+    z-index: 2;
     filter: blur(15px);
   }
   .dialog{

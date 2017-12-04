@@ -39,10 +39,8 @@
 </template>
 
 <script>
-  import LocalImg from './local-img.vue';
   export default {
     name: 'landing-page',
-    components: { LocalImg },
     data: () => ({
       active: 0,
       user: {

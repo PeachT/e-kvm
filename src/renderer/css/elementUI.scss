@@ -1,0 +1,44 @@
+// 时间选择样式
+.el-date-picker,
+{
+  min-width: 390px;
+}
+
+.el-picker-panel {
+  line-height: 48px;
+}
+
+.el-picker-panel__icon-btn,
+.el-date-table {
+  font-size: 24px;
+}
+
+.el-date-picker__header-label {
+  font-size: 24px;
+  line-height: 35px;
+}
+
+.el-date-picker {
+  .el-picker-panel__content {
+    width: 360px;
+  }
+  .el-date-table td {
+    padding: 10px 0;
+  }
+}
+// 时间选择样式
+
+// tabs菜单样式
+.tabs{
+  &>div{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .el-tabs__content{
+      height: 100%;
+      .el-tab-pane{
+        height: 100%;
+      }
+    }
+  }
+}
