@@ -26,29 +26,33 @@
 
 
       <!-- 详细信息 -->
-      <div v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
-        <h3 style="background-color: rgb(245, 247, 250);">{{item}}泵顶数据</h3>
+      <div class="gloup">
+        <div :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
+          <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}泵顶数据</h3>
 
-        <div class="row-flex">
-          <el-form-item label="千斤顶编号">
-            <el-input ></el-input>
-          </el-form-item>
-          <el-form-item label="油泵编号">
-            <el-input ></el-input>
-          </el-form-item>
-          <div></div>
-        </div>
+          <div class="row-flex">
+            <el-form-item label="千斤顶编号">
+              <el-input ></el-input>
+            </el-form-item>
+            <el-form-item label="油泵编号">
+              <el-input value="123456"></el-input>
+            </el-form-item>
+            <el-form-item label="油泵编号">
+              <el-input value="123456"></el-input>
+            </el-form-item>
+          </div>
 
-        <div class="row-flex">
-          <el-form-item :label="`回归方程: ${true ? 'F=': 'P='}`">
-            <el-input  type="number" ></el-input>
-          </el-form-item>
-          <el-form-item :label="true ? 'P+': 'F+'" class="fc">
-            <el-input  type="number"></el-input>
-          </el-form-item>
-          <el-form-item label="标定日期">
-            <el-date-picker type="date" placeholder="选择日期" :editable="false"></el-date-picker>
-          </el-form-item>
+          <div class="row-flex">
+            <el-form-item :label="`回归方程: ${true ? 'F=': 'P='}`">
+              <el-input  type="number" ></el-input>
+            </el-form-item>
+            <el-form-item :label="true ? 'P+': 'F+'" class="fc">
+              <el-input  type="number"></el-input>
+            </el-form-item>
+            <el-form-item label="标定日期">
+              <el-date-picker style="width: auto;" type="date" placeholder="选择日期" :editable="false"></el-date-picker>
+            </el-form-item>
+          </div>
         </div>
       </div>
     </el-form>
@@ -63,21 +67,13 @@
 
 </script>
 
-<style lang="scss">
-// .device-info{
-//   padding:5px 5px 0 5px;
-//   h3{
-//     margin-bottom:10px;
-//   }
-// }
-// .fc {
-//   .el-form-item__label {
-//     text-align: center;
-//     padding-right: 0;
-//     font-weight: bold;
-//     font-size: 20px;
-//     background-color: rgb(216, 220, 229);
-//   }
-//   text-align: left;
-// }
+<style lang="scss" scoped>
+.gloup{
+  display: grid;
+  grid-template-columns: 50% 50%;
+  &>div{
+    margin-right: 15px;
+  }
+}
 </style>
+

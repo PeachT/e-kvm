@@ -5,13 +5,14 @@ import Router from 'vue-router';
 import Root from '../components/root.vue';
 import store from '../store/index';
 
-const Home = require('@/components/home').default;
+const Login = require('@/components/login').default;
 const Menu = require('@/components/menus/menu').default;
 const Task = require('@/components/task/task').default;
 const Record = require('../components/record/record.vue').default;
 const User = require('@/components/user/user.vue').default;
 const Device = require('@/components/device/device.vue').default;
 const Girder = require('@/components/girder/girder.vue').default;
+const Monitoring = require('../components/monitoring/monitoring.vue').default;
 
 Vue.use(Router);
 Vue.use(Vuex);
@@ -19,8 +20,13 @@ Vue.use(Vuex);
 const routes = [
   {
     path: '/',
-    name: 'home',
-    component: Home,
+    name: 'login',
+    component: Login,
+  },
+  {
+    path: '/monitoring',
+    name: 'monitoring',
+    component: Monitoring,
   },
   {
     path: '/menu',

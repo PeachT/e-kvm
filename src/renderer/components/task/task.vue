@@ -2,7 +2,7 @@
   <div class="wh100 task-record">
     <el-container class="wh100">
       <el-aside class="task-record-menu" width="224px">
-        <task-menu></task-menu>
+        <task-menu @operation="operation"></task-menu>
       </el-aside>
       <el-main class="task-record-main">
         <el-tabs>
@@ -42,6 +42,11 @@
     },
     data: () => ({
     }),
+    methods: {
+      operation(state) {
+        this.$message(state);
+      },
+    },
   };
 
 </script>

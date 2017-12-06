@@ -3,10 +3,10 @@
     <el-container class="wh100">
       <el-header height="40px" class="header">
         <el-button-group >
-          <el-button type="success" >添加</el-button>
-          <el-button type="primary" >编辑</el-button>
-          <el-button type="primary" >下载</el-button>
-          <el-button type="danger" >删除</el-button>
+          <el-button type="success" @click="emit('add')">添加</el-button>
+          <el-button type="primary" @click="emit('edit')">编辑</el-button>
+          <el-button type="primary" @click="emit('down')">下载</el-button>
+          <el-button type="danger" @click="emit('dle')">删除</el-button>
         </el-button-group>
       </el-header>
       <el-main>
@@ -62,6 +62,9 @@ export default {
         this.activeItem = state === index ? null : index;
         this.$message(`${this.active}--${index}`);
       }
+    },
+    emit(state) {
+      this.$emit('operation', state);
     },
   },
 };

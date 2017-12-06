@@ -6,6 +6,10 @@
 .wh100{
   height: 100%;
   width: 100%;
+  header, main, footer{
+    margin: 0;
+    padding: 0;
+  }
 }
 .w{
   width: 100%;
@@ -81,3 +85,36 @@ body,
   box-shadow: inset 0 0 2px rgba(0, 0, 0, .3);
   background-color: #555;
 }
+
+// 设备样式
+// '#ff3333', '#ff33cc', '#00cc33', '#00cccc'
+@each $name, $color in (A1, #ff3333), (A2, #ff33cc), (B1, #00cc33), (B2, #00cccc) {
+  .#{$name}{
+    color: $color;
+    .el-input--small .el-input__inner{
+      color: $color;
+    }
+  }
+}
+// 输入框样式
+.el-input--small .el-input__inner{
+  font-size: 20px;
+  padding-left: 5px;
+}
+// 带边框单选框
+.el-radio--small.is-bordered .el-radio__label{
+  font-size: 20px;
+  line-height: 0.7;
+}
+// 单选框
+.el-radio-button--small .el-radio-button__inner{
+  font-size: 20px;
+}
+// 带边框多选框
+.el-checkbox.is-bordered.el-checkbox--small .el-checkbox__label{
+  line-height: 20px;
+  font-size: 20px;
+}
+// .A1{
+//   color: #ff3333;
+// }

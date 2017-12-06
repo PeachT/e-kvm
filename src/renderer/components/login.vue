@@ -10,11 +10,8 @@
     </div>
     <div class="main">
       <div class="info">
-        <div>
-          <!-- <img :src="nowData.img" alt=""> -->
-          <img :src="nowData.img" alt="">
-          <h1>{{nowData.name}}</h1>
-        </div>
+        <img :src="nowData.img" alt="">
+        <h1>{{nowData.name}}</h1>
       </div>
       <div class="login">
         <el-form label-width="110px" size="medium">
@@ -47,7 +44,7 @@
         name: 'admin',
         pwd: 'admin',
       },
-      message: '',
+      message: '', // 1登陆成功 2登陆失败
     }),
     computed: {
       // 当前选择的项目
@@ -73,6 +70,7 @@
         // 调用 callback 返回建议列表的数据
         cb(Results);
       },
+      // 登陆检测
       loginFunc() {
         const user = this.user;
         if (user.name === 'admin' && user.pwd === 'admin') {
@@ -87,7 +85,7 @@
 
 </script>
 
-<style lang="scss">
+<style scoped lang="scss" >
   .home {
     background-image: url(../assets/background-image.png);
     background-repeat: no-repeat;
@@ -129,18 +127,16 @@
       height: 100%;
       margin: 3%;
       .info {
-        display: flex;
-        align-items: center;
-        justify-content: center;
         background-color: white;
         flex: auto;
         text-align: center;
         img {
-          height: 128px;
-          width: 128px;
+          padding-top: 100px;
+          height: 360px;
         }
         h1{
-          font-size: 46px;
+          padding-top: 50px;
+          font-size: 90px;
         }
       }
       .login {
@@ -152,12 +148,17 @@
           margin-left: 100px;
           text-align: center;
         }
-        .el-form-item__label {
-          color: white;
-        }
       }
     }
   }
 
+</style>
+
+<style lang="scss">
+.login{
+   .el-form-item__label {
+    color: white;
+  }
+}
 </style>
 
