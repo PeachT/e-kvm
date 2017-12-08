@@ -17,7 +17,7 @@
       <h3>混泥土信息</h3>
       <div class="row-flex">
         <el-form-item :label="item[1]"
-          v-for="(item, index) in [['skqd', '试块强度'],['sjqd', '设计强度'],['zlqd', '张拉强度']]"
+          v-for="(item, index) in [['skqd', '试块编号'], ['skqd', '试块强度'], ['sjqd', '设计强度'],['','张拉时砼强度']]"
           :key="index">
           <el-input ></el-input>
         </el-form-item>

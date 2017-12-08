@@ -40,6 +40,11 @@ body,
   @extend .wh100;
   // overflow: hidden;
 }
+#app {
+  main{
+    background-color: white;
+  }
+}
 // 布局样式
 .row-flex{
   display: flex;

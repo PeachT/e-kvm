@@ -6,6 +6,11 @@
         <el-form-item label="控制应力">
           <el-input value="123456"></el-input>
         </el-form-item>
+        <el-form-item label="张拉长度">
+          <el-input >
+            <i slot="suffix" class="el-input__icon">m</i>
+          </el-input>
+        </el-form-item>
         <el-form-item label="钢绞线数量">
           <el-input value="123456"></el-input>
         </el-form-item>
@@ -15,14 +20,14 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="设备/孔号" style="flex: 1.5;">
+        <el-form-item label="设备/孔号" style="flex: 2;">
           <div class="row-flex">
             <el-input value="123456"></el-input>
             <el-input value="123456">
-              <i slot="prefix" class="el-input__icon">A组</i>
+              <i slot="suffix" class="el-input__icon">A组</i>
             </el-input>
             <el-input value="123456">
-              <i slot="prefix" class="el-input__icon">B组</i>
+              <i slot="suffix" class="el-input__icon">B组</i>
             </el-input>
           </div>
         </el-form-item>
@@ -37,6 +42,7 @@
           <th width="80px">张拉数据</th>
           <th v-for="(item, index) in ['初张拉','阶段一','阶段二','阶段三','终张拉','超张拉']" :key="index">{{item}}</th>
           <th width="120px">工作长度</th>
+          <th width="120px">内缩量均值</th>
           <th width="120px">理论伸长量</th>
         </tr>
         <tr>
@@ -63,6 +69,12 @@
             </el-input>
           </td>
           <!-- 工作长度 -->
+          <td>
+            <el-input value="123456">
+              <i slot="suffix" class="el-input__icon">mm</i>
+            </el-input>
+          </td>
+          <!-- 内缩量均值 -->
           <td>
             <el-input value="123456">
               <i slot="suffix" class="el-input__icon">mm</i>

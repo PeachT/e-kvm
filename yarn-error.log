@@ -1,5 +1,5 @@
 Arguments: 
-  F:\Program Files\nodejs\node.exe F:\Program Files\nodejs\node_modules\yarn\bin\yarn.js add d3
+  F:\Program Files\nodejs\node.exe F:\Program Files\nodejs\node_modules\yarn\bin\yarn.js
 
 PATH: 
   C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\130\DTS\Binn\;C:\Program Files\Microsoft SQL Server\130\DTS\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\;C:\Program Files\dotnet\;C:\Android;C:\Windows\System32;C:\Program Files\MongoDB\Server\3.4\bin;C:\Program Files\Microsoft\Web Platform Installer\;F:\Program Files\nodejs\;F:\Program Files\Git\cmd;C:\Users\peach\AppData\Local\Microsoft\WindowsApps;F:\Program Files (x86)\Microsoft VS Code\bin;C:\Users\peach\AppData\Roaming\npm
@@ -40,7 +40,11 @@ npm manifest:
     },
     "dependencies": {
       "axios": "^0.17.1",
+      "d3": "^4.12.0",
       "element-ui": "^2.0.7",
+      "lokijs": "^1.5.1",
+      "read-file-utf8": "^1.1.2",
+      "v-charts": "^1.12.1",
       "vue": "^2.5.9",
       "vue-electron": "^1.0.6",
       "vue-router": "^3.0.1",
@@ -2346,6 +2350,12 @@ Lockfile:
     dependencies:
       jsbn "~0.1.0"
   
+  echarts@^3.8.3:
+    version "3.8.5"
+    resolved "http://registry.npm.taobao.org/echarts/download/echarts-3.8.5.tgz#58e4a51d2743c6fb75257b0dc0a9cf9f5378ac0e"
+    dependencies:
+      zrender "3.7.4"
+  
   ee-first@1.1.1:
     version "1.1.1"
     resolved "http://registry.npm.taobao.org/ee-first/download/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
@@ -4435,6 +4445,10 @@ Lockfile:
     version "1.6.0"
     resolved "http://registry.npm.taobao.org/loglevel/download/loglevel-1.6.0.tgz#ae0caa561111498c5ba13723d6fb631d24003934"
   
+  lokijs@^1.5.1:
+    version "1.5.1"
+    resolved "http://registry.npm.taobao.org/lokijs/download/lokijs-1.5.1.tgz#7e1b20217142ec2a68ecc5476cbb6c80fc3ffa56"
+  
   longest@^1.0.1:
     version "1.0.1"
     resolved "http://registry.npm.taobao.org/longest/download/longest-1.0.1.tgz#30a0b2da38f73770e8294a0d22e6625ed77d0097"
@@ -5709,6 +5723,10 @@ Lockfile:
     version "0.9.0"
     resolved "http://registry.npm.taobao.org/rcedit/download/rcedit-0.9.0.tgz#3910df57345399e2b0325f4a519007f89e55ef1c"
   
+  read-file-utf8@^1.1.2:
+    version "1.1.2"
+    resolved "http://registry.npm.taobao.org/read-file-utf8/download/read-file-utf8-1.1.2.tgz#b4c78cf2a064aeb80f423c47835fba90f9be6658"
+  
   read-pkg-up@^1.0.1:
     version "1.0.1"
     resolved "http://registry.npm.taobao.org/read-pkg-up/download/read-pkg-up-1.0.1.tgz#9d63c13276c065918d57f002a57f40a1b643fb02"
@@ -6887,6 +6905,12 @@ Lockfile:
     version "3.1.0"
     resolved "http://registry.npm.taobao.org/uuid/download/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
   
+  v-charts@^1.12.1:
+    version "1.12.1"
+    resolved "http://registry.npm.taobao.org/v-charts/download/v-charts-1.12.1.tgz#cc9b691f469106c86d181f0de4a522201cb556d0"
+    dependencies:
+      echarts "^3.8.3"
+  
   validate-npm-package-license@^3.0.1:
     version "3.0.1"
     resolved "http://registry.npm.taobao.org/validate-npm-package-license/download/validate-npm-package-license-3.0.1.tgz#2804babe712ad3379459acfbe24746ab2c303fbc"
@@ -7271,9 +7295,13 @@ Lockfile:
     resolved "http://registry.npm.taobao.org/yauzl/download/yauzl-2.4.1.tgz#9528f442dab1b2284e58b4379bb194e22e0c4005"
     dependencies:
       fd-slicer "~1.0.1"
+  
+  zrender@3.7.4:
+    version "3.7.4"
+    resolved "http://registry.npm.taobao.org/zrender/download/zrender-3.7.4.tgz#f847d53948481ef6d42906d1ea9aeec7acbefdf2"
 
 Trace: 
-  Error: connect ETIMEDOUT 114.55.80.225:80
+  Error: connect ETIMEDOUT 222.218.84.224:443
       at Object._errnoException (util.js:1024:11)
       at _exceptionWithHostPort (util.js:1046:20)
       at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1182:14)

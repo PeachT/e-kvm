@@ -52,9 +52,9 @@
         { name: '用户', path: '/user', icon: 'icon-bianji', permissions: 1 },
         { name: '设备', path: '/device', icon: 'icon-bianji', permissions: 0 },
         { name: '监控', path: '/monitoring', icon: 'icon-bianji', permissions: 0 },
+        { name: '操作员', path: '/operator', icon: 'icon-bianji', permissions: 0 },
+        { name: '钢绞线', path: '/steelStrand', icon: 'icon-bianji', permissions: 0 },
         { name: '设备设置', path: '', icon: 'icon-bianji', permissions: 1 },
-        { name: '预览', path: '', icon: 'icon-bianji', permissions: 0 },
-        { name: '帮助', path: '', icon: 'icon-bianji', permissions: 0 },
       ],
     }),
     methods: {

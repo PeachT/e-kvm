@@ -2,7 +2,7 @@
   <div class="wh100">
     <el-container class="wh100">
       <el-aside class="task-menu" width="224px">
-        <menu-two @operation="operation"></menu-two>
+        <menu-two :menuData="menuData" :nowId.sync="nowId" @operation="operation" ></menu-two>
       </el-aside>
       <el-main class="task-main">
         <girder-info></girder-info>
@@ -20,6 +20,17 @@ export default {
   components: {
     MenuTwo, girderInfo,
   },
+  computed: {
+    menuData() {
+      return [];
+    },
+    nowData() {
+      return null;
+    },
+  },
+  data: () => ({
+    nowId: '',
+  }),
   methods: {
     operation(state) {
       this.$message(state);

@@ -4,18 +4,17 @@
       <el-header height="40px" class="teak-header">
         <el-button-group >
           <el-button type="success" @click="emit('add')">添加</el-button>
-          <el-button type="primary" @click="emit('edit')">编辑</el-button>
-          <el-button type="primary" @click="emit('down')">下载</el-button>
-          <el-button type="danger" @click="emit('dle')">删除</el-button>
+          <el-button type="primary" @click="emit('edit')" :disabled="!activeItem">编辑</el-button>
+          <el-button type="primary" @click="emit('down')" :disabled="!activeItem">下载</el-button>
+          <el-button type="danger" @click="emit('dle')" :disabled="!activeItem">删除</el-button>
         </el-button-group>
       </el-header>
       <el-main>
         <div class="items">
-            <li class="item" :class="{'active' : activeItem === index}" v-for="(item, index) in 50" :key="index" @click.stop="activeItemFunc(index)">
-              <i class="el-icon-delete"></i>
+            <li class="item" :class="{'active' : activeItem === index}" v-for="(item, index) in menuData" :key="index" @click.stop="activeItemFunc(index, item.id)">
+              <!-- <i class="el-icon-delete"></i> -->
               <span>
-                {{'123456kkkl'+item}}
-                {{'123456kkkl'+item}}
+                {{item.name}}
               </span>
             </li>
         </div>
@@ -26,16 +25,18 @@
 <script>
 export default {
   name: 'taskmenu',
+  props: ['menuData'],
   data: () => ({
     active: null,
     activeItem: null,
   }),
   methods: {
-    activeItemFunc(index) {
+    activeItemFunc(index, id) {
       const state = this.activeItem === index;
       if (!state) {
         this.activeItem = state === index ? null : index;
-        this.$message(`${this.active}--${index}`);
+        this.$message(`${index}`);
+        this.emit('update:nowId', id);
       }
     },
     emit(state) {

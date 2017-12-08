@@ -2,6 +2,7 @@ const state = {
   path: '',
   showMenu: false,
   menuTitle: '',
+  menu2Data: [], // {id: 'id', name: '菜单名称'}
 };
 
 const mutations = {
@@ -13,6 +14,9 @@ const mutations = {
   },
   menuTitle(state, data) {
     state.menuTitle = data;
+  },
+  menu2Data(state, data) {
+    state.menu2Data = data;
   },
 };
 

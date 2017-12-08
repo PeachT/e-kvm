@@ -13,6 +13,8 @@ const User = require('@/components/user/user.vue').default;
 const Device = require('@/components/device/device.vue').default;
 const Girder = require('@/components/girder/girder.vue').default;
 const Monitoring = require('../components/monitoring/monitoring.vue').default;
+const Operator = require('../components/operator/operator.vue').default;
+const SteelStrand = require('../components/steelStrand/steelStrand.vue').default;
 
 Vue.use(Router);
 Vue.use(Vuex);
@@ -71,6 +73,22 @@ const routes = [
     component: Root,
     children: [
       { path: '', component: Girder, name: '构件' },
+    ],
+  },
+  {
+    path: '/operator',
+    name: 'operator',
+    component: Root,
+    children: [
+      { path: '', component: Operator, name: '操作员' },
+    ],
+  },
+  {
+    path: '/steelStrand',
+    name: 'steelStrand',
+    component: Root,
+    children: [
+      { path: '', component: SteelStrand, name: '钢绞线' },
     ],
   },
   {

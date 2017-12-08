@@ -1,24 +1,24 @@
 <template>
   <div class="wh100">
     <el-container class="wh100">
-      <el-aside class="task-menu" width="224px">
+      <el-aside style="border-right:1px solid #EDF2FC;" width="224px">
         <menu-two :menuData="menuData" :nowId.sync="nowId" @operation="operation"></menu-two>
       </el-aside>
       <el-main class="task-main">
-        <user-info></user-info>
+        <operator-info></operator-info>
       </el-main>
     </el-container>
   </div>
 </template>
 
 <script>
-import UserInfo from './template/userInfo';
+import OperatorInfo from './template/operatorInfo';
 import MenuTwo from '../menus/menuTow';
 
 export default {
   name: 'devide',
   components: {
-    MenuTwo, UserInfo,
+    MenuTwo, OperatorInfo,
   },
   computed: {
     menuData() {

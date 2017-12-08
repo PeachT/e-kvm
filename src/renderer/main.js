@@ -1,11 +1,17 @@
 import Vue from 'vue';
 import ElementUI from 'element-ui';
+import * as D3 from 'd3';
 import 'element-ui/lib/theme-chalk/index.css';
 import {} from './js/iconfont.js';
 // import axios from 'axios';
 import App from './App';
 import router from './router';
 import store from './store';
+
+import Db from './db/db';
+
+Vue.prototype.$db = Db;
+Vue.prototype.$d3 = D3;
 
 Vue.use(ElementUI, {
   size: 'small',

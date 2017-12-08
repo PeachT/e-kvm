@@ -7,8 +7,8 @@
         <th v-for="(item, index) in jd" :key="index">{{item}}</th>
         <th >回油至初张拉</th>
         <th width="120px">力筋回缩量</th>
-        <th width="120px">工作长度</th>
-        <th width="120px">理论伸长量</th>
+        <!-- <th width="120px">工作长度</th>
+        <th width="120px">理论伸长量</th> -->
         <th width="120px">总伸长量</th>
         <th width="120px">伸长量偏差值</th>
       </tr>
@@ -44,17 +44,17 @@
           </el-input>
         </td>
         <!-- 工作长度 -->
-        <td class="h3">
+        <!-- <td class="h3">
           <el-input value="123456">
             <i slot="suffix" class="el-input__icon">mm</i>
           </el-input>
-        </td>
+        </td> -->
         <!-- 理论生长量 -->
-        <td rowspan="2" class="h6" v-if="index===0 || index===2">
+        <!-- <td rowspan="2" class="h6" v-if="index===0 || index===2">
           <el-input value="123456">
             <i slot="suffix" class="el-input__icon">mm</i>
           </el-input>
-        </td>
+        </td> -->
         <!-- 总伸长量 -->
         <td rowspan="2" class="h6" v-if="index===0 || index===2">
           <el-input value="123456">

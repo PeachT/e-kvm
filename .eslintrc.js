@@ -29,6 +29,8 @@ module.exports = {
     "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
     "import/no-dynamic-require": ["error"],
     "no-empty": 1,
+    "arrow-body-style": 0,
+    "object-shorthand": [0, "always", { "avoidExplicitReturnArrows": true }],
     // allow debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0
   }
