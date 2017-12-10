@@ -4835,6 +4835,10 @@ node-abi@^2.0.0:
   dependencies:
     semver "^5.4.1"
 
+node-cmd@^3.0.0:
+  version "3.0.0"
+  resolved "http://registry.npm.taobao.org/node-cmd/download/node-cmd-3.0.0.tgz#38fff70a4aaa4f659d203eb57862737018e24f6f"
+
 node-forge@0.6.33:
   version "0.6.33"
   resolved "http://registry.npm.taobao.org/node-forge/download/node-forge-0.6.33.tgz#463811879f573d45155ad6a9f43dc296e8e85ebc"

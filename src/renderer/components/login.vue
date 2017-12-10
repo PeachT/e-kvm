@@ -30,29 +30,50 @@
           <el-form-item>
             <el-button type="primary" @click="loginFunc()">登录</el-button>
           </el-form-item>
+          <!-- <el-button-group>
+            <el-button type="primary">初始化数据库</el-button>
+            <el-button type="primary" @click="getDir()">导入数据库</el-button>
+          </el-button-group> -->
         </el-form>
       </div>
     </div>
     <el-dialog title="数据初始化" :visible.sync="dbState" width="100%" :before-close="dbInitClose">
-      <el-form :model="admin" :rules="adminRules" ref="admin" label-width="120px">
-        <el-form-item label="最高管理员名称"  prop="name">
-          <el-input v-model="admin.name"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="pwd">
-          <el-input v-model="admin.pwd" ></el-input>
-        </el-form-item>
-        <el-form-item label="确认密码" prop="checkPwd">
-          <el-input v-model="admin.checkPwd"></el-input>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="adminSave">完 成</el-button>
-      </span>
+
+        <el-radio-group v-model="initState">
+          <el-radio :label="false">创建新数据库</el-radio>
+          <el-radio :label="true">导入已有数据库</el-radio>
+        </el-radio-group>
+        <div v-if="!initState">
+          <el-form :model="adminInit" :rules="adminInitRules" ref="adminInit" label-width="120px">
+            <el-form-item label="最高管理员名称"  prop="name">
+              <el-input v-model="adminInit.name"></el-input>
+            </el-form-item>
+            <el-form-item label="密码" prop="pwd">
+              <el-input v-model="adminInit.pwd" ></el-input>
+            </el-form-item>
+            <el-form-item label="确认密码" prop="checkPwd">
+              <el-input v-model="adminInit.checkPwd"></el-input>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div v-else>
+          <el-form :model="fileInit" :rules="fileInitRules" ref="fileInit" label-width="120px">
+            <el-form-item label="选择目录地址" prop="path" >
+              <el-input v-model="fileInit.path" :disabled="true"></el-input>
+            </el-form-item>
+            <el-button type="primary" @click="getDir()">导入数据库</el-button>
+          </el-form>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="initFunc(initState ? 'fileInit' : 'adminInit')">完 成</el-button>
+        </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
+  import { ipcRenderer } from 'electron';
+  const { dialog } = require('electron').remote;
   export default {
     name: 'landing-page',
     data() {
@@ -60,8 +81,8 @@
         if (value === '') {
           callback(new Error('请输入密码'));
         } else {
-          if (this.admin.checkPwd !== '') {
-            this.$refs.admin.validateField('checkPwd');
+          if (this.adminInit.checkPwd !== '') {
+            this.$refs.adminInit.validateField('checkPwd');
           }
           callback();
         }
@@ -69,7 +90,7 @@
       const validatePass2 = (rule, value, callback) => {
         if (value === '') {
           callback(new Error('请再次输入密码'));
-        } else if (value !== this.admin.pwd) {
+        } else if (value !== this.adminInit.pwd) {
           callback(new Error('两次输入密码不一致!'));
         } else {
           callback();
@@ -82,35 +103,45 @@
           name: 'admin',
           pwd: 'admin',
         },
-        admin: {
+        initState: false,
+        adminInit: {
           name: 'admin',
           pwd: 'admin',
           checkPwd: 'admin',
         },
-        adminRules: {
+        adminInitRules: {
           name: [
-            { required: true, message: '请输入活动名称', trigger: 'blur' },
+            { required: true, message: '请输入管理员名称', trigger: 'blur' },
             { min: 3, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' },
           ],
           pwd: [{ validator: validatePass, trigger: 'blur' }],
           checkPwd: [{ validator: validatePass2, trigger: 'blur' }],
+        },
+        fileInit: {
+          path: null,
+        },
+        fileInitRules: {
+          path: [
+            { required: true, message: '请选择数据目录', trigger: 'blur' },
+          ],
         },
         message: '', // 1登陆成功 2登陆失败
         users: 0,
       };
     },
     beforeMount() {
-      if (this.$db.init()) {
+      console.log(this.$store.state.global.userDb);
+      if (this.$db.ifDb) {
         this.dbState = false;
-        try {
-          const db = this.$db.dbBase('users');
-          const users = db.getCollection('users');
-          if (users) {
-            this.users = users.data.map((item) => {
-              return { name: item.name, img: item.img };
-            });
-          }
-        } catch (error) { console.log('程序错误'); }
+        // try {
+        //   const db = this.$db.dbBase('users');
+        //   const users = db.getCollection('users');
+        //   if (users) {
+        //     this.users = users.data.map((item) => {
+        //       return { name: item.name, img: item.img };
+        //     });
+        //   }
+        // } catch (error) { console.log('程序错误'); }
       }
     },
     computed: {
@@ -124,16 +155,6 @@
           };
         }
         return this.usrs[this.active];
-      },
-      adminDb() {
-        // 获取数据库
-        const db = this.$db.dbBase('admin');
-        let collection = db.getCollection('admin');
-        if (!collection) {
-          collection = db.addCollection('admin');
-        }
-        // 获取文档
-        return { db: db, collection: collection };
       },
     },
     methods: {
@@ -153,7 +174,9 @@
       // 登陆检测
       loginFunc() {
         const user = this.user;
-        const admin = this.adminDb.collection.find({ name: user.name })[0];
+        const admin = this.$db.admin.find({ name: user.name })[0];
+        console.log(admin);
+        // const admindata = admin.find({ name: user.name })[0];
         if (admin && user.pwd === admin.pwd) {
           this.$router.push({
             path: 'menu',
@@ -164,35 +187,37 @@
         }
       },
       // 数据库初始化保存
-      adminSave() {
-        this.$refs.admin.validate((valid) => {
+      initFunc(ref) {
+        this.$refs[ref].validate((valid) => {
           if (valid) {
-            const adminCollection = this.adminDb.collection;
-            const adminDb = this.adminDb.db;
-            if (adminCollection.find({ name: this.admin.name })[0]) {
-              this.$message({
-                showClose: true,
-                message: '管理员已经存在！',
-                type: 'error',
+            if (this.$db.init(
+              this.initState, this.fileInit.path, this.adminInit,
+            )) {
+              // this.$message.success('数据库初始化完成!');
+              this.$notify.success({
+                title: 'Info',
+                message: '数据库初始化完成! 请稍后...',
+                showClose: false,
               });
-              return;
+              // 相对于刷新当前页面
+              this.$router.go(0);
+            } else {
+              this.$message.error('数据库初始化失败');
             }
-            // 插入数据
-            adminCollection.insert({
-              name: this.admin.name,
-              pwd: this.admin.pwd,
-            });
-            // 保存数据到数据库
-            adminDb.save();
-            this.$message.success('管理用添加成功！');
-            this.dbState = false;
-          } else {
+          } else if (ref === 'adminInit') {
             this.$message.error('输入有误！');
+          } else {
+            this.$message.error('请选择数据库所在目录！');
           }
         });
       },
       dbInitClose(done) {
-        this.$message.error('必须完成设置！');
+        this.$message.error('必须完成设置！设备才能正常使用，请完成设置！');
+      },
+      // 选择数据库文件夹
+      getDir() {
+        this.fileInit.path = dialog.showOpenDialog({ properties: ['openDirectory'] })[0];
+        console.log(this.fileInit.path);
       },
     },
   };

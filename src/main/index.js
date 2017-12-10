@@ -1,5 +1,11 @@
-import { app, BrowserWindow } from 'electron' // eslint-disable-line
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'; // eslint-disable-line
+// const { dialog } = require('electron').remote;
 
+ipcMain.on('relaunch', () => {
+  console.log('重启');
+  app.relaunch();
+  app.quit();
+});
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html

@@ -3,6 +3,7 @@ const state = {
   showMenu: false,
   menuTitle: '',
   menu2Data: [], // {id: 'id', name: '菜单名称'}
+  userDb: 'db123456789',
 };
 
 const mutations = {

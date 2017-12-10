@@ -16,7 +16,7 @@ import girderInfo from './template/girderInfo';
 import MenuTwo from '../menus/menuTow';
 
 export default {
-  name: 'devide',
+  name: 'girder',
   components: {
     MenuTwo, girderInfo,
   },
