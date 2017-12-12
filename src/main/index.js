@@ -33,7 +33,7 @@ function createWindow() {
     },
   });
   mainWindow.loadURL(winURL);
-
+  BrowserWindow.addDevToolsExtension('C:/Users/peach/AppData/Local/Google/Chrome/User Data/Default/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/3.1.6_0');
   mainWindow.on('closed', () => {
     mainWindow = null;
   });

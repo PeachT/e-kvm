@@ -8,31 +8,29 @@ const initData = {
       permissions: 9,
     },
     // 用户表 数据库文件名称"userId+user"
-    users: {
+    userInfo: {
       userId: '',
+      projectName: '项目名称',
+      engineeringName: '工程名称',
+      constructionUnit: '施工单位',
+      girderFactory: '预制梁厂',
+      supervisorUnit: '监理单位',
+      unitEngineering: '单位工程',
+      subdivision: '分部工程',
+      subPoject: '分项工程',
+      contractNumber: '土建合同号',
+      pileNumber: '压桩号',
+      engineeringPart: '工程部位',
+      logo: '',
+      // 监理资料
+      supervisors: {
+        name: '监理名称',
+        img: '',
+      },
     },
   },
   // 用户信息 数据库文件名称"userId+user"
   // 用户表中的文档
-  userInfo: {
-    projectName: '项目名称',
-    engineeringName: '工程名称',
-    constructionUnit: '施工单位',
-    girderFactory: '预制梁厂',
-    supervisorUnit: '监理单位',
-    unitEngineering: '单位工程',
-    subdivision: '分部工程',
-    subPoject: '分项工程',
-    contractNumber: '土建合同号',
-    pileNumber: '压桩号',
-    engineeringPart: '工程部位',
-    logo: '',
-    // 监理资料
-    supervisors: {
-      name: '监理名称',
-      img: '',
-    },
-  },
   tensioningData: { // 张拉数据
     id: '',
     bridgeName: '梁号',
@@ -118,33 +116,32 @@ const initData = {
             retractionMM: 8, // 力筋回缩量
           },
         },
+        curves: [ // 曲线
+          {
+            id: '',
+            time: [],
+            A1Mpa: [],
+            A2Mpa: [],
+            B1Mpa: [],
+            B2Mpa: [],
+            A1mm: [],
+            A2mm: [],
+            B1mm: [],
+            B2mm: [],
+          },
+        ],
       },
     ],
   },
-  // 用户表中的文档
   // 曲线数据 数据库文件名使用"userId+curve"
   // id 梁id+组名称
-  curves: [
-    {
-      id: '',
-      time: [],
-      A1Mpa: [],
-      A2Mpa: [],
-      B1Mpa: [],
-      B2Mpa: [],
-      A1mm: [],
-      A2mm: [],
-      B1mm: [],
-      B2mm: [],
-    },
-  ],
+  // 用户表中的文档
   // 操作员
   operator: {
     name: '操作员',
     pwd: '123',
     img: '',
   },
-
   // 钢绞线
   steelStrands: {
     specs: '1860',

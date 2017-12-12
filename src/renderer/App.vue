@@ -11,7 +11,9 @@
   export default {
     name: 'electronTemplate',
     computed: {
-      ...mapState({ path: state => state.global.path }),
+      // ...mapState({ path: state => state.global.path }),
+    },
+    beforeMount() {
     },
     watch: {
     },

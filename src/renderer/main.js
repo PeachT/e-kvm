@@ -9,9 +9,11 @@ import router from './router';
 import store from './store';
 
 import Db from './db/db';
+import Unity from './js/unity';
 
 Vue.prototype.$db = Db;
 Vue.prototype.$d3 = D3;
+Vue.prototype.$unity = Unity;
 
 Vue.use(ElementUI, {
   size: 'small',

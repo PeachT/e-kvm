@@ -3,7 +3,9 @@ const state = {
   showMenu: false,
   menuTitle: '',
   menu2Data: [], // {id: 'id', name: '菜单名称'}
-  userDb: 'db123456789',
+  userDb: null,
+  editState: false,
+  addState: false,
 };
 
 const mutations = {
@@ -18,6 +20,12 @@ const mutations = {
   },
   menu2Data(state, data) {
     state.menu2Data = data;
+  },
+  editState(state, data) {
+    state.editState = data;
+  },
+  addState(state, data) {
+    state.addState = data;
   },
 };
 

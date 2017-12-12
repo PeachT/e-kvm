@@ -12,7 +12,7 @@ import store from '../store/index';
 
 Vue.use(Vuex);
 // 获取当前登录用户
-const userdb = store.state.global.userDb;
+const xuserdb = store.state.global.userDb;
 
 /**
  * 获取数据库目录
@@ -45,13 +45,12 @@ function db(fileName) {
     return false;
   }
   const filePath = path.join(remote.app.getPath('userData'), `${dbDirName}/${fileName}.db`);
+  const dbFile = new Loki(filePath);
   try {
     const file = Read(filePath);
-    const dbFile = new Loki();
     dbFile.loadJSON(file);
-    return dbFile;
   } catch (error) {}
-  return new Loki(filePath);
+  return dbFile;
 }
 /**
  * 判断数据库是否存在
@@ -69,127 +68,7 @@ function ifDb() {
   }
   return false;
 }
-/**
- * 获取admin（管理数据）文档实例
- *
- * @returns 返回adminCollection
- */
-function admin() {
-  try {
-    const $db = db('main');
-    console.log($db, '123123');
-    return $db.getCollection('admin');
-  } catch (error) {
-    return error;
-  }
-}
-/**
- * 获取users（用户数据集合）文档实例
- *
- * @returns 返回usersCollection
- */
-function users() {
-  try {
-    const $db = db('main');
-    return $db.getCollection('users');
-  } catch (error) {
-    return error;
-  }
-}
-/**
- * 获取userInfo（用户资料）文档实例
- *
- * @returns 返回userInfoCollection
- */
-function userInfo() {
-  try {
-    console.log(userdb);
-    const $db = db(`${userdb}.user`);
-    return $db.getCollection('userInfo');
-  } catch (error) {
-    return error;
-  }
-}
-/**
- * 获取tensioningData（张拉数据）文档实例
- *
- * @returns 返回tensioningDataCollection
- */
-function tensioningData() {
-  try {
-    console.log(userdb);
-    const $db = db(`${userdb}.user`);
-    return $db.getCollection('tensioningData');
-  } catch (error) {
-    return error;
-  }
-}
-/**
- * 获取curvesData（曲线）文档实例
- *
- * @returns 返回curvesDataCollection
- */
-function curves() {
-  try {
-    console.log(userdb);
-    const $db = db(`${userdb}.curves`);
-    return $db.getCollection('curves');
-  } catch (error) {
-    return error;
-  }
-}
-/**
- * 获取operators（操作员）文档实例
- *
- * @returns 返回operatorsCollection
- */
-function operators() {
-  try {
-    const $db = db('other');
-    return $db.getCollection('operators');
-  } catch (error) {
-    return error;
-  }
-}
-/**
- * 获取steelStrands（钢绞线）文档实例
- *
- * @returns 返回steelStrandsCollection
- */
-function steelStrands() {
-  try {
-    const $db = db('other');
-    return $db.getCollection('steelStrands');
-  } catch (error) {
-    return error;
-  }
-}
-/**
- * 获取device（设备）文档实例
- *
- * @returns 返回deviceCollection
- */
-function device() {
-  try {
-    const $db = db('other');
-    return $db.getCollection('device');
-  } catch (error) {
-    return error;
-  }
-}
-/**
- * 获取girder（构件）文档实例
- *
- * @returns 返回girderCollection
- */
-function girder() {
-  try {
-    const $db = db('other');
-    return $db.getCollection('girder');
-  } catch (error) {
-    return error;
-  }
-}
+
 const Db = {
   /**
    * 数据库初始化
@@ -228,27 +107,15 @@ const Db = {
         // 创建主数据库和文档
         let $db = db('main');
         const adminCollection = $db.addCollection('admin', { indices: ['name'] });
-        const usersCollection = $db.addCollection('users', { indices: ['userId'] });
+        const usersCollection = $db.addCollection('users', { indices: ['id'] });
         // 插入数据
         adminCollection.insert({
           name: admin.name,
           pwd: admin.pwd,
           permissions: 9,
         });
-        const userFileName = `kvm.${new Date().getTime()}`;
-        usersCollection.insert({ userId: userFileName });
         // 保存数据到数据库
         $db.save();
-        // 创建用户资料数据库和文档
-        $db = db(`${userFileName}.user`);
-        $db.addCollection('userInfo');
-        $db.addCollection('tensioningData', { indices: ['bridgeName', 'id'] });
-        $db.save();
-        // 创建用户曲线数据库和文档
-        $db = db(`${userFileName}.curves`);
-        $db.addCollection('curves', { indices: ['id'] });
-        $db.save();
-        // 创建其它数据库和文档
         $db = db('other');
         // 操作员文档
         $db.addCollection('operators', { indices: ['name'] });
@@ -266,17 +133,8 @@ const Db = {
       return false;
     }
   },
+  db,
   ifDb: ifDb(),
-  // 获取指定数据库
-  admin: admin(),
-  users: users(),
-  userInfo: userInfo(),
-  tensioningData: tensioningData(),
-  curves: curves(),
-  operators: operators(),
-  steelStrands: steelStrands(),
-  device: device(),
-  girder: girder(),
 };
 
 export default Db;

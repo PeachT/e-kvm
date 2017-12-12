@@ -3,7 +3,7 @@
     <div class="top">
       <ul>
         <li v-if="users===0">没有数据</li>
-        <li v-for="(item, index) in users" :key="index" :class="{'active': index===active}" @click="active = index">
+        <li v-for="(item, index) in users" :key="index" :class="{'active': item.name===nowName}" @click="nowName = item.name">
           <img :src="item.img" alt="">
           <p>{{item.name}}</p>
         </li>
@@ -72,7 +72,6 @@
 </template>
 
 <script>
-  import { ipcRenderer } from 'electron';
   const { dialog } = require('electron').remote;
   export default {
     name: 'landing-page',
@@ -126,25 +125,41 @@
           ],
         },
         message: '', // 1登陆成功 2登陆失败
-        users: 0,
+        nowName: null,
       };
     },
     beforeMount() {
-      console.log(this.$store.state.global.userDb);
       if (this.$db.ifDb) {
         this.dbState = false;
-        // try {
-        //   const db = this.$db.dbBase('users');
-        //   const users = db.getCollection('users');
-        //   if (users) {
-        //     this.users = users.data.map((item) => {
-        //       return { name: item.name, img: item.img };
-        //     });
-        //   }
-        // } catch (error) { console.log('程序错误'); }
       }
     },
     computed: {
+      // 数据库
+      DBmain() {
+        if (!this.dbState) {
+          return this.$db.db('main');
+        }
+        return null;
+      },
+      // DBother() {
+      //   return this.$db.db('other');
+      // },
+      // DBtensioning() {
+      //   return this.$db.db(`${nval}.tensioning`);
+      // },
+      // 数据库
+      users() {
+        const users = this.DBmain.getCollection('users').data;
+        if (users.length > 0) {
+          if (this.nowName === null) {
+            this.nowName = users[0].projectName;
+          }
+          return users.map((item) => {
+            return { name: item.projectName, img: item.logo };
+          });
+        }
+        return 0;
+      },
       // 当前选择的项目
       nowData() {
         // img: 'file:///C:/Users/peach/Pictures/%E4%B8%B4%E6%97%B6%E5%9B%BE%E7%89%87/vue.png',
@@ -154,29 +169,34 @@
             name: '没有数据',
           };
         }
-        return this.usrs[this.active];
+        const nowName = this.nowName;
+        return this.users.filter(item => item.name === nowName)[0];
       },
     },
     methods: {
       // 提示下拉框用户名
       querySearch(queryString, cb) {
-        const Results = [
-          {
-            value: '张三',
-          },
-          {
-            value: '李四',
-          },
-        ];
+        // const Results = [
+        //   {
+        //     value: '张三',
+        //   },
+        //   {
+        //     value: '李四',
+        //   },
+        // ];
+        let Results = [];
+        const users = this.DBmain.getCollection('admin').find({ permissions: { $lt: 9 } });
+        Results = users.map((item) => {
+          return { value: item.name };
+        });
         // 调用 callback 返回建议列表的数据
         cb(Results);
       },
       // 登陆检测
       loginFunc() {
         const user = this.user;
-        const admin = this.$db.admin.find({ name: user.name })[0];
+        const admin = this.DBmain.getCollection('admin').findOne({ name: user.name });
         console.log(admin);
-        // const admindata = admin.find({ name: user.name })[0];
         if (admin && user.pwd === admin.pwd) {
           this.$router.push({
             path: 'menu',
