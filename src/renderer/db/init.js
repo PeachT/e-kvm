@@ -166,24 +166,28 @@ const initData = {
     A1: {
       liftingJackNumber: '千斤顶编号',
       oilPumpNumber: '油泵编号',
+      demarcationDate: '',
       a: 0, // 方程常数a
       b: 0, // 方程常数b
     },
     A2: {
       liftingJackNumber: '千斤顶编号',
       oilPumpNumber: '油泵编号',
+      demarcationDate: '',
       a: 0,
       b: 0,
     },
     B1: {
       liftingJackNumber: '千斤顶编号',
       oilPumpNumber: '油泵编号',
+      demarcationDate: '',
       a: 0,
       b: 0,
     },
     B2: {
       liftingJackNumber: '千斤顶编号',
       oilPumpNumber: '油泵编号',
+      demarcationDate: '',
       a: 0,
       b: 0,
     },

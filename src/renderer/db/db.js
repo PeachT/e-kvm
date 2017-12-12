@@ -107,13 +107,17 @@ const Db = {
         // 创建主数据库和文档
         let $db = db('main');
         const adminCollection = $db.addCollection('admin', { indices: ['name'] });
-        const usersCollection = $db.addCollection('users', { indices: ['id'] });
         // 插入数据
         adminCollection.insert({
           name: admin.name,
           pwd: admin.pwd,
           permissions: 9,
         });
+        // 添加视图
+        const operator = adminCollection.addDynamicView('operator');
+        operator.applyFind({ permissions: { $lt: 9 } }); // 查询数据
+        operator.applySimpleSort('permissions', true); // permissions字段倒序排列
+        $db.addCollection('users', { indices: ['id'] });
         // 保存数据到数据库
         $db.save();
         $db = db('other');

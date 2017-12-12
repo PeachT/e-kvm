@@ -14,7 +14,7 @@
       </div>
       <el-form-item label="张拉模式" style="flex:2;">
         <el-checkbox-group >
-          <el-checkbox :label="index" border v-for="(item, index) in ['A1单顶', 'A2单顶', 'A两顶', 'B1单顶', 'B2单顶', 'B两顶', '四顶']" :key="index">{{item}}</el-checkbox>
+          <el-checkbox :label="index" border v-for="(item, index) in ['A1单顶', 'A两顶', 'B1单顶', 'B两顶', '四顶']" :key="index">{{item}}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
       <el-form-item label="回归方程">

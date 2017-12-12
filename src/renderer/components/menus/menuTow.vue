@@ -18,6 +18,7 @@
         <div class="items">
             <li class="item" :class="{'active' : item.name === nowName}" v-for="(item, index) in menuData" :key="index" @click.stop="activeItemFunc(index, item.name)">
               <!-- <i class="el-icon-delete"></i> -->
+              <i class="el-icon-star-on" style="color:#67C23A" v-if="'permissions' in item && item.permissions===1"></i>
               <span>
                 {{item.name}}
               </span>

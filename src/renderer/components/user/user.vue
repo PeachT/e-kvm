@@ -1,7 +1,7 @@
 <template>
   <div class="wh100">
     <el-container class="wh100">
-      <el-aside class="task-menu" width="224px">
+      <el-aside style="border-right:1px solid #EDF2FC;" width="224px">
         <menu-two :menuData="menuData" :nowName.sync="nowName" @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel"></menu-two>
       </el-aside>
       <el-main class="task-main">
@@ -94,6 +94,13 @@
         return this.$store.state.global.addState;
       },
     },
+    updated() {
+      if (this.editState) {
+        this.disabled(null);
+      } else {
+        this.disabled();
+      }
+    },
     beforeMount() {
       this.getMenuData();
       if (!(this.menuData.length === 0)) {
@@ -159,6 +166,7 @@
     watch: {
       // 切换输入框状态
       editState(nval) {
+        console.log('df45sd45', nval);
         this.disabled(nval ? null : true);
       },
       // 切换菜单选项
@@ -179,17 +187,18 @@
     methods: {
       // 菜单数据
       getMenuData() {
-        const users = this.DBmain.getCollection('users').data;
+        const users = this.DBmain.getCollection('users').data.map((item) => {
+          return { name: item.projectName };
+        });
+        console.log('数据', users);
         if (users.length > 0) {
           if (this.nowName === null) {
-            this.nowName = users[0].projectName;
+            this.nowName = users[0].name;
           }
-          this.menuData = users.map((item) => {
-            return { name: item.projectName };
-          });
         } else {
-          this.menuData = [];
+          this.userInfo = null;
         }
+        this.menuData = users;
       },
       // 切换用户
       switchUser() {
