@@ -21,6 +21,9 @@ const mutations = {
   menu2Data(state, data) {
     state.menu2Data = data;
   },
+  userDb(state, data) {
+    state.userDb = data;
+  },
   editState(state, data) {
     state.editState = data;
   },

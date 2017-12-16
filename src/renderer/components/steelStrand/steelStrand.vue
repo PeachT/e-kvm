@@ -172,6 +172,7 @@
                   this.$message.error('名字重复！请重新输入！');
                   return;
                 }
+                nowData.id = this.$unity.timeId();
                 console.log(this.nowData);
                 collection.insert(nowData);
                 this.DBother.save();

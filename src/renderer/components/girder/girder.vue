@@ -169,6 +169,7 @@
                   this.$message.error('名字重复！请重新输入！');
                   return;
                 }
+                nowData.id = `${this.$unity.timeId()}T`;
                 console.log(this.nowData);
                 collection.insert(nowData);
                 this.DBother.save();
@@ -207,6 +208,8 @@
           type: 'warning',
         }).then(() => {
           this.getMenuData();
+          this.$store.commit('editState', false);
+          this.$store.commit('addState', false);
           this.$message({
             type: 'info',
             message: '已成功取消编辑!',
@@ -217,8 +220,6 @@
             message: '继续编辑',
           });
         });
-        this.$store.commit('editState', false);
-        this.$store.commit('addState', false);
       },
       errorShow(msg) {
         this.$notify.error({

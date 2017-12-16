@@ -31,12 +31,15 @@ const initData = {
   },
   // 用户信息 数据库文件名称"userId+user"
   // 用户表中的文档
-  tensioningData: { // 张拉数据
+  tensioning: { // 张拉数据
     id: '',
     bridgeName: '梁号',
-    structureName: '构件名称',
-    structureHoleName: '构件孔名称',
-    device: '', // 设备id 未张拉使用全局的设备 已张拉使用用户下的设备
+    structure: {
+      name: '构件名称',
+      id: '构件名称',
+      holeName: '构件孔名称',
+    },
+    deviceId: '', // 设备id 未张拉使用全局的设备 已张拉使用用户下的设备
     steelStrand: '', // 钢绞线id 未张拉使用全局的钢绞线 已张拉使用用户下的钢绞线
     concretes: { // 混凝土数据
       sampleNumber: '试块编号',

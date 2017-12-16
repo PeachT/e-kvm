@@ -24,16 +24,12 @@
             <el-input v-model="user.pwd"></el-input>
           </el-form-item>
           <el-form-item>
-            <p style="color:#67C23A;" v-if="message === 1">登陆成功！</p>
-            <p style="color:#FA5555;" v-if="message === 2">登陆错误！</p>
+            <h1 style="color:#67C23A;" v-if="message === 1">登陆成功！</h1>
+            <h1 style="color:#FA5555;" v-if="message === 2">登陆错误！</h1>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="loginFunc()">登录</el-button>
           </el-form-item>
-          <!-- <el-button-group>
-            <el-button type="primary">初始化数据库</el-button>
-            <el-button type="primary" @click="getDir()">导入数据库</el-button>
-          </el-button-group> -->
         </el-form>
       </div>
     </div>
@@ -131,33 +127,38 @@
     beforeMount() {
       if (this.$db.ifDb) {
         this.dbState = false;
+        window.adminDB = this.$db.dbAll('main', 'admin');
+        window.usersDB = this.$db.dbAll('main', 'users');
+        window.deviceDB = this.$db.dbAll('other', 'device');
+        window.steelStrandsDB = this.$db.dbAll('other', 'steelStrands');
+        window.girderDB = this.$db.dbAll('other', 'girder');
+        console.log(window.usersDB);
       }
     },
     computed: {
       // 数据库
       DBmain() {
-        if (!this.dbState) {
-          return this.$db.db('main');
-        }
+        try {
+          if (!this.dbState) {
+            return this.$db.db('main');
+          }
+        } catch (error) {}
         return null;
       },
-      // DBother() {
-      //   return this.$db.db('other');
-      // },
-      // DBtensioning() {
-      //   return this.$db.db(`${nval}.tensioning`);
-      // },
-      // 数据库
+      // 操作员数据
       users() {
-        const users = this.DBmain.getCollection('users').data;
-        if (users.length > 0) {
-          if (this.nowName === null) {
-            this.nowName = users[0].projectName;
+        try {
+          // const users = this.DBmain.getCollection('users').data;
+          const users = window.usersDB.getAll;
+          if (users.length > 0) {
+            if (this.nowName === null) {
+              this.nowName = users[0].projectName;
+            }
+            return users.map((item) => {
+              return { name: item.projectName, img: item.logo, id: item.id };
+            });
           }
-          return users.map((item) => {
-            return { name: item.projectName, img: item.logo };
-          });
-        }
+        } catch (error) {}
         return 0;
       },
       // 当前选择的项目
@@ -176,16 +177,9 @@
     methods: {
       // 提示下拉框用户名
       querySearch(queryString, cb) {
-        // const Results = [
-        //   {
-        //     value: '张三',
-        //   },
-        //   {
-        //     value: '李四',
-        //   },
-        // ];
         let Results = [];
-        const users = this.DBmain.getCollection('admin').find({ permissions: { $lt: 9 } });
+        // const users = this.DBmain.getCollection('admin').find({ permissions: { $lt: 9 } });
+        const users = window.get({ permissions: { $lt: 9 } });
         Results = users.map((item) => {
           return { value: item.name };
         });
@@ -195,12 +189,15 @@
       // 登陆检测
       loginFunc() {
         const user = this.user;
-        const admin = this.DBmain.getCollection('admin').findOne({ name: user.name });
-        console.log(admin);
+        // const admin = this.DBmain.getCollection('admin').findOne({ name: user.name });
+        const admin = window.adminDB.getOne({ name: user.name });
         if (admin && user.pwd === admin.pwd) {
+          this.$store.commit('userDb', `${this.nowData.id}.tensioning`);
           this.$router.push({
             path: 'menu',
           });
+          // 保存用户张拉数据
+          window.tensioningDb = this.$db.db(`${this.nowData.id}.tensioning`);
           this.message = 1;
         } else {
           this.message = 2;

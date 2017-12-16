@@ -118,7 +118,7 @@ export default {
     disabled(state = true) {
       console.log(state);
 
-      this.$d3.selectAll('input').attr('disabled', state);
+      // this.$d3.selectAll('input').attr('disabled', state);
     },
   },
 };

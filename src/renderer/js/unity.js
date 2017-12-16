@@ -8,6 +8,9 @@ const unity = {
   copyObj(data) {
     return JSON.parse(JSON.stringify(data))
   },
+  timeId() {
+    return `${new Date().getTime()}`
+  },
   /**
    * input获取焦点时选择内容
    *

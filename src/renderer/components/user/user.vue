@@ -53,7 +53,6 @@
 <script>
   // import UserInfo from './template/userInfo';
   import MenuTwo from '../menus/menuTow';
-
   const userInfo = {
     projectName: '', // '项目名称',
     engineeringName: '', // '工程名称',
@@ -81,11 +80,6 @@
       // UserInfo,
     },
     computed: {
-      // 数据库
-      DBmain() {
-        return this.$db.db('main');
-      },
-      // 数据库
       // 编辑状态
       editState() {
         return this.$store.state.global.editState;
@@ -102,13 +96,11 @@
       }
     },
     beforeMount() {
+      this.DB = window.usersDB;
       this.getMenuData();
-      if (!(this.menuData.length === 0)) {
-        this.nowName = this.menuData[0].name;
-        // this.switchUser();
-      }
     },
     data: () => ({
+      DB: null,
       userInfo: false,
       templateName: [
         ['projectName', '项目名称'],
@@ -164,11 +156,6 @@
       nowName: null,
     }),
     watch: {
-      // 切换输入框状态
-      editState(nval) {
-        console.log('df45sd45', nval);
-        this.disabled(nval ? null : true);
-      },
       // 切换菜单选项
       nowName(nval, oval) {
         if (nval !== null) {
@@ -187,24 +174,21 @@
     methods: {
       // 菜单数据
       getMenuData() {
-        const users = this.DBmain.getCollection('users').data.map((item) => {
+        const users = this.DB.getAll.map((item) => {
           return { name: item.projectName };
         });
-        console.log('数据', users);
-        if (users.length > 0) {
-          if (this.nowName === null) {
-            this.nowName = users[0].name;
-          }
-        } else {
-          this.userInfo = null;
+        if (users.length > 0 && this.nowName === null) {
+          this.nowName = users[0].name;
+        }
+        if (this.nowName !== null) {
+          this.switchUser();
         }
         this.menuData = users;
       },
       // 切换用户
       switchUser() {
-        console.log('222222222');
         try {
-          this.userInfo = this.$unity.copyObj(this.DBmain.getCollection('users').findOne({ projectName: this.nowName }));
+          this.userInfo = this.$unity.copyObj(this.DB.getOne({ projectName: this.nowName }));
           if (this.userInfo.supervisors.length > 0) {
             this.supervisors = this.$unity.copyObj(this.userInfo.supervisors[0]);
             this.supervisorsIndex = 0;
@@ -212,7 +196,7 @@
             this.supervisors = null;
           }
         } catch (error) {
-          this.errorShow(`${error}`);
+          this.errorShow(`切换用户--${error}`);
         }
       },
       add() {
@@ -238,10 +222,7 @@
             message: '取消删除！',
           });
         }).catch(() => {
-          const db = this.DBmain.getCollection('users');
-          const user = db.findOne({ projectName: this.nowName });
-          db.remove(user);
-          this.DBmain.save();
+          this.DB.del({ projectName: this.nowName });
           this.nowName = null;
           this.getMenuData();
           this.$message('删除成功！');
@@ -258,37 +239,29 @@
               // 添加
               if (this.addState) {
                 // 判断用户名是否存在
-                if (this.DBmain.getCollection('users').findOne({ projectName: userInfo.projectName })) {
-                  this.$message.error('项目名称重复！请重新输入！');
-                  return;
-                }
                 const userId = `${new Date().getTime()}`;
                 userInfo.id = userId;
-                console.log(this.userInfo);
-                this.DBmain.getCollection('users').insert(userInfo);
-                this.DBmain.save();
+
+                if (this.DB.insert(userInfo, { projectName: userInfo.projectName })) {
+                  this.$message.error('项目已经存在！请重新输入！');
+                  return;
+                }
                 const db = this.$db.db(`${userId}.tensioning`);
-                db.addCollection('tensioningData', { indices: ['bridgeName', 'id'] });
+                db.addCollection('device');
+                db.addCollection('tpl', { indices: ['structureId', 'tplName'] });
                 db.save();
-                this.nowName = userInfo.projectName;
               // 修改
               } else {
                 msg = '修改成功！';
                 errorMsg = '数据更新出错！';
-                this.DBmain.getCollection('users').update(userInfo);
-                this.DBmain.save();
+                this.DB.update(userInfo);
               }
+              this.nowName = userInfo.projectName;
               this.$message.success(msg);
               this.getMenuData();
               this.$store.commit('editState', false);
               this.$store.commit('addState', false);
             } catch (error) {
-              // this.$notify.error({
-              //   showClose: true,
-              //   duration: 0,
-              //   title: '错误',
-              //   message: `${errorMsg}--${error}`,
-              // });
               this.errorShow(`${errorMsg}--${error}`);
             }
           } else {

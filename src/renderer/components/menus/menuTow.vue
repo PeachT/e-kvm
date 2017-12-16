@@ -1,7 +1,7 @@
 <template>
   <div class="wh100 menu-template">
     <el-container class="wh100">
-      <el-header height="40px" class="teak-header">
+      <el-header height="40px" class="header">
         <el-button-group v-if="!edit">
           <el-button type="success" @click="$store.commit('editState', true), $store.commit('addState', true), $emit('add')">添加</el-button>
           <el-button type="primary" @click="$store.commit('editState', true), $emit('edit')" :disabled="!nowName">编辑</el-button>
@@ -12,7 +12,6 @@
           <el-button type="success" @click="$emit('save')">保存</el-button>
           <el-button type="danger" @click=" $emit('cancel')">取消</el-button>
         </el-button-group>
-
       </el-header>
       <el-main>
         <div class="items">
@@ -38,8 +37,6 @@ export default {
     },
   },
   data: () => ({
-    active: null,
-    activeItem: null,
   }),
   methods: {
     activeItemFunc(index, name) {
@@ -53,9 +50,6 @@ export default {
         }
         // this.$emit('update:foo', newValue)
       }
-    },
-    emit(state) {
-      this.$emit(state);
     },
   },
 };

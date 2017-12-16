@@ -1,11 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'; // eslint-disable-line
 // const { dialog } = require('electron').remote;
-
-ipcMain.on('relaunch', () => {
-  console.log('重启');
-  app.relaunch();
-  app.quit();
-});
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -33,7 +27,7 @@ function createWindow() {
     },
   });
   mainWindow.loadURL(winURL);
-  BrowserWindow.addDevToolsExtension('C:/Users/peach/AppData/Local/Google/Chrome/User Data/Default/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/3.1.6_0');
+  BrowserWindow.addDevToolsExtension('C:/Users/peach/AppData/Local/Google/Chrome/User Data/Default/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/3.1.7_0');
   mainWindow.on('closed', () => {
     mainWindow = null;
   });

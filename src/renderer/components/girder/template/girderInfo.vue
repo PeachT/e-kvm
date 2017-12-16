@@ -46,15 +46,17 @@
       :visible.sync="editState"
       width="80%"
       :before-close="editClose">
-        <el-form :model="nowData" :rules="nowDataRules" ref="nowData" class="form-info" label-width="80px">
+        <el-form :model="nowData" :rules="nowDataRules" ref="nowData" label-width="80px">
           <el-form-item label="孔号名称" prop="name">
             <el-input v-model="nowData.name"></el-input>
           </el-form-item>
           <el-form-item label="孔号">
-            <el-input v-model="nowData.detail"></el-input>
+            <el-input type="textarea" :rows="5" v-model="nowData.detail"></el-input>
           </el-form-item>
         </el-form>
-        <h1 style="color: red;">注意！孔号不能重名。不能以“,”逗号结尾。孔名称之间必须已英文逗号“,”隔开。</h1>
+        <h1 style="color: green;">提示！孔名称之间必须已英文逗号“,”隔开！</h1>
+        <h1 style="color: red;">注意！孔号不能重名!</h1>
+        <h1 style="color: red;">注意不能以“,”逗号结尾!</h1>
       <span slot="footer" class="dialog-footer">
         <el-button @click="editState = false">取 消</el-button>
         <el-button type="primary" @click="okFunc()">确 定</el-button>
@@ -171,7 +173,9 @@
       },
       save() {
         if (this.addState) {
-          this.holes.push(this.nowData);
+          const data = this.nowData;
+          data.id = this.$unity.timeId();
+          this.holes.push(data);
         } else {
           this.$set(this.holes, this.editNumber, this.$unity.copyObj(this.nowData));
           // this.holes[this.editNumber] = this.$unity.copyObj(this.nowData);

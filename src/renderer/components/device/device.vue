@@ -189,7 +189,7 @@
         try {
           this.nowData = this.$unity.copyObj(this.DBother.getCollection('device').findOne({ name: this.nowName }));
         } catch (error) {
-          this.errorShow(`${error}`);
+          this.errorShow(`切换菜单--${error}`);
         }
       },
       add() {
@@ -243,6 +243,8 @@
                   this.$message.error('名称重复！请重新输入！');
                   return;
                 }
+                nowData.id = this.$unity.timeId();
+                nowData.tensioningPattern = nowData.tensioningPattern.sort();
                 console.log(this.nowData);
                 collection.insert(nowData);
                 this.DBother.save();

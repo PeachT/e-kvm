@@ -122,7 +122,7 @@ const Db = {
         $db.save();
         $db = db('other');
         // 操作员文档
-        $db.addCollection('operators', { indices: ['name'] });
+        // $db.addCollection('operators', { indices: ['name'] });
         // 钢绞线文档
         $db.addCollection('steelStrands', { indices: ['specs'] });
         // $db.addCollection('concretes', { indices: ['name'] });
@@ -139,6 +139,37 @@ const Db = {
   },
   db,
   ifDb: ifDb(),
+  dbAll(dbName, collectionName) {
+    const $db = db(dbName);
+    const collection = $db.getCollection(collectionName);
+    return {
+      db: $db,
+      c: collection,
+      getAll: collection.data,
+      getOne: (query) => {
+        return collection.findOne(query);
+      },
+      get: (query) => {
+        return collection.find(query);
+      },
+      insert: (data, query) => {
+        console.log('插入数据');
+        if (collection.findOne(query)) {
+          return true;
+        }
+        collection.insert(data);
+        return $db.save();
+      },
+      update: (data) => {
+        collection.update(data);
+        $db.save();
+      },
+      del: (query) => {
+        collection.chain().find(query).remove();
+        $db.save();
+      },
+    };
+  },
 };
 
 export default Db;
