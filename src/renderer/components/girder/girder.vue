@@ -93,7 +93,7 @@
       // 菜单数据
       getMenuData() {
         try {
-          const menus = this.DBother.getCollection('girder').data.map((item) => {
+          const menus = window.girderDB.getAll.map((item) => {
             return {
               name: item.name,
             };
@@ -113,7 +113,7 @@
       switchMenu() {
         console.log('切换菜单', this.nowName);
         try {
-          this.nowData = this.$unity.copyObj(this.DBother.getCollection('girder').findOne({ name: this.nowName }));
+          this.nowData = this.$unity.copyObj(window.girderDB.getOne({ name: this.nowName }));
         } catch (error) {
           this.errorShow(`${error}`);
         }
@@ -141,10 +141,7 @@
           });
         }).catch(() => {
           try {
-            const collection = this.DBother.getCollection('girder');
-            const delData = collection.findOne({ name: this.nowName });
-            collection.remove(delData);
-            this.DBother.save();
+            window.girderDB.del({ name: this.nowName });
             this.nowName = null;
             this.getMenuData();
             this.$message('删除成功！');
@@ -157,7 +154,7 @@
         this.$message('保存');
         this.$refs.nowData.validate((valid) => {
           if (valid && !this.supervisorsEdit) {
-            const collection = this.DBother.getCollection('girder');
+            const collection = window.girderDB.c;
             const nowData = this.nowData;
             let msg = '添加成功！';
             let errorMsg = '数据插入出错！';
@@ -165,21 +162,17 @@
               // 添加
               if (this.addState) {
                 // 判断用户名是否存在
-                if (collection.findOne({ name: nowData.name })) {
+                nowData.id = `${this.$unity.timeId()}T`;
+                if (window.girderDB.insert(nowData, { name: nowData.name })) {
                   this.$message.error('名字重复！请重新输入！');
                   return;
                 }
-                nowData.id = `${this.$unity.timeId()}T`;
-                console.log(this.nowData);
-                collection.insert(nowData);
-                this.DBother.save();
                 this.nowName = nowData.name;
                 // 修改
               } else {
                 msg = '修改成功！';
                 errorMsg = '数据更新出错！';
-                collection.update(nowData);
-                this.DBother.save();
+                window.girderDB.update(nowData);
               }
               this.$message.success(msg);
               this.getMenuData();

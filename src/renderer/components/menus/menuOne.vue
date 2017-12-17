@@ -48,83 +48,20 @@
 <script>
   export default {
     name: 'taskmenu',
-    props: ['id', 'structureId'],
-    data: () => ({
-      menuData: [],
-      menuId: null,
-      childrenMenuData: [],
-      childrenMenuId: null,
-    }),
-    beforeMount() {
-      this.getMenuData();
-    },
+    props: ['menuData', 'childrenMenuData', 'childrenMenuId', 'menuId'],
     computed: {
       edit() {
         return this.$store.state.global.editState;
       },
     },
-    watch: {
-      // 父组件更新数据
-      childrenMenuId(nval) {
-        this.$emit('update:structureId', this.menuId);
-        this.$emit('update:id', nval);
-      },
-    },
     methods: {
-      getMenuData() {
-        try {
-          const ids = window.tensioningDb.collections.map((item) => {
-            return item.name;
-          });
-          let menuData = [];
-          if (ids.length > 0) {
-            menuData = window.girderDB.get({
-              id: {
-                $in: ids,
-              },
-            }).map((item) => {
-              return {
-                name: item.name,
-                id: item.id,
-              };
-            });
-          }
-          console.log(this.childrenMenuId);
-          if (menuData.length > 0 && this.childrenMenuId === null) {
-            this.childrenMenuId = menuData[0].id;
-          }
-          this.menuData = menuData;
-          this.getChildrenMenuData();
-        } catch (error) {}
-      },
-      getChildrenMenuData() {
-        try {
-          this.childrenMenuData = window.tensioningDb
-            .getCollection(this.menuId).data.map((item) => {
-              return {
-                name: item.bridgeName,
-                id: item.id,
-              };
-            });
-          if (this.childrenMenuId === null) {
-            this.childrenMenuId = this.childrenMenuData[0].id;
-          }
-        } catch (error) {}
-      },
-      showMenu(id1, id2) {
-        console.log(id1, id2);
-        this.menuId = id1;
-        this.childrenMenuId = id2;
-        this.getMenuData();
-      },
       menuFunc(id) {
         const state = this.menuId === id;
         if (state) {
-          this.menuId = null;
-          this.childrenMenuId = null;
+          this.$emit('update:menuId', null);
+          this.$emit('update:childrenMenuId', null);
         } else {
-          this.menuId = id;
-          this.getChildrenMenuData();
+          this.$emit('update:menuId', id);
         }
       },
       childernMenuFunc(id) {
@@ -134,8 +71,7 @@
             this.$message('请完成编辑操作才能切换！');
           } else {
             this.$message(`${id}`);
-            // this.$emit('update:childrenMenuId', id);
-            this.childrenMenuId = id;
+            this.$emit('update:childrenMenuId', id);
           }
           // this.$emit('update:foo', newValue)
         }

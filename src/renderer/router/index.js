@@ -15,6 +15,7 @@ const Girder = require('@/components/girder/girder.vue').default;
 const Monitoring = require('../components/monitoring/monitoring.vue').default;
 const Operator = require('../components/operator/operator.vue').default;
 const SteelStrand = require('../components/steelStrand/steelStrand.vue').default;
+const Tpl = require('../components/tpl/tpl.vue').default;
 
 Vue.use(Router);
 Vue.use(Vuex);
@@ -89,6 +90,14 @@ const routes = [
     component: Root,
     children: [
       { path: '', component: SteelStrand, name: '钢绞线' },
+    ],
+  },
+  {
+    path: '/tpl',
+    name: 'tpl',
+    component: Root,
+    children: [
+      { path: '', component: Tpl, name: '模板' },
     ],
   },
   {

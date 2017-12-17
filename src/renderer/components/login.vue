@@ -197,7 +197,7 @@
             path: 'menu',
           });
           // 保存用户张拉数据
-          window.tensioningDb = this.$db.db(`${this.nowData.id}.tensioning`);
+          window.tensioningDB = this.$db.db(`${this.nowData.id}.tensioning`);
           this.message = 1;
         } else {
           this.message = 2;
