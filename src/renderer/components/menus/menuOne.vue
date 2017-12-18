@@ -16,7 +16,7 @@
       <el-main>
         <div class="glub" v-for="(item, index) in menuData" :class="{'active' : menuId === item.id}" :key="index" v-show="menuId===null || menuId === item.id"
           @click.stop="menuFunc(item.id)">
-          <div class="title">
+          <div class="title" :class="{'active' : menuId === item.id}">
             <div>
               <i class="el-icon-delete"></i>{{item.name}}</div>
             <div>
@@ -27,7 +27,7 @@
           <div class="items" v-show="menuId === item.id">
             <li class="item" v-for="(childern, index) in childrenMenuData" :class="{'active' : childrenMenuId === childern.id}" :key="index"
               @click.stop="childernMenuFunc(childern.id)">
-              <i class="el-icon-delete"></i>
+              <i class="state" :class="`g${childern.state}`"></i>
               <span>
                 {{ childern.name }}
               </span>
@@ -58,22 +58,23 @@
       menuFunc(id) {
         const state = this.menuId === id;
         if (state) {
-          this.$emit('update:menuId', null);
-          this.$emit('update:childrenMenuId', null);
+          if (this.edit) {
+            this.$message('请完成编辑操作才能切换！');
+          } else {
+            this.$emit('update:menuId', null);
+            this.$emit('update:childrenMenuId', null);
+          }
         } else {
           this.$emit('update:menuId', id);
         }
       },
       childernMenuFunc(id) {
         const state = this.childrenMenuId === id;
-        if (!state) {
-          if (this.$store.state.global.editState) {
-            this.$message('请完成编辑操作才能切换！');
-          } else {
-            this.$message(`${id}`);
-            this.$emit('update:childrenMenuId', id);
-          }
-          // this.$emit('update:foo', newValue)
+        if (!state && this.edit) {
+          this.$message('请完成编辑操作才能切换！');
+        } else {
+          this.$message(`${id}`);
+          this.$emit('update:childrenMenuId', id);
         }
       },
     },

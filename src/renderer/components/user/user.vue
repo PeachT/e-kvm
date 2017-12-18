@@ -246,6 +246,7 @@
                   this.$message.error('项目已经存在！请重新输入！');
                   return;
                 }
+                // 创建项目数据库文件
                 const db = this.$db.db(`${userId}.tensioning`);
                 db.addCollection('device');
                 db.addCollection('tpl', { indices: ['structureId', 'tplName'] });

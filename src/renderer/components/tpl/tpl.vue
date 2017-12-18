@@ -52,6 +52,7 @@
     holeId: '',
     deviceId: '', // 设备id 未张拉使用全局的设备 已张拉使用用户下的设备
     steelStrandId: '', // 钢绞线id 未张拉使用全局的钢绞线 已张拉使用用户下的钢绞线
+    state: 0,
     concretes: { // 混凝土数据
       sampleNumber: '试块编号',
       sampleStrength: '试块强度',

@@ -71,7 +71,7 @@ export default {
   },
   computed: {
     nowData() {
-      return this.$db.db('other').getCollection('device').findOne({ id: this.deviceId });
+      return window.deviceDB.getOne({ id: this.deviceId });
     },
   },
 };

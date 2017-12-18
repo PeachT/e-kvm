@@ -118,11 +118,22 @@
       this.deviceDataFunc(this.deviceId);
       this.steelStrandDataFunc(this.steelStrandId);
     },
+    watch: {
+      holeId() {
+        this.holeDataFunc(this.holeId);
+      },
+      deviceId() {
+        this.deviceDataFunc(this.deviceId);
+      },
+      steelStrandId() {
+        this.steelStrandDataFunc(this.steelStrandId);
+      },
+    },
     methods: {
       holeDataFunc(id = null) {
         try {
           if (id) {
-            const structureData = this.$db.db('other').getCollection('girder').findOne({ 'holes.id': id });
+            const structureData = window.girderDB.getOne({ 'holes.id': id });
             const holes = structureData.holes.filter(item => item.id === id)[0];
             this.structure.name = structureData.name;
             this.structure.holeName = holes.name;
@@ -140,7 +151,7 @@
       deviceDataFunc(id = null, tensioningPattern = null) {
         try {
           if (id) {
-            this.deviceName = this.$db.db('other').getCollection('device').findOne({ id: id }).name;
+            this.deviceName = window.deviceDB.getOne({ id: id }).name;
             this.group.tensioningPattern = tensioningPattern;
             this.$emit('update:deviceId', id);
             this.groupFunc();
@@ -150,7 +161,7 @@
       steelStrandDataFunc(id = null) {
         try {
           if (id) {
-            const steelStrand = this.$db.db('other').getCollection('steelStrands').findOne({ id: id });
+            const steelStrand = window.steelStrandsDB.getOne({ id: id });
             this.steelStrand = steelStrand.specs;
             this.$emit('update:steelStrandId', id);
           }

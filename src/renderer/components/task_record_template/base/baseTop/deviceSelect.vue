@@ -44,7 +44,7 @@ export default {
     },
   },
   beforeMount() {
-    this.dadas = this.$db.db('other').getCollection('device').data.map((item) => {
+    this.dadas = window.deviceDB.getAll.map((item) => {
       return item;
     });
   },

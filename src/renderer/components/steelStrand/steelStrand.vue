@@ -40,11 +40,6 @@
       MenuTwo,
     },
     computed: {
-      // 数据库
-      DBother() {
-        return this.$db.db('other');
-      },
-      // 数据库
       // 编辑状态
       editState() {
         return this.$store.state.global.editState;
@@ -62,10 +57,6 @@
     },
     beforeMount() {
       this.getMenuData();
-      console.log(this.menuData);
-      if (this.menuData.length > 0) {
-        this.nowName = this.menuData[0].name;
-      }
     },
     data: () => ({
       role: false,
@@ -95,12 +86,11 @@
       // 菜单数据
       getMenuData() {
         try {
-          const menus = this.DBother.getCollection('steelStrands').data.map((item) => {
+          const menus = window.steelStrandsDB.getAll.map((item) => {
             return {
               name: item.specs,
             };
           });
-          console.log('数据', menus);
           if (menus.length > 0) {
             if (this.nowName === null) {
               this.nowName = menus[0].name;
@@ -108,15 +98,15 @@
           } else {
             this.nowData = null;
           }
+          this.switchMenu();
           this.menuData = menus;
-        } catch (error) {
-        }
+        } catch (error) {}
       },
       // 切换菜单
       switchMenu() {
         console.log('切换菜单', this.nowName);
         try {
-          this.nowData = this.$unity.copyObj(this.DBother.getCollection('steelStrands').findOne({ specs: this.nowName }));
+          this.nowData = this.$unity.copyObj(window.steelStrandsDB.getOne({ specs: this.nowName }));
         } catch (error) {
           this.errorShow(`${error}`);
         }
@@ -144,10 +134,7 @@
           });
         }).catch(() => {
           try {
-            const collection = this.DBother.getCollection('steelStrands');
-            const delData = collection.findOne({ specs: this.nowName });
-            collection.remove(delData);
-            this.DBother.save();
+            window.steelStrandsDB.del({ specs: this.nowName });
             this.nowName = null;
             this.getMenuData();
             this.$message('删除成功！');
@@ -160,41 +147,29 @@
         this.$message('保存');
         this.$refs.nowData.validate((valid) => {
           if (valid && !this.supervisorsEdit) {
-            const collection = this.DBother.getCollection('steelStrands');
             const nowData = this.nowData;
             let msg = '添加成功！';
             let errorMsg = '数据插入出错！';
             try {
               // 添加
               if (this.addState) {
-                // 判断用户名是否存在
-                if (collection.findOne({ specs: nowData.specs })) {
+                nowData.id = this.$unity.timeId();
+                if (window.steelStrandsDB.insert(nowData, { specs: nowData.specs })) {
                   this.$message.error('名字重复！请重新输入！');
                   return;
                 }
-                nowData.id = this.$unity.timeId();
-                console.log(this.nowData);
-                collection.insert(nowData);
-                this.DBother.save();
                 this.nowName = nowData.specs;
                 // 修改
               } else {
                 msg = '修改成功！';
                 errorMsg = '数据更新出错！';
-                collection.update(nowData);
-                this.DBother.save();
+                window.steelStrandsDB.update(nowData);
               }
               this.$message.success(msg);
               this.getMenuData();
               this.$store.commit('editState', false);
               this.$store.commit('addState', false);
             } catch (error) {
-              // this.$notify.error({
-              //   showClose: true,
-              //   duration: 0,
-              //   title: '错误',
-              //   message: `${errorMsg}--${error}`,
-              // });
               this.errorShow(`${errorMsg}--${error}`);
             }
           } else {

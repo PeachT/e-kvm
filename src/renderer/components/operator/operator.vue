@@ -46,11 +46,6 @@
       MenuTwo,
     },
     computed: {
-      // 数据库
-      DBmain() {
-        return this.$db.db('main');
-      },
-      // 数据库
       // 编辑状态
       editState() {
         return this.$store.state.global.editState;
@@ -68,9 +63,6 @@
     },
     beforeMount() {
       this.getMenuData();
-      if (!(this.menuData.length === 0)) {
-        this.nowName = this.menuData[0].name;
-      }
     },
     data: () => ({
       role: false,
@@ -103,11 +95,7 @@
     methods: {
       // 菜单数据
       getMenuData() {
-        // const operator = this.DBmain.getCollection('admin').addDynamicView('operator');
-        // operator.applyFind({ permissions: { $lt: 9 } });
-        // operator.applySimpleSort('permissions', true);
-        // this.DBmain.save();
-        const menus = this.DBmain.getCollection('admin').getDynamicView('operator').data().map((item) => {
+        const menus = window.adminDB.c.getDynamicView('operator').data().map((item) => {
           return {
             name: item.name,
             permissions: item.permissions,
@@ -121,13 +109,14 @@
         } else {
           this.nowData = null;
         }
+        this.switchMenu();
         this.menuData = menus;
       },
       // 切换菜单
       switchMenu() {
         console.log('切换菜单');
         try {
-          this.nowData = this.$unity.copyObj(this.DBmain.getCollection('admin').findOne({ name: this.nowName }));
+          this.nowData = this.$unity.copyObj(window.adminDB.getOne({ name: this.nowName }));
         } catch (error) {
           this.errorShow(`${error}`);
         }
@@ -155,10 +144,7 @@
           });
         }).catch(() => {
           try {
-            const db = this.DBmain.getCollection('admin');
-            const delData = db.findOne({ name: this.nowName });
-            db.remove(delData);
-            this.DBmain.save();
+            window.adminDB.del({ name: this.nowName });
             this.nowName = null;
             this.getMenuData();
             this.$message('删除成功！');
@@ -177,22 +163,17 @@
             try {
               // 添加
               if (this.addState) {
-                // 判断用户名是否存在
-                if (this.DBmain.getCollection('admin').findOne({ name: nowData.name })) {
+                nowData.permissions = this.role ? 1 : 0;
+                if (window.adminDB.insert(nowData, { name: nowData.name })) {
                   this.$message.error('名字重复！请重新输入！');
                   return;
                 }
-                nowData.permissions = this.role ? 1 : 0;
-                console.log(this.nowData);
-                this.DBmain.getCollection('admin').insert(nowData);
-                this.DBmain.save();
                 this.nowName = nowData.name;
                 // 修改
               } else {
                 msg = '修改成功！';
                 errorMsg = '数据更新出错！';
-                this.DBmain.getCollection('admin').update(nowData);
-                this.DBmain.save();
+                window.adminDB.update(nowData);
               }
               this.$message.success(msg);
               this.getMenuData();

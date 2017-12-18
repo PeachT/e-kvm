@@ -177,14 +177,16 @@
     methods: {
       // 提示下拉框用户名
       querySearch(queryString, cb) {
-        let Results = [];
-        // const users = this.DBmain.getCollection('admin').find({ permissions: { $lt: 9 } });
-        const users = window.get({ permissions: { $lt: 9 } });
-        Results = users.map((item) => {
-          return { value: item.name };
-        });
-        // 调用 callback 返回建议列表的数据
-        cb(Results);
+        try {
+          let Results = [];
+          // const users = this.DBmain.getCollection('admin').find({ permissions: { $lt: 9 } });
+          const users = window.get({ permissions: { $lt: 9 } });
+          Results = users.map((item) => {
+            return { value: item.name };
+          });
+          // 调用 callback 返回建议列表的数据
+          cb(Results);
+        } catch (error) {}
       },
       // 登陆检测
       loginFunc() {

@@ -6,8 +6,8 @@
         @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel" />
       </el-aside>
       <el-main class="task-record-main">
-        <h1 v-if="!nowData">没有数据</h1>
-        <el-tabs v-if="nowData">
+        <h1 v-if="!nowDataState">没有数据</h1>
+        <el-tabs v-show="nowDataState">
           <el-tab-pane label="基础信息">
             <base-top
             :holeId.sync="nowData.holeId"
@@ -67,6 +67,7 @@
     holeId: '',
     deviceId: '', // 设备id 未张拉使用全局的设备 已张拉使用用户下的设备
     steelStrandId: '', // 钢绞线id 未张拉使用全局的钢绞线 已张拉使用用户下的钢绞线
+    state: 0, // 张拉状态
     concretes: { // 混凝土数据
       sampleNumber: '试块编号',
       sampleStrength: '试块强度',
@@ -99,9 +100,10 @@
       groups() {
         try {
           const s = this.nowData.data.map((item) => {
-            return item.name;
+            return { name: item.name, state: item.state };
           });
-          this.nowGroupName = s[0];
+          console.log('张拉组数据改变', s[0]);
+          this.nowGroupName = s[0].name;
           return s;
         } catch (error) {
           return null;
@@ -120,7 +122,8 @@
     },
     data: () => ({
       role: false,
-      nowData: null,
+      nowData: baseData,
+      nowDataState: false,
       menuId: null,
       childrenMenuData: null,
       childrenMenuId: null,
@@ -147,19 +150,16 @@
       tplSelectState: false,
     }),
     watch: {
-      // // 切换菜单选项
-      // nowId(nval) {
-      //   console.log('id123', nval);
-      //   if (nval !== null) {
-      //     this.switchMenu();
-      //   } else if (!this.editState) {
-      //     this.nowData = null;
-      //   }
-      // },
+      nowData() {
+        console.log('数据变了');
+        this.nowDataState = true;
+      },
       // 张拉组切换
       nowGroupName(nval) {
+        console.log(nval);
         if (nval) {
           this.taskData = this.nowData.data.filter(item => item.name === nval)[0];
+          console.log(this.taskData);
         } else {
           this.taskData = null;
         }
@@ -171,7 +171,8 @@
             this.getChildrenMenuData();
           }
         } else if (!this.editState) {
-          this.nowData = null;
+          this.nowDataState = false;
+          // this.nowData = null;
         }
       },
       childrenMenuId(nval) {
@@ -206,7 +207,8 @@
           if (this.menuId) {
             this.getChildrenMenuData();
           } else {
-            this.nowData = null;
+            this.nowDataState = false;
+            // this.nowData = null;
           }
           this.menuData = menuData;
         } catch (error) {}
@@ -219,16 +221,17 @@
             return {
               name: item.bridgeName,
               id: item.id,
+              state: item.state,
             };
           });
           const id = this.childrenMenuId;
           if (this.menuId && id === null) {
             this.childrenMenuId = this.childrenMenuData[0].id;
           }
-          console.log('子菜单', this.menuId, id);
           if (id) {
             this.nowData = this.$unity.copyObj(datas.filter(item => item.id === id)[0]);
           }
+          console.log('子菜单', this.nowData);
         } catch (error) {}
       },
       // 保存取消切换菜单
@@ -240,11 +243,14 @@
         this.$message('添加');
         this.tplSelectState = true;
       },
-      addOk(data = false) {
+      addOk(data = false, structureId) {
         this.menuId = null;
         this.childrenMenuId = null;
         this.nowGroupName = null;
         if (data) {
+          this.structureId = structureId;
+          delete data.meta;
+          delete data.$loki;
           this.nowData = data;
         } else {
           this.nowData = this.$unity.copyObj(baseData);
@@ -284,9 +290,13 @@
       },
       save() {
         this.$message('保存');
+        const nowData = this.nowData;
+        console.log(nowData);
         const db = window.tensioningDB;
         const cname = this.structureId;
         let cstate = true;
+        let msg = '添加成功！';
+        let errorMsg = '数据插入出错！';
         // 获取构件文档
         let collection = db.getCollection(cname);
         // 构件文档不存在创建新的文档
@@ -297,9 +307,6 @@
           // 文档是否存在标示
           cstate = false;
         }
-        const nowData = this.nowData;
-        let msg = '添加成功！';
-        let errorMsg = '数据插入出错！';
         try {
           // 添加
           if (this.addState) {

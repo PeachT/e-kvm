@@ -21,7 +21,7 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="$emit('update:show', false), $emit('cancel')">取 消</el-button>
         <el-button type="primary" @click="$emit('addOk')">不使用模板</el-button>
-        <el-button type="primary" @click="$emit('addOk', nowData)">确 定</el-button>
+        <el-button type="primary" @click="$emit('addOk', nowData, menuId)">确 定</el-button>
       </span>
     </el-dialog>
   </div>

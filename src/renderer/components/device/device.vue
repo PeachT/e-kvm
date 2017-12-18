@@ -112,11 +112,6 @@
       MenuTwo,
     },
     computed: {
-      // 数据库
-      DBother() {
-        return this.$db.db('other');
-      },
-      // 数据库
       // 编辑状态
       editState() {
         return this.$store.state.global.editState;
@@ -167,7 +162,7 @@
       // 菜单数据
       getMenuData() {
         try {
-          const menus = this.DBother.getCollection('device').data.map((item) => {
+          const menus = window.deviceDB.getAll.map((item) => {
             return {
               name: item.name,
             };
@@ -187,7 +182,7 @@
       switchMenu() {
         console.log('切换菜单', this.nowName);
         try {
-          this.nowData = this.$unity.copyObj(this.DBother.getCollection('device').findOne({ name: this.nowName }));
+          this.nowData = this.$unity.copyObj(window.deviceDB.getOne({ name: this.nowName }));
         } catch (error) {
           this.errorShow(`切换菜单--${error}`);
         }
@@ -215,10 +210,7 @@
           });
         }).catch(() => {
           try {
-            const collection = this.DBother.getCollection('device');
-            const delData = collection.findOne({ name: this.nowName });
-            collection.remove(delData);
-            this.DBother.save();
+            window.deviceDB.del({ name: this.nowName });
             this.nowName = null;
             this.getMenuData();
             this.$message('删除成功！');
@@ -231,42 +223,30 @@
         this.$message('保存');
         this.$refs.nowData.validate((valid) => {
           if (valid && !this.supervisorsEdit) {
-            const collection = this.DBother.getCollection('device');
             const nowData = this.nowData;
             let msg = '添加成功！';
             let errorMsg = '数据插入出错！';
             try {
               // 添加
               if (this.addState) {
-                // 判断用户名是否存在
-                if (collection.findOne({ name: nowData.name })) {
-                  this.$message.error('名称重复！请重新输入！');
-                  return;
-                }
                 nowData.id = this.$unity.timeId();
                 nowData.tensioningPattern = nowData.tensioningPattern.sort();
-                console.log(this.nowData);
-                collection.insert(nowData);
-                this.DBother.save();
+                if (window.deviceDB.insert(nowData, { name: nowData.name })) {
+                  this.$message.error('设备已经存在！请重新输入！');
+                  return;
+                }
                 this.nowName = nowData.name;
                 // 修改
               } else {
                 msg = '修改成功！';
                 errorMsg = '数据更新出错！';
-                collection.update(nowData);
-                this.DBother.save();
+                window.deviceDB.update(nowData);
               }
               this.$message.success(msg);
               this.getMenuData();
               this.$store.commit('editState', false);
               this.$store.commit('addState', false);
             } catch (error) {
-              // this.$notify.error({
-              //   showClose: true,
-              //   duration: 0,
-              //   title: '错误',
-              //   message: `${errorMsg}--${error}`,
-              // });
               this.errorShow(`${errorMsg}--${error}`);
             }
           } else {

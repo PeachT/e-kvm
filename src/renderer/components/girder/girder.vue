@@ -38,11 +38,6 @@
       MenuTwo, girderInfo,
     },
     computed: {
-      // 数据库
-      DBother() {
-        return this.$db.db('other');
-      },
-      // 数据库
       // 编辑状态
       editState() {
         return this.$store.state.global.editState;

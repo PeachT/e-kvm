@@ -31,7 +31,7 @@ export default {
   props: ['steelStrandId'],
   computed: {
     nowData() {
-      return this.$db.db('other').getCollection('steelStrands').findOne({ id: this.steelStrandId });
+      return window.steelStrandsDB.getOne({ id: this.steelStrandId });
     },
   },
 };
