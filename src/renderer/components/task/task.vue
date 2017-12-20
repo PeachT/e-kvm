@@ -6,7 +6,7 @@
         @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel" />
       </el-aside>
       <el-main class="task-record-main">
-        <h1 v-if="!nowDataState">没有数据</h1>
+        <h1 v-if="!nowDataState">没有数据--{{touterPath}}</h1>
         <el-tabs v-show="nowDataState">
           <el-tab-pane label="基础信息">
             <base-top
@@ -19,6 +19,12 @@
             :editState="editState" />
             <base-group :groups="groups" :nowGroupName.sync="nowGroupName" v-if="groups" />
             <base-tendon-data :taskData.sync="taskData" :deviceId="nowData.deviceId" v-if="taskData" />
+            <div v-if="touterPath === '记录' && nowDataState">
+              <base-record-data />
+              <!-- <d3-svg-loading/> -->
+              <base-svg :data="svg1" refName="svg1"/>
+              <base-svg :data="svg2" refName="svg2"/>
+            </div>
           </el-tab-pane>
           <el-tab-pane label="设备消息">
             <device-info :deviceId="nowData.deviceId" />
@@ -30,7 +36,7 @@
             <user-info />
           </el-tab-pane>
         </el-tabs>
-        <div class="tpl" v-if="nowData && nowData.id !== ''">
+        <div class="tpl" v-if="nowDataState && nowData.id !== ''">
           <el-button type="success" style="height:40px;" @click="tplState = true">创建为模板</el-button>
         </div>
       </el-main>
@@ -61,6 +67,37 @@
   import UserInfo from '../user/template/userInfo.vue';
   import TplSelect from './tplSelect/tplSelect.vue';
 
+  // import BaseRecordData from '../task_record_template/base/baseRecordData.vue';
+  import D3SvgLoading from '../task_record_template/base/d3SvgLoading.vue';
+  // import BaseSvg from '../task_record_template/base/d3svg';
+  // import BaseSvg from '../task_record_template/base/svg.vue';
+  // import BaseSvg from '../task_record_template/base/veline.vue';
+  // const BaseSvg = (resolve) => require('./service-search.vue', resolve);
+  const BaseSvg = () => ({
+  // 需要加载的组件。应当是一个 Promise
+    component: import('../task_record_template/base/d3svg'),
+    // 加载中应当渲染的组件
+    loading: D3SvgLoading,
+    // 出错时渲染的组件
+    error: D3SvgLoading,
+    // 渲染加载中组件前的等待时间。默认：200ms。
+    delay: 500,
+    // 最长等待时间。超出此时间则渲染错误组件。默认：Infinity
+    timeout: 3000,
+  });
+  const BaseRecordData = () => ({
+  // 需要加载的组件。应当是一个 Promise
+    component: import('../task_record_template/base/baseRecordData.vue'),
+    // 加载中应当渲染的组件
+    loading: D3SvgLoading,
+    // 出错时渲染的组件
+    error: D3SvgLoading,
+    // 渲染加载中组件前的等待时间。默认：200ms。
+    delay: 500,
+    // 最长等待时间。超出此时间则渲染错误组件。默认：Infinity
+    timeout: 3000,
+  });
+
   const baseData = { // 张拉数据
     id: '',
     bridgeName: '梁号',
@@ -88,8 +125,15 @@
       OtherInfo,
       UserInfo,
       TplSelect,
+      BaseRecordData,
+      D3SvgLoading,
+      BaseSvg,
     },
     computed: {
+      //
+      touterPath() {
+        return this.$store.state.global.menuTitle;
+      },
       // 编辑状态
       editState() {
         return this.$store.state.global.editState;
@@ -112,6 +156,7 @@
     },
     beforeMount() {
       this.getMenuData();
+      console.log(this.$store.state.global.menuTitle);
     },
     updated() {
       if (this.editState) {
@@ -148,11 +193,17 @@
       tplState: false,
       tplName: null,
       tplSelectState: false,
+      svg1: null,
+      svg2: null,
     }),
     watch: {
       nowData() {
-        console.log('数据变了');
         this.nowDataState = true;
+      },
+      taskData() {
+        console.log('数据变了');
+        this.svg1 = this.svgData();
+        this.svg2 = this.svgData(225);
       },
       // 张拉组切换
       nowGroupName(nval) {
@@ -180,6 +231,16 @@
       },
     },
     methods: {
+      svgData(max = 60) {
+        const arr = [[], [], [], []];
+        for (let index = 0; index < 36; index += 1) {
+          arr[0].push(Math.ceil(Math.random() * max));
+          arr[1].push(Math.ceil(Math.random() * max));
+          arr[2].push(Math.ceil(Math.random() * max));
+          arr[3].push(Math.ceil(Math.random() * max));
+        }
+        return arr;
+      },
       // 主菜单数据获取
       getMenuData() {
         try {

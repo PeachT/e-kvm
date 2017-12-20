@@ -16,8 +16,7 @@
               <th>设备压力</th>
               <th>目标压力</th>
               <th>单顶伸长量</th>
-              <th>组伸长量</th>
-              <th>组偏差率</th>
+              <th>单顶偏差率</th>
               <th>理论伸长量</th>
               <th>总伸长量</th>
               <th>总偏差率</th>
@@ -29,11 +28,10 @@
               <td>设备压力</td>
               <td>目标压力</td>
               <td>单顶伸长量</td>
-              <td>组伸长量</td>
-              <td>组偏差率</td>
-              <td>理论伸长量</td>
-              <td>总伸长量</td>
-              <td>总偏差率</td>
+              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">单顶偏差率</td>
+              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">理论伸长量</td>
+              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总伸长量</td>
+              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总偏差率</td>
             </tr>
           </table>
         </div>

@@ -6,9 +6,9 @@
       v-for="(item, index) in jd" :key="index"
     >
       <div class="main">
-        <div class="text">
+        <div class="text" :class="{'rainbow': active*1 === index}">
           <span>{{item}}</span>
-          <i class="el-icon-loading" v-show="active*1 === index"></i>
+          <!-- <i class="el-icon-loading" v-show="active*1 === index"></i> -->
         </div>
         <div class="line" v-if="jd.length > index+1" >
           <el-progress :percentage="50" :show-text="false" status="success" :stroke-width="25"></el-progress>
@@ -28,7 +28,7 @@
 export default {
   name: 'steps',
   data: () => ({
-    active: 0,
+    active: 1,
     jd: ['初张拉', '阶段一', '阶段二', '阶段三', '终张拉', '超张拉', '卸荷', '完成'],
   }),
 };
@@ -69,11 +69,11 @@ export default {
         .text {
           font-size: 24px;
           border: 2px solid rgb(180, 188, 204);
-          border-radius: 80px;
+          border-radius: 40px;
           text-align: center;
-          line-height: 80px;
-          height: 80px;
-          width: 80px;
+          line-height: 40px;
+          height: 40px;
+          width: 100px;
           font-weight: 700;
           position: relative;
         }
@@ -82,14 +82,6 @@ export default {
         color: black;
         .text{
           border-color:#67C23A;
-          i{
-            color:#67C23A;
-            position: absolute;
-            top: 0px;
-            left: 0px;
-            font-size: 80px;
-            z-index: -1;
-          }
         }
         &.active-ok{
           .text{
@@ -99,7 +91,14 @@ export default {
         }
       }
     }
+    .rainbow{
+      animation: 2s rainbow infinite alternate;
+      color: #67C23A;
+    }
   }
-
+  @keyframes rainbow {
+  0% { opacity: 1 }
+  to { opacity: .3 }
+}
 </style>
 

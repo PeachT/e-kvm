@@ -54,6 +54,7 @@ const routes = [
     component: Root,
     children: [
       { path: '', component: Task, name: '任务' },
+      // { path: '/record', component: Task, name: '任务' },
     ],
   },
   {
@@ -61,12 +62,12 @@ const routes = [
     name: 'record',
     component: Root,
     children: [
-      { path: '', component: Record, name: '记录' },
+      { path: '', component: Task, name: '记录' },
     ],
   },
   {
     path: '/user',
-    name: 'task',
+    name: 'user',
     component: Root,
     children: [
       { path: '', component: User, name: '用户' },
