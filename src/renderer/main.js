@@ -10,10 +10,16 @@ import store from './store';
 
 import Db from './db/db';
 import Unity from './js/unity';
+import Modbus from './modbus-tcp/index';
+
+const plc1 = new Modbus('192.168.181.101');
+// const plc2 = new Modbus('192.168.181.102');
 
 Vue.prototype.$db = Db;
 Vue.prototype.$d3 = D3;
 Vue.prototype.$unity = Unity;
+Vue.prototype.$plc1 = plc1;
+// Vue.prototype.$plc2 = plc2;
 
 Vue.use(ElementUI, {
   size: 'small',
