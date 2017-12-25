@@ -6,6 +6,8 @@ const state = {
   userDb: null,
   editState: false,
   addState: false,
+  PLC1State: false,
+  PLC2State: false,
 };
 
 const mutations = {
@@ -29,6 +31,12 @@ const mutations = {
   },
   addState(state, data) {
     state.addState = data;
+  },
+  PLC1State(state, data) {
+    state.PLC1State = data;
+  },
+  PLC2State(state, data) {
+    state.PLC2State = data;
   },
 };
 

@@ -5,10 +5,14 @@
         <router-link to="/menu">菜单</router-link>
         <el-button @click="bitOut(1280, true)">开</el-button>
         <el-button @click="bitOut(1280, false)">关</el-button>
-        <el-button @click="get()">读</el-button>
+        <el-button @click="get()">读取线圈状态</el-button>
+        <el-button @click="readRegisters16()">读取寄存器数据</el-button>
         <el-button @click="writeMultipleCoil()">强制多线圈</el-button>
         <el-button @click="writeSingleRegister16()">写入单个16位寄存器</el-button>
+        <el-button @click="writeMultipleRegisters16()">写入多个16位寄存器</el-button>
         <el-button @click="reconnect()">重新连接</el-button>
+        <i class="el-icon-info PLC" :class="{'on': PLCState1}"></i>
+        <i class="el-icon-info PLC" :class="{'on': PLCState2}"></i>
       </el-header>
       <el-main>
         <div>
@@ -54,22 +58,8 @@
 <script>
 import Veline from '../task_record_template/base/veline';
 import Steps from './steps/steps';
-// // 创建TCP客户端
-// const Client = new net.Socket();
-// Client.setEncoding('utf8');
-// Client.connect(502, '192.168.181.101');
-// // 监听返回数据
-// Client.on('data', (data) => {
-//   console.log(data);
-// });
-// // 监听与服务端连接的错误事件
-// Client.on('error', (error) => {
-//   console.log(error);
-//   Client.destroy();
-// });
-// Client.on('connect', (data) => {
-//   console.log('连接成功！', data);
-// });
+
+const returnData16 = require('../../modbus-tcp/returnData').default.returnData16;
 
 export default {
   name: 'monitoring',
@@ -80,7 +70,14 @@ export default {
   data: () => ({
     mpas: [2, 3, 4, 5, 8, 10],
   }),
-
+  computed: {
+    PLCState1() {
+      return this.$store.state.global.PLC1State;
+    },
+    PLCState2() {
+      return this.$store.state.global.PLC2State;
+    },
+  },
   methods: {
     bitOut(address, value) {
       // console.time('s');
@@ -113,6 +110,16 @@ export default {
         console.log('PLC返回写入16位单寄存器：', data);
       });
     },
+    writeMultipleRegisters16() {
+      this.$plc1.writeMultipleRegisters16(1536, [100, 101, 102, 103, 104, 105], (data) => {
+        console.log('PLC返回写入16位多寄存器：', data);
+      });
+    },
+    readRegisters16() {
+      this.$plc1.readRegisters16(1536, 6, (data) => {
+        console.log('PLC返回读取16位寄存器：', returnData16(data));
+      });
+    },
     reconnect() {
       this.$plc1.reconnect();
     },
@@ -135,5 +142,19 @@ table{
     font-size: 25px;
     padding: 2px 5px;
   }
+}
+.PLC{
+  color: #909399;
+  &.on{
+    color: #67C23A;
+    animation: 2s rainbow infinite alternate;
+  }
+}
+@keyframes rainbow {
+  // 0% { background: #c00; }
+  // 50% { background: orange; }
+  // 100% { background: yellowgreen; }
+  0% { opacity: 1 }
+  to { opacity: .3 }
 }
 </style>

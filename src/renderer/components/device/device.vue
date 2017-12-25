@@ -24,43 +24,119 @@
                 <el-checkbox :label="index" border v-for="(item, index) in ['A1单顶', 'A两顶', 'B1单顶', 'B两顶', '四顶']" :key="index">{{item}}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
-            <el-form-item label="回归方程">
-              <el-radio-group v-model="nowData.equation">
-                <el-radio :label="true" border>F=aP+b F张拉控制应力KN</el-radio>
-                <el-radio :label="false" border>P=aF+b P张拉控制应力MPa</el-radio>
-              </el-radio-group>
-            </el-form-item>
 
 
-            <!-- 详细信息 -->
-            <div class="gloup">
-              <div :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
-                <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}泵顶数据</h3>
-
-                <div class="row-flex">
-                  <el-form-item label="千斤顶编号">
-                    <el-input v-model="nowData[item].liftingJackNumber"></el-input>
-                  </el-form-item>
-                  <el-form-item label="油泵编号">
-                    <el-input v-model="nowData[item].oilPumpNumber"></el-input>
-                  </el-form-item>
-                  <el-form-item >
-                  </el-form-item>
+            <el-tabs v-model="tabsActive" type="card">
+              <el-tab-pane label="顶参数" name="a">
+                <!-- 泵顶参数 -->
+                <div :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
+                  <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}顶参数</h3>
+                  <div class="row-flex">
+                    <el-form-item label="位移上限">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="位移下限">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="工作位移上限">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="工作位移下限">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="传感器参数">
+                      <el-input ></el-input>
+                    </el-form-item>
+                  </div>
+                  <div class="row-flex">
+                    <el-form-item label="位移0~20%">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="20~40%">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="40~60%">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="60~80%">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="80~100%">
+                      <el-input ></el-input>
+                    </el-form-item>
+                  </div>
+                  <div class="row-flex">
+                    <el-form-item label="2.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="7.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="12.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="17.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="22.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                  </div>
+                  <div class="row-flex">
+                    <el-form-item label="27.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="32.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="37.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="42.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                    <el-form-item label="47.5Mpa">
+                      <el-input ></el-input>
+                    </el-form-item>
+                  </div>
                 </div>
+              </el-tab-pane>
+              <el-tab-pane label="标定参数" name="b">
+                <!-- 标定参数 -->
+                <el-form-item label="回归方程">
+                  <el-radio-group v-model="nowData.equation">
+                    <el-radio :label="true" border>F=aP+b F张拉控制应力KN</el-radio>
+                    <el-radio :label="false" border>P=aF+b P张拉控制应力MPa</el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <div :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
+                  <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}标定参数</h3>
 
-                <div class="row-flex">
-                  <el-form-item :label="`回归方程: ${nowData.equation ? 'F=': 'P='}`">
-                    <el-input type="number" v-model="nowData[item].a"></el-input>
-                  </el-form-item>
-                  <el-form-item :label="nowData.equation ? 'P+': 'F+'" class="fc">
-                    <el-input type="number" v-model="nowData[item].b"></el-input>
-                  </el-form-item>
-                  <el-form-item label="标定日期">
-                    <el-date-picker v-model="nowData[item].demarcationDate" style="width: auto;" type="date" placeholder="选择日期" :editable="false"></el-date-picker>
-                  </el-form-item>
+                  <div class="row-flex">
+                    <el-form-item label="千斤顶编号">
+                      <el-input v-model="nowData[item].liftingJackNumber"></el-input>
+                    </el-form-item>
+                    <el-form-item label="油泵编号">
+                      <el-input v-model="nowData[item].oilPumpNumber"></el-input>
+                    </el-form-item>
+                    <el-form-item >
+                    </el-form-item>
+                  </div>
+
+                  <div class="row-flex">
+                    <el-form-item :label="`回归方程: ${nowData.equation ? 'F=': 'P='}`">
+                      <el-input type="number" v-model="nowData[item].a"></el-input>
+                    </el-form-item>
+                    <el-form-item :label="nowData.equation ? 'P+': 'F+'" class="fc">
+                      <el-input type="number" v-model="nowData[item].b"></el-input>
+                    </el-form-item>
+                    <el-form-item label="标定日期">
+                      <el-date-picker v-model="nowData[item].demarcationDate" style="width: auto;" type="date" placeholder="选择日期" :editable="false"></el-date-picker>
+                    </el-form-item>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </el-tab-pane>
+            </el-tabs>
           </el-form>
         </div>
       </el-main>
@@ -135,6 +211,7 @@
       }
     },
     data: () => ({
+      tabsActive: 'a',
       role: false,
       nowData: null,
       nowDataRules: {

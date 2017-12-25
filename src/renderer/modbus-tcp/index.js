@@ -1,46 +1,40 @@
+import Vue from 'vue';
+import Vuex from 'vuex';
+import store from '../store/index';
 const Socket = require('net').Socket;
 const sendCommand = require('./sendData').default.sendCommand;
 
+Vue.use(Vuex);
 class Modbus {
   constructor(path = '127.0.0.1', host = 502, devId = 1, timeout = 3000, autoReconnect = true, reconnectTimeout = 10000) {
     const client = new Socket();
     client.setEncoding('utf8');
     client.setNoDelay(false);
-    client.connect(host, path, (data) => {
-      console.log('789456', data);
-    });
+    client.connect(host, path);
     client.setTimeout(timeout);
     client.on('error', (error) => {
-      console.log('错误', error, client);
-      if (this.client.readyState !== 'open') {
-        if (autoReconnect) {
-          this.reconnect();
-        }
-      }
-      // window.setTimeout(() => {
-      //   console.log('gggggggggggggggggggggggggggggg', this.client);
-      //   if (this.client === null) {
-      //     this.reconnect();
-      //   }
-      // }, reconnectTimeout);
+      console.log('错误', error, this.client);
+      this.PLCState(false);
+      this.reconnect();
     });
     client.on('data', (data) => {
-      console.time('ss');
       const func = this.func.shift();
       console.log('func数量：', this.func.length);
       if (this.func.length > 0) {
         this.write();
       }
-      if (func.next) {
+      if (func && func.next) {
         func.next(data);
       }
-      console.timeEnd('ss');
     });
-    client.on('connect', (data) => {
-      console.log('连接成功！', data, client);
+    client.on('connect', () => {
+      console.log('连接成功！', this.client);
+      this.init();
     });
-    client.on('timeout', (data) => {
-      console.log('连接超时！', data, client.readyState);
+    client.on('timeout', () => {
+      this.PLCState(false);
+      console.log('连接超时！', this.client);
+      this.reconnectState = true;
     });
     this.path = path;
     this.host = host;
@@ -51,57 +45,39 @@ class Modbus {
     this.client = client;
     this.huitiao = null;
     this.func = [];
-    console.log('123123123123123123', devId, this.devId);
+    this.reconnectState = false;
   }
   reconnect() {
-    console.log('正在重新启动...');
-    this.client = null;
-    this.constructor(this.path);
+    console.log('正在重新启动...', this.client);
+    if (this.reconnectState || this.client.readyState !== 'open') {
+      this.reconnectState = false;
+      this.client = null;
+      this.constructor(this.path);
+    }
   }
-  static Dec2Hex(dec, num) {
-    return dec.toString(16).padStart(num, '00000000').toUpperCase();
+  init() {
+    this.readCoilStatue(2048, 1, (data) => {
+      this.PLCState(true);
+      this.init();
+    });
   }
-  static LRC(data) {
-    console.log('777777777', this.devId);
-    return 256 - (data.reduce((p, c) => {
-      return (Number(p) + Number(c));
-    }) % 256).toString(16).toUpperCase();
+  PLCState(state) {
+    if (this.path === '192.168.181.101') {
+      store.commit('PLC1State', state);
+    } else {
+      store.commit('PLC2State', state);
+    }
   }
-  static Byte4(dec) {
-    const hex = dec.toString(16).padStart(4, '0000');
-    return {
-      decSum: parseInt(`${hex[0]}${hex[1]}`, 16) + parseInt(`${hex[2]}${hex[3]}`, 16),
-      hexStr: hex,
-    };
-  }
-  static CoilData(bits) {
-    const bitStr = bits.reduce((p, c) => `${p}${c ? '1' : '0'}`);// 拼接强制线圈数据（二进制）
-    const bitDec = parseInt(bitStr, 2).toString(16); // 强制线圈数据
-    const quantity = bitStr.length; // 强制线圈数量
-    const typeNumber = (quantity / 4) + (quantity % 4 > 0 ? 1 : 0); // 数据需要的字节数
-    const hexStr = `${Modbus.Dec2Hex(quantity, 4)}${Modbus.Dec2Hex(typeNumber, 2)}${Modbus.Dec2Hex(bitDec, 4)}`; // 拼接十六进制字符串
-    const decSum = quantity + typeNumber + bitDec;// 计算LRC需要的值
-    return {
-      decSum: decSum,
-      hexStr: hexStr,
-    };
-  }
-  /**
-   * 发送命令字符串
-   *
-   * @static
-   * @param {String} command 命令码
-   * @param {Object} address 操作数据首地址
-   * @param {Object} data 命令数据
-   * @returns 返回命令字符串
-   * @memberof Modbus
-   */
-  static commandStr(command, address, data) {
-    // LRC 码计算
-    const LRC = ((256 - (this.devId + command + address.decSum + data.decSum)) % 256)
-      .toString(16).toUpperCase();
-    return `:${this.devId}01${address.hexStr}${data.hexStr}${LRC}\r\n`;
-  }
+  // init() {
+  //   setTimeout(() => {
+  //     this.readCoilStatue(2048, 1, (data) => {
+  //       if (!store.state.global.PLC1State) {
+  //         store.commit('PLC1State', true);
+  //       }
+  //       this.init();
+  //     });
+  //   }, 2000);
+  // }
   getCommand(fc, address, data) {
     return sendCommand(this.devId, fc, address, data);
   }
@@ -117,7 +93,12 @@ class Modbus {
     this.write(commandCode, next);
   }
   // FC2 "Read Input Status" 读取输入状态
-  // FC3 "Read Holding Registers" 读取保持寄存器
+  // FC3 "Read Holding Registers" 读取16位寄存器数据 : 01 03 0C 0064 0065 0066 0067 0068 0069 89
+  readRegisters16(address, quantity, next) {
+    const commandCode = this.getCommand(3, address, quantity);
+    this.write(commandCode, next);
+  }
+
   // FC5 "Force Single Coil" 强制单线圈
   writeSingleCoil(address, value, next) {
     const commandCode = this.getCommand(5, address, value);
@@ -134,7 +115,12 @@ class Modbus {
     const commandCode = this.getCommand(15, address, bits);
     this.write(commandCode, next);
   }
-  // FC16 "Preset Multiple Registers" 预置多个寄存器
+  // FC16 "Preset Multiple Registers" 预置多个16位寄存器
+  writeMultipleRegisters16(address, datas, next) {
+    const commandCode = this.getCommand(16, address, datas);
+    this.write(commandCode, next);
+  }
+
   write(data = null, next = null) {
     const func = this.func;
     if (data !== null && func.length > 0) {

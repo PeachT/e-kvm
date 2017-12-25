@@ -2,8 +2,8 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import Router from 'vue-router';
 
-import Root from '../components/root.vue';
 import store from '../store/index';
+import Root from '../components/root.vue';
 
 import Login from '../components/login';
 import Menu from '../components/menus/menu';
