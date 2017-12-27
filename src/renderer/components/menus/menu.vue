@@ -31,6 +31,24 @@
 </template>
 
 <script>
+  const menus = [
+    // { name: '任务', path: '/task', icon: 'icon-bianji', permissions: 0 },
+    { name: '模板', path: '/tpl', icon: '', permissions: 0 },
+    { name: '构件', path: '/girder', icon: '', permissions: 0 },
+    { name: '钢绞线', path: '/steelStrand', icon: '', permissions: 1 },
+    { name: '千斤顶', path: '/device', icon: '', permissions: 1 },
+    { name: '系统参数', path: '/system', icon: '', permissions: 1 },
+    { name: '项目', path: '/user', icon: '', permissions: 1 },
+    { name: '操作员', path: '/operator', icon: '', permissions: 1 },
+    { name: '无', path: '/', icon: '', permissions: 0 },
+    { name: '无', path: '/', icon: '', permissions: 0 },
+    { name: '无', path: '/', icon: '', permissions: 0 },
+    { name: '无', path: '/', icon: '', permissions: 0 },
+    { name: '无', path: '/', icon: '', permissions: 0 },
+    { name: '无16', path: '/', icon: '', permissions: 1 },
+    { name: '监控', path: '/', icon: '', permissions: 0 },
+    { name: '记录', path: '/', icon: '', permissions: 0 },
+  ];
   export default {
     name: 'menu',
     components: { },
@@ -45,18 +63,23 @@
       dialogState: false,
       dialogOperation: 0,
       bgkimg: 'file:///E:/KVM/UIImg/home-backage1.png',
-      menus: [
-        { name: '任务', path: '/task', icon: 'icon-bianji', permissions: 0 },
-        { name: '记录', path: '/record', icon: 'icon-bianji', permissions: 0 },
-        { name: '构件', path: '/girder', icon: 'icon-bianji', permissions: 0 },
-        { name: '用户', path: '/user', icon: 'icon-bianji', permissions: 1 },
-        { name: '设备', path: '/device', icon: 'icon-bianji', permissions: 0 },
-        { name: '监控', path: '/monitoring', icon: 'icon-bianji', permissions: 0 },
-        { name: '操作员', path: '/operator', icon: 'icon-bianji', permissions: 0 },
-        { name: '钢绞线', path: '/steelStrand', icon: 'icon-bianji', permissions: 0 },
-        { name: '模板', path: '/tpl', icon: 'icon-bianji', permissions: 1 },
-      ],
     }),
+    computed: {
+      menus() {
+        const arr = [];
+        let permissions = 0;
+        if (this.$store.state.global.user) {
+          arr.push(
+            { name: '任务', path: '/task', icon: 'icon-bianji', permissions: 0 });
+        }
+        if (this.$store.state.global.operator) {
+          permissions = this.$store.state.global.operator.permissions;
+        }
+        arr.push(...menus.filter(
+          item => item.permissions <= permissions));
+        return arr;
+      },
+    },
     methods: {
       dialogOperationFunc(operation) {
         if (this.dialogOperation > 0) {
@@ -80,7 +103,7 @@
   };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .menu{
   display: flex;
   align-items: center;
@@ -88,15 +111,15 @@
   position: relative;
   // background-image: url()
   .items{
-    width: 783px;
+    width: 804px;
     border-bottom: 1px solid #EDF2FC;
     border-right: 1px solid #EDF2FC;
     z-index: 3;
     .item{
       position: relative;
       float: left;
-      height: 260px;
-      width: 260px;
+      height: 200px;
+      width: 200px;
       text-align: center;
       display: flex;
       align-items: center;

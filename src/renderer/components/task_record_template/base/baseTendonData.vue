@@ -14,13 +14,9 @@
         <el-form-item label="钢绞线数量">
           <el-input v-model="taskData.steelStrandNumber"></el-input>
         </el-form-item>
-        <el-form-item label="张拉工艺">
-          <el-select v-model="taskData.stage" placeholder="请选择" style="width:100%;">
-            <el-option v-for="(item, index) in ['3段', '4段', '5段']" :key="index" :label="item" :value="index">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="设备/孔号" style="flex: 2;">
+      </div>
+      <div class="row-flex">
+        <el-form-item label="设备/孔号" >
           <div class="row-flex">
             <el-input v-model="device.name"></el-input>
             <el-input v-model="groupAB.a">
@@ -30,6 +26,12 @@
               <i slot="suffix" class="el-input__icon">B组</i>
             </el-input>
           </div>
+        </el-form-item>
+        <el-form-item label="张拉工艺">
+          <el-select v-model="taskData.stage" placeholder="请选择" style="width:100%;">
+            <el-option v-for="(item, index) in ['3段', '4段', '5段']" :key="index" :label="item" :value="index">
+            </el-option>
+          </el-select>
         </el-form-item>
         <div class="el-checkbox-group" style="display: flex; justify-content: center;">
           <!-- <el-radio v-model="taskData.two" :label="true" border>二次张拉</el-radio> -->
@@ -44,9 +46,9 @@
           <!-- ['初张拉','阶段一','阶段二','阶段三','终张拉','超张拉'] -->
           <th width="80px">张拉数据</th>
           <th v-for="(item, index) in stage" :key="index" :class="{'two': index===2&&taskData.two, 'exceed': index===stage.length-1&&taskData.exceed, }">{{item}}</th>
-          <th width="120px">工作长度</th>
-          <th width="120px">内缩量均值</th>
-          <th width="120px">理论伸长量</th>
+          <th width="108px">工作长度</th>
+          <th width="108px">内缩量均值</th>
+          <th width="108px">理论伸长量</th>
         </tr>
         <tr>
           <td>张拉阶段</td>

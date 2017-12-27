@@ -172,27 +172,13 @@ const initData = {
       demarcationDate: '',
       a: 0, // 方程常数a
       b: 0, // 方程常数b
-    },
-    A2: {
-      liftingJackNumber: '千斤顶编号',
-      oilPumpNumber: '油泵编号',
-      demarcationDate: '',
-      a: 0,
-      b: 0,
-    },
-    B1: {
-      liftingJackNumber: '千斤顶编号',
-      oilPumpNumber: '油泵编号',
-      demarcationDate: '',
-      a: 0,
-      b: 0,
-    },
-    B2: {
-      liftingJackNumber: '千斤顶编号',
-      oilPumpNumber: '油泵编号',
-      demarcationDate: '',
-      a: 0,
-      b: 0,
+      ceiling: 0, // 位移上限
+      lower: 0, // 位移下限
+      WorkCeiling: 0, // 工作位移上限
+      WorkLower: 0, // 工作位移下限
+      sensor: 0, // 传感器参数
+      displacementCorrection: [], // 位移校正
+      pressureCorrection: [], // 压力校正
     },
   },
   // 构件

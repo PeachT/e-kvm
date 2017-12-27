@@ -24,79 +24,44 @@
                 <el-checkbox :label="index" border v-for="(item, index) in ['A1单顶', 'A两顶', 'B1单顶', 'B两顶', '四顶']" :key="index">{{item}}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
-
-
             <el-tabs v-model="tabsActive" type="card">
               <el-tab-pane label="顶参数" name="a">
-                <!-- 泵顶参数 -->
+                <!-- 顶参数 -->
+                <h3 style="background-color: rgb(245, 247, 250);">顶参数</h3>
+                <div class="row-flex">
+                  <el-form-item label="位移上限">
+                    <el-input v-model="nowData.ceiling"></el-input>
+                  </el-form-item>
+                  <el-form-item label="位移下限">
+                    <el-input v-model="nowData.lower"></el-input>
+                  </el-form-item>
+                  <el-form-item label="工作位移上限">
+                    <el-input v-model="nowData.WorkCeiling"></el-input>
+                  </el-form-item>
+                  <el-form-item label="工作位移下限">
+                    <el-input v-model="nowData.WorkLower"></el-input>
+                  </el-form-item>
+                  <!-- <el-form-item label="传感器参数">
+                    <el-input v-model="nowData[item].sensor"></el-input>
+                  </el-form-item> -->
+                </div>
                 <div :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
                   <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}顶参数</h3>
+                  <!-- 位移校正 displacementCorrection -->
                   <div class="row-flex">
-                    <el-form-item label="位移上限">
-                      <el-input ></el-input>
+                    <el-form-item :label="i" v-for="(i, index) in ['位移0~20%', '20~40%', '40~60%', '60~80%', '80~100%']" :key="index">
+                      <el-input v-model="nowData[item].displacementCorrection[index]"></el-input>
                     </el-form-item>
-                    <el-form-item label="位移下限">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="工作位移上限">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="工作位移下限">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="传感器参数">
-                      <el-input ></el-input>
+                  </div>
+                  <!-- 压力校正 pressureCorrection -->
+                  <div class="row-flex">
+                    <el-form-item :label="i" v-for="(i, index) in ['2.5Mpa', '7.5Mpa', '12.5Mpa', '17.5Mpa', '22.5Mpa']" :key="index">
+                      <el-input v-model="nowData[item].pressureCorrection[index]"></el-input>
                     </el-form-item>
                   </div>
                   <div class="row-flex">
-                    <el-form-item label="位移0~20%">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="20~40%">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="40~60%">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="60~80%">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="80~100%">
-                      <el-input ></el-input>
-                    </el-form-item>
-                  </div>
-                  <div class="row-flex">
-                    <el-form-item label="2.5Mpa">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="7.5Mpa">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="12.5Mpa">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="17.5Mpa">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="22.5Mpa">
-                      <el-input ></el-input>
-                    </el-form-item>
-                  </div>
-                  <div class="row-flex">
-                    <el-form-item label="27.5Mpa">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="32.5Mpa">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="37.5Mpa">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="42.5Mpa">
-                      <el-input ></el-input>
-                    </el-form-item>
-                    <el-form-item label="47.5Mpa">
-                      <el-input ></el-input>
+                    <el-form-item :label="i" v-for="(i, index) in ['27.5Mpa', '32.5Mpa', '37.5Mpa', '42.5Mpa', '47.5Mpa']" :key="index">
+                      <el-input v-model="nowData[item].pressureCorrection[index + 5]"></el-input>
                     </el-form-item>
                   </div>
                 </div>
@@ -111,7 +76,6 @@
                 </el-form-item>
                 <div :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
                   <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}标定参数</h3>
-
                   <div class="row-flex">
                     <el-form-item label="千斤顶编号">
                       <el-input v-model="nowData[item].liftingJackNumber"></el-input>
@@ -122,7 +86,6 @@
                     <el-form-item >
                     </el-form-item>
                   </div>
-
                   <div class="row-flex">
                     <el-form-item :label="`回归方程: ${nowData.equation ? 'F=': 'P='}`">
                       <el-input type="number" v-model="nowData[item].a"></el-input>
@@ -131,7 +94,7 @@
                       <el-input type="number" v-model="nowData[item].b"></el-input>
                     </el-form-item>
                     <el-form-item label="标定日期">
-                      <el-date-picker v-model="nowData[item].demarcationDate" style="width: auto;" type="date" placeholder="选择日期" :editable="false"></el-date-picker>
+                      <el-date-picker v-model="nowData[item].demarcationDate" value-format="yyyy-MM-dd" align="right" style="width: auto;" type="date" placeholder="选择日期" :editable="false"></el-date-picker>
                     </el-form-item>
                   </div>
                 </div>
@@ -153,12 +116,19 @@
     oilPumpModel: '',
     tensioningPattern: [], // 张拉模式
     equation: true, // 方程选择true F=aP+b， false P=aF+b
+    ceiling: 0, // 位移上限
+    lower: 0, // 位移下限
+    WorkCeiling: 0, // 工作位移上限
+    WorkLower: 0, // 工作位移下限
+    // sensor: 0, // 传感器参数
     A1: {
-      liftingJackNumber: '',
-      oilPumpNumber: '',
-      demarcationDate: '',
+      liftingJackNumber: '', // 千斤顶编号
+      oilPumpNumber: '', // 油泵编号
+      demarcationDate: '', // 标定日期
       a: 0, // 方程常数a
       b: 0, // 方程常数b
+      displacementCorrection: [1, 1, 1, 1, 1], // 位移校正
+      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // 压力校正
     },
     A2: {
       liftingJackNumber: '',
@@ -166,6 +136,8 @@
       demarcationDate: '',
       a: 0,
       b: 0,
+      displacementCorrection: [1, 1, 1, 1, 1],
+      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     B1: {
       liftingJackNumber: '',
@@ -173,6 +145,8 @@
       demarcationDate: '',
       a: 0,
       b: 0,
+      displacementCorrection: [1, 1, 1, 1, 1],
+      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     B2: {
       liftingJackNumber: '',
@@ -180,6 +154,8 @@
       demarcationDate: '',
       a: 0,
       b: 0,
+      displacementCorrection: [1, 1, 1, 1, 1],
+      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
   };
   export default {

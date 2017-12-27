@@ -6,11 +6,11 @@
         <th width="80px">记录数据</th>
         <th v-for="(item, index) in jd" :key="index">{{item}}</th>
         <th >回油至初张拉</th>
-        <th width="120px">力筋回缩量</th>
+        <th width="108px">力筋回缩量</th>
         <!-- <th width="120px">工作长度</th>
         <th width="120px">理论伸长量</th> -->
-        <th width="120px">总伸长量</th>
-        <th width="120px">伸长量偏差值</th>
+        <th width="108px">总伸长量</th>
+        <th width="108px">伸长量偏差值</th>
       </tr>
       <tr :class="item" v-for="(item, index) in ['A1','A2','B1','B2']" :key="index">
         <td>{{item}}</td>

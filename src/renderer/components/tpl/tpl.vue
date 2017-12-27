@@ -83,9 +83,10 @@
       groups() {
         try {
           const s = this.nowData.data.map((item) => {
-            return item.name;
+            return { name: item.name };
           });
-          this.nowGroupName = s[0];
+          console.log('tpl分组', this.nowData.data, s);
+          this.nowGroupName = s[0].name;
           return s;
         } catch (error) {
           return null;
@@ -156,7 +157,7 @@
       // 主菜单数据获取
       getMenuData() {
         try {
-          const tplData = window.tensioningDB.getCollection('tpl').data.map((item) => {
+          const tplData = window.tplDB.getAll.map((item) => {
             return item.structureId;
           });
           console.log(tplData);
@@ -184,7 +185,7 @@
       // 子菜单切换
       getChildrenMenuData() {
         try {
-          const datas = window.tensioningDB.getCollection('tpl').find({ structureId: this.menuId });
+          const datas = window.tplDB.get({ structureId: this.menuId });
           console.log(datas);
           this.childrenMenuData = datas.map((item) => {
             return {
@@ -237,10 +238,7 @@
           });
         }).catch(() => {
           try {
-            const db = window.tensioningDB;
-            db.getCollection('tpl')
-              .chain().find({ id: this.childrenMenuId.id }).remove();
-            db.save();
+            window.tplDB.del({ id: this.childrenMenuId.id });
             this.childrenMenuId = null;
             this.getChildrenMenuData();
             this.$message('删除成功！');
@@ -255,28 +253,22 @@
         let errorMsg = '数据插入出错！';
         try {
           // 添加
-          const db = window.tensioningDB;
-          // 获取文档
-          const collection = db.getCollection('tpl');
           if (this.addState) {
             if (this.tplName) {
-              const name = `${this.tplName}-${this.structureId}`;
-              console.log(collection);
-              // 判断数据是否存在
-              if (collection.findOne({ name: name })) {
+              const cname = this.structureId;
+              const name = `${this.tplName}-${cname}`;
+              const id = this.$unity.timeId();
+              const tplData = {
+                name: name,
+                id: id,
+                structureId: cname,
+                data: this.$unity.copyObj(this.nowData),
+              };
+              if (window.tplDB.insert(tplData, { name: name })) {
                 this.$message.error('模板已经存在！请重新输入！');
               } else {
-                const id = this.$unity.timeId();
-                collection.insert({
-                  name: name,
-                  id: id,
-                  structureId: this.structureId,
-                  data: this.$unity.copyObj(this.nowData),
-                });
-                db.save();
-                this.showMenu(this.structureId, id);
                 this.$message.success('模板保存成功！');
-                this.tplState = false;
+                this.showMenu(cname, id);
               }
             } else {
               this.$message.error('必须输入模板名称！');
@@ -287,8 +279,7 @@
             // const updta = this.update;
             this.updata.name = `${this.tplName}-${this.menuId}`;
             this.updata.data = this.$unity.copyObj(this.nowData);
-            collection.update(this.updata);
-            db.save();
+            window.tplDB.uptate(this.updata);
           }
           // 通知菜单更新
           this.$message.success(msg);

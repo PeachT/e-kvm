@@ -68,6 +68,81 @@ function ifDb() {
   }
   return false;
 }
+function dbFunc(db, collection) {
+  return {
+    db: db,
+    c: collection,
+    getAll: collection.data,
+    getOne: (query) => {
+      return collection.findOne(query);
+    },
+    get: (query) => {
+      return collection.find(query);
+    },
+    insert: (data, query) => {
+      try {
+        console.log('插入数据');
+        if (collection.findOne(query)) {
+          return true;
+        }
+        collection.insert(data);
+        return db.save();
+        // return $db.save();
+      } catch (error) {
+        console.error(error);
+        return false;
+      }
+    },
+    update: (data) => {
+      try {
+        collection.update(data);
+        // $db.save();
+        db.save();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    del: (query) => {
+      try {
+        collection.chain().find(query).remove();
+        // $db.save();
+        db.save();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+  };
+}
+function mainDB() {
+  if (ifDb()) {
+    const $db = db('main');
+    const admin = $db.getCollection('admin');
+    const users = $db.getCollection('users');
+    return {
+      admin: dbFunc($db, admin),
+      users: dbFunc($db, users),
+    };
+  }
+  return null;
+}
+function systemDB() {
+  if (ifDb()) {
+    const $db = db('system');
+    const steelStrands = $db.getCollection('steelStrands');
+    const device = $db.getCollection('device');
+    const girder = $db.getCollection('girder');
+    const system = $db.getCollection('system');
+    const tpl = $db.getCollection('tpl');
+    return {
+      steelStrands: dbFunc($db, steelStrands),
+      device: dbFunc($db, device),
+      girder: dbFunc($db, girder),
+      system: dbFunc($db, system),
+      tpl: dbFunc($db, tpl),
+    };
+  }
+  return null;
+}
 
 const Db = {
   /**
@@ -120,15 +195,30 @@ const Db = {
         $db.addCollection('users', { indices: ['id'] });
         // 保存数据到数据库
         $db.save();
-        $db = db('other');
-        // 操作员文档
-        // $db.addCollection('operators', { indices: ['name'] });
+        $db = db('system');
         // 钢绞线文档
-        $db.addCollection('steelStrands', { indices: ['specs'] });
-        // $db.addCollection('concretes', { indices: ['name'] });
+        $db.addCollection('steelStrands', { indices: ['specs', 'id'] });
         // 设备文档
         $db.addCollection('device', { indices: ['name', 'id'] });
-        $db.addCollection('girder', { indices: ['name'] });
+        // 构件文档
+        $db.addCollection('girder', { indices: ['name', 'id'] });
+        // 系统参数文档
+        const sys = $db.addCollection('system');
+        sys.insert({
+          name: 'sensor',
+          displacement: 255, // 位移传感器
+          displacementPLC: 2000,
+          pressure: 60, // 压力传感器
+          pressurePLC: 2000,
+        });
+        sys.insert({
+          name: 'control',
+          deviationCeiling: 10, // 运行总位移上限
+          deviationLower: 6, // 允许总位移下限
+          balance: 5, // 平衡控制
+        });
+        // 模板文档
+        $db.addCollection('tpl', { indices: ['name', 'id'] });
         $db.save();
       }
       return true;
@@ -139,37 +229,8 @@ const Db = {
   },
   db,
   ifDb: ifDb(),
-  dbAll(dbName, collectionName) {
-    const $db = db(dbName);
-    const collection = $db.getCollection(collectionName);
-    return {
-      db: $db,
-      c: collection,
-      getAll: collection.data,
-      getOne: (query) => {
-        return collection.findOne(query);
-      },
-      get: (query) => {
-        return collection.find(query);
-      },
-      insert: (data, query) => {
-        console.log('插入数据');
-        if (collection.findOne(query)) {
-          return true;
-        }
-        collection.insert(data);
-        return $db.save();
-      },
-      update: (data) => {
-        collection.update(data);
-        $db.save();
-      },
-      del: (query) => {
-        collection.chain().find(query).remove();
-        $db.save();
-      },
-    };
-  },
+  mainDB: mainDB(),
+  systemDB: systemDB(),
 };
 
 export default Db;

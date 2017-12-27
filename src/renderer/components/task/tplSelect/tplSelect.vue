@@ -34,7 +34,7 @@
     computed: {
       menuData() {
         try {
-          const tplData = window.tensioningDB.getCollection('tpl').data.map((item) => {
+          const tplData = window.tplDB.getAll.map((item) => {
             return item.structureId;
           });
           console.log(tplData);
@@ -56,7 +56,7 @@
       getChildrenMenuData() {
         this.nowData = null;
         try {
-          return window.tensioningDB.getCollection('tpl').find({
+          return window.tplDB.get({
             structureId: this.menuId,
           });
         } catch (error) { return []; }

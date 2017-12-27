@@ -8,6 +8,8 @@ const state = {
   addState: false,
   PLC1State: false,
   PLC2State: false,
+  operator: null,
+  user: null,
 };
 
 const mutations = {
@@ -37,6 +39,12 @@ const mutations = {
   },
   PLC2State(state, data) {
     state.PLC2State = data;
+  },
+  operator(state, data) {
+    state.operator = data;
+  },
+  user(state, data) {
+    state.user = data;
   },
 };
 

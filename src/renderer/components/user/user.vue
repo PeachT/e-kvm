@@ -248,8 +248,6 @@
                 }
                 // 创建项目数据库文件
                 const db = this.$db.db(`${userId}.tensioning`);
-                db.addCollection('device');
-                db.addCollection('tpl', { indices: ['structureId', 'tplName'] });
                 db.save();
               // 修改
               } else {

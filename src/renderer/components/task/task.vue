@@ -3,7 +3,7 @@
     <el-container class="wh100">
       <el-aside class="task-record-menu" width="224px">
         <task-menu ref="menu" :menuData="menuData" :childrenMenuData="childrenMenuData" :childrenMenuId.sync="childrenMenuId" :menuId.sync="menuId"
-        @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel" />
+        @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel" :pgNo.sync="pgNo"/>
       </el-aside>
       <el-main class="task-record-main">
         <h1 v-if="!nowDataState">没有数据--{{touterPath}}</h1>
@@ -37,7 +37,8 @@
           </el-tab-pane>
         </el-tabs>
         <div class="tpl" v-if="nowDataState && nowData.id !== ''">
-          <el-button type="success" style="height:40px;" @click="tplState = true">创建为模板</el-button>
+          <el-button :type="taskDown.type" plain round style="height:40px;" @click="taskDownFunc(taskDown.state)">{{taskDown.title}}</el-button>
+          <el-button plain round style="height:40px;" @click="tplState = true">创建为模板</el-button>
         </div>
       </el-main>
     </el-container>
@@ -153,6 +154,16 @@
           return null;
         }
       },
+      taskDown() {
+        const state = this.groups.filter(item => item.name === this.nowGroupName)[0].state;
+        const titles = ['张  拉', '二次张拉', '重新张拉'];
+        const types = ['primary', 'warning', 'danger'];
+        return {
+          state: state,
+          title: titles[state],
+          type: types[state],
+        };
+      },
     },
     beforeMount() {
       this.getMenuData();
@@ -166,6 +177,7 @@
       }
     },
     data: () => ({
+      pgNo: 0,
       role: false,
       nowData: baseData,
       nowDataState: false,
@@ -197,6 +209,10 @@
       svg2: null,
     }),
     watch: {
+      pgNo(nval) {
+        console.log(nval);
+        this.getChildrenMenuData();
+      },
       nowData() {
         this.nowDataState = true;
       },
@@ -277,7 +293,15 @@
       // 子菜单切换
       getChildrenMenuData() {
         try {
-          const datas = window.tensioningDB.getCollection(this.menuId).data;
+          const datass = window.tensioningDB.getCollection(this.menuId).data;
+          console.log(datass.length);
+          let datas = [];
+          if (75 + this.pgNo > datass.length) {
+            this.pgNo = datass.length - 75;
+            datas = datass.slice(this.pgNo, datass.length);
+          } else {
+            datas = datass.slice(this.pgNo, 75 + this.pgNo);
+          }
           this.childrenMenuData = datas.map((item) => {
             return {
               name: item.bridgeName,
@@ -351,7 +375,7 @@
       },
       save() {
         this.$message('保存');
-        const nowData = this.nowData;
+        const nowData = this.$unity.copyObj(this.nowData);
         console.log(nowData);
         const db = window.tensioningDB;
         const cname = this.structureId;
@@ -372,6 +396,20 @@
           // 添加
           if (this.addState) {
             // 判断数据是否存在
+            // for (let index = 0; index < 100; index += 1) {
+            //   console.log(index);
+            //   nowData.bridgeName = `梁${index}t`;
+            //   if (cstate && collection.findOne({
+            //     bridgeName: nowData.bridgeName,
+            //   })) {
+            //     this.$message.error('该梁号已经存在！请重新输入！');
+            //     return;
+            //   }
+            //   nowData.id = `${this.$unity.timeId()}${index}`;
+            //   // nowData.id = this.$unity.timeId();
+            //   collection.insert(this.$unity.copyObj(nowData));
+            //   db.save();
+            // }
             if (cstate && collection.findOne({
               bridgeName: nowData.bridgeName,
             })) {
@@ -379,8 +417,9 @@
               return;
             }
             nowData.id = this.$unity.timeId();
-            collection.insert(nowData);
+            collection.insert(this.$unity.copyObj(nowData));
             db.save();
+            // 通知菜单更新
             this.showMenu(cname, nowData.id);
           } else { // 修改
             msg = '修改成功！';
@@ -388,7 +427,6 @@
             collection.update(nowData);
             db.save();
           }
-          // 通知菜单更新
           this.$message.success(msg);
           this.$store.commit('editState', false);
           this.$store.commit('addState', false);
@@ -433,29 +471,27 @@
       tplCreateFunc() {
         if (this.tplName) {
           const name = `${this.tplName}-${this.menuId}`;
-          const db = window.tensioningDB;
-          // 获取文档
-          const collection = db.getCollection('tpl');
-          console.log(collection);
-          // 判断数据是否存在
-          if (collection.findOne({ name: name })) {
+          const data = this.$unity.copyObj(this.nowData);
+          data.bridgeName = '';
+          const tplData = {
+            name: name,
+            id: this.$unity.timeId(),
+            structureId: this.menuId,
+            data: data,
+          };
+          if (window.tplDB.insert(tplData, { name: name })) {
             this.$message.error('模板已经存在！请重新输入！');
-          } else {
-            const data = this.$unity.copyObj(this.nowData);
-            data.bridgeName = '';
-            collection.insert({
-              name: name,
-              id: this.$unity.timeId(),
-              structureId: this.menuId,
-              data: data,
-            });
-            db.save();
-            this.$message.success('模板保存成功！');
-            this.tplState = false;
+            return;
           }
+          this.$message.success('模板保存成功！');
+          this.tplState = false;
         } else {
           this.$message.error('必须输入模板名称！');
         }
+      },
+      // 下载任务
+      taskDownFunc(state) {
+        this.$message(`下载${state}`);
       },
     },
   };

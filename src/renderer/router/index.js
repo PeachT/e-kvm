@@ -16,6 +16,7 @@ import Monitoring from '../components/monitoring/monitoring.vue';
 import Operator from '../components/operator/operator.vue';
 import SteelStrand from '../components/steelStrand/steelStrand.vue';
 import Tpl from '../components/tpl/tpl.vue';
+import System from '../components/system/system.vue';
 
 // const Login = require('@/components/login').default;
 // const Menu = require('@/components/menus/menu').default;
@@ -82,6 +83,14 @@ const routes = [
     ],
   },
   {
+    path: '/system',
+    name: 'system',
+    component: Root,
+    children: [
+      { path: '', component: System, name: '系统' },
+    ],
+  },
+  {
     path: '/girder',
     name: 'girder',
     component: Root,
@@ -127,8 +136,15 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   store.commit('showMenu', false);
   store.commit('menuTitle', to.name);
+  console.log(store.state.global.operator);
+  if (store.state.global.operator) {
+    next();
+  } else if (to.path !== '/') {
+    next('/');
+  } else {
+    next();
+  }
   // console.log(to.name);
-  next();
 });
 
 export default router;

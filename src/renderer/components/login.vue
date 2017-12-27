@@ -127,24 +127,16 @@
     beforeMount() {
       if (this.$db.ifDb) {
         this.dbState = false;
-        window.adminDB = this.$db.dbAll('main', 'admin');
-        window.usersDB = this.$db.dbAll('main', 'users');
-        window.deviceDB = this.$db.dbAll('other', 'device');
-        window.steelStrandsDB = this.$db.dbAll('other', 'steelStrands');
-        window.girderDB = this.$db.dbAll('other', 'girder');
-        console.log(window.usersDB);
+        window.adminDB = this.$db.mainDB.admin;
+        window.usersDB = this.$db.mainDB.users;
+        window.deviceDB = this.$db.systemDB.steelStrands;
+        window.steelStrandsDB = this.$db.systemDB.device;
+        window.girderDB = this.$db.systemDB.girder;
+        window.systemDB = this.$db.systemDB.system;
+        window.tplDB = this.$db.systemDB.tpl;
       }
     },
     computed: {
-      // 数据库
-      DBmain() {
-        try {
-          if (!this.dbState) {
-            return this.$db.db('main');
-          }
-        } catch (error) {}
-        return null;
-      },
       // 操作员数据
       users() {
         try {
@@ -171,6 +163,7 @@
           };
         }
         const nowName = this.nowName;
+        this.$store.commit('user', window.usersDB.getOne({ projectName: nowName }));
         return this.users.filter(item => item.name === nowName)[0];
       },
     },
@@ -195,6 +188,7 @@
         const admin = window.adminDB.getOne({ name: user.name });
         if (admin && user.pwd === admin.pwd) {
           this.$store.commit('userDb', `${this.nowData.id}.tensioning`);
+          this.$store.commit('operator', admin);
           this.$router.push({
             path: 'menu',
           });

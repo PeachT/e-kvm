@@ -14,7 +14,7 @@
                 <el-input v-model="nowData[item[0]]"></el-input>
               </el-form-item>
               <el-form-item label="标定日期">
-                <el-date-picker v-model="nowData.demarcationDate" style="width:100%;" type="date" placeholder="选择日期"></el-date-picker>
+                <el-date-picker v-model="nowData.demarcationDate" value-format="yyyy-MM-dd" align="right" :editable="false" style="width:100%;" type="date" placeholder="选择日期"></el-date-picker>
               </el-form-item>
             </div>
           </el-form>
