@@ -215,7 +215,7 @@
       // 菜单数据
       getMenuData() {
         try {
-          const menus = window.deviceDB.getAll.map((item) => {
+          const menus = window.deviceDB.reverseGetAll().map((item) => {
             return {
               name: item.name,
             };

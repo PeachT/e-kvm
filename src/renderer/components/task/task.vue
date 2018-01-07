@@ -3,7 +3,7 @@
     <el-container class="wh100">
       <el-aside class="task-record-menu" width="224px">
         <task-menu ref="menu" :menuData="menuData" :childrenMenuData="childrenMenuData" :childrenMenuId.sync="childrenMenuId" :menuId.sync="menuId"
-        @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel" :pgNo.sync="pgNo"/>
+        @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel" :pgNo.sync="pgNo" :paNoLength="paNoLength"/>
       </el-aside>
       <el-main class="task-record-main">
         <h1 v-if="!nowDataState">没有数据--{{touterPath}}</h1>
@@ -55,6 +55,28 @@
       </span>
     </el-dialog>
     <tpl-select v-if="tplSelectState" :show.sync="tplSelectState" @addOk="addOk" @cancel="cancel"/>
+    <!-- 下载任务 -->
+    <el-dialog
+      title="任务下载中..."
+      :visible="taskDownData.state"
+      width="60%"
+      >
+      <div class="taskDownData">
+        <h3>设备连接状态</h3>
+        <div :class="{'yes': PLCState1}" v-show="taskDownData.plc1"><i class="el-icon-success"></i>主站</div>
+        <div :class="{'yes': PLCState2}" v-show="taskDownData.plc2"><i class="el-icon-success"></i>从站</div>
+        <h3>数据下载状态</h3>
+        <div :class="{'yes': taskDownData.A1}" v-show="taskDownData.A1show"><i :class="{'el-icon-success' : taskDownData.A1, 'el-icon-loading': !taskDownData.A1}"></i>{{taskDownData.A1? '下载完成': '下载中...'}}</div>
+        <div :class="{'yes': taskDownData.A2}" v-show="taskDownData.A2show"><i :class="{'el-icon-success' : taskDownData.A2, 'el-icon-loading': !taskDownData.A2}"></i>{{taskDownData.A2? '下载完成': '下载中...'}}</div>
+        <div :class="{'yes': taskDownData.B1}" v-show="taskDownData.B1show"><i :class="{'el-icon-success' : taskDownData.B1, 'el-icon-loading': !taskDownData.B1}"></i>{{taskDownData.B1? '下载完成': '下载中...'}}</div>
+        <div :class="{'yes': taskDownData.B2}" v-show="taskDownData.B2show"><i :class="{'el-icon-success' : taskDownData.B2, 'el-icon-loading': !taskDownData.B2}"></i>{{taskDownData.B2? '下载完成': '下载中...'}}</div>
+        <h3 :class="{'yes': taskDownDataAll}">{{taskDownDataAll? '全部下载完成！' : '下载中...'}}</h3>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -107,14 +129,29 @@
     steelStrandId: '', // 钢绞线id 未张拉使用全局的钢绞线 已张拉使用用户下的钢绞线
     state: 0, // 张拉状态
     concretes: { // 混凝土数据
-      sampleNumber: '试块编号',
-      sampleStrength: '试块强度',
-      designStrength: '设计强度',
-      tensioningStrengthNow: '张拉时强度',
-      castingDate: '浇筑日期',
+      sampleNumber: null, // '试块编号',
+      sampleStrength: null, // '试块强度',
+      designStrength: null, // '设计强度',
+      tensioningStrengthNow: null, // '张拉时强度',
+      castingDate: null, // '浇筑日期',
     },
     data: null,
   };
+  const taskDownData = {
+    state: false,
+    plc1: false,
+    plc2: false,
+    dwon: false,
+    A1: false,
+    A2: false,
+    B1: false,
+    B2: false,
+    A1show: false,
+    A2show: false,
+    B1show: false,
+    B2show: false,
+  };
+  const pressurePLC = require('../../objJS/matrixing').default.pressurePLC;
   export default {
     name: 'task',
     components: {
@@ -164,6 +201,40 @@
           type: types[state],
         };
       },
+      PLCState1() {
+        return this.$store.state.global.PLC1State;
+      },
+      PLCState2() {
+        return this.$store.state.global.PLC2State;
+      },
+      taskDownDataAll() {
+        let s = false;
+        if (taskDownData.dwon) {
+          s = (taskDownData.A1show === taskDownData.A1) &&
+          (taskDownData.A2show === taskDownData.A2) &&
+          (taskDownData.B1show === taskDownData.B1) &&
+          (taskDownData.B2show === taskDownData.B2);
+        }
+        if (s) {
+          this.$message.success('下载完成');
+          setTimeout(() => {
+            this.taskDownData.state = false;
+            this.taskDownData.plc1 = false;
+            this.taskDownData.plc2 = false;
+            this.taskDownData.dwon = false;
+            this.taskDownData.A1 = false;
+            this.taskDownData.A2 = false;
+            this.taskDownData.B1 = false;
+            this.taskDownData.B2 = false;
+            this.taskDownData.A1show = false;
+            this.taskDownData.A2show = false;
+            this.taskDownData.B1show = false;
+            this.taskDownData.B2show = false;
+            this.$router.push('/monitoring');
+          }, 100);
+        }
+        return s;
+      },
     },
     beforeMount() {
       this.getMenuData();
@@ -178,6 +249,7 @@
     },
     data: () => ({
       pgNo: 0,
+      paNoLength: false,
       role: false,
       nowData: baseData,
       nowDataState: false,
@@ -207,6 +279,7 @@
       tplSelectState: false,
       svg1: null,
       svg2: null,
+      taskDownData: taskDownData,
     }),
     watch: {
       pgNo(nval) {
@@ -247,6 +320,7 @@
       },
     },
     methods: {
+      // 曲线测试数据
       svgData(max = 60) {
         const arr = [[], [], [], []];
         for (let index = 0; index < 36; index += 1) {
@@ -280,7 +354,6 @@
               };
             });
           }
-          console.log(menuData, ids, window.girderDB.getAll);
           if (this.menuId) {
             this.getChildrenMenuData();
           } else {
@@ -293,10 +366,15 @@
       // 子菜单切换
       getChildrenMenuData() {
         try {
-          const datass = window.tensioningDB.getCollection(this.menuId).data;
-          console.log(datass.length);
+          // const datass = window.tensioningDB.getCollection(this.menuId).data;
+          const datass = window.tensioningDB.getCollection(this.menuId).chain().find()
+            .sort((o1, o2) => {
+              return o1.$loki > o2.$loki ? -1 : 1;
+            })
+            .data();
+          this.paNoLength = datass.length > 75 && true;
           let datas = [];
-          if (75 + this.pgNo > datass.length) {
+          if (75 + this.pgNo > datass.length && datass.length > 75) {
             this.pgNo = datass.length - 75;
             datas = datass.slice(this.pgNo, datass.length);
           } else {
@@ -309,6 +387,8 @@
               state: item.state,
             };
           });
+          // datass.reverse();
+          console.log('datas', datas, 'datass', this.childrenMenuData);
           const id = this.childrenMenuId;
           if (this.menuId && id === null) {
             this.childrenMenuId = this.childrenMenuData[0].id;
@@ -417,7 +497,7 @@
               return;
             }
             nowData.id = this.$unity.timeId();
-            collection.insert(this.$unity.copyObj(nowData));
+            collection.insert(nowData);
             db.save();
             // 通知菜单更新
             this.showMenu(cname, nowData.id);
@@ -491,7 +571,77 @@
       },
       // 下载任务
       taskDownFunc(state) {
-        this.$message(`下载${state}`);
+        try {
+          window.nowDB.c.chain().find().remove();
+          // $db.save();
+          window.nowDB.db.save();
+        } catch (error) {
+          console.error(error);
+        }
+        const taskData = this.taskData;
+        const tensioningPattern = taskData.tensioningPattern; // 泵顶组合
+        switch (tensioningPattern) {
+          case 0:
+            this.taskDownData.plc1 = true;
+            if (!this.PLCState1) {
+              this.$message.error('设备连接有误！');
+              return;
+            }
+            break;
+          case 2:
+            this.taskDownData.plc2 = true;
+            if (!this.PLCState2) {
+              this.$message.error('设备连接有误！');
+              return;
+            }
+            break;
+          case 1:
+          case 3:
+          case 4:
+            this.taskDownData.plc1 = true;
+            this.taskDownData.plc2 = true;
+            if (!this.PLCState && !this.PLCState2) {
+              this.$message.error('设备连接有误！');
+              return;
+            }
+            break;
+          default:
+            break;
+        }
+        this.taskDownData.state = true;
+        const pressure = pressurePLC(taskData, this.nowData.deviceId);
+        if ('A1' in pressure) {
+          this.taskDownData.A1show = true;
+          this.$plc1.writeSingleRegister16(4096, pressure.A1[0], (data) => {
+            this.taskDownData.A1 = true;
+          });
+        }
+        if ('A2' in pressure) {
+          this.taskDownData.A2show = true;
+          this.$plc2.writeSingleRegister16(4096, pressure.A1[0], (data) => {
+            this.taskDownData.A2 = true;
+          });
+        }
+        if ('B1' in pressure) {
+          this.taskDownData.B1show = true;
+          this.$plc1.writeSingleRegister16(4196, pressure.A1[0], (data) => {
+            this.taskDownData.B1 = true;
+          });
+        }
+        if ('B2' in pressure) {
+          this.taskDownData.B2show = true;
+          this.$plc2.writeSingleRegister16(4196, pressure.A1[0], (data) => {
+            this.taskDownData.B2 = true;
+          });
+        }
+        this.taskDownData.dwon = true;
+        window.nowDB.insert({
+          uid: this.menuId,
+          id: this.childrenMenuId,
+          name: this.nowGroupName,
+          pressure: pressure,
+        });
+        console.log(this.taskDownData);
       },
     },
   };
@@ -503,5 +653,14 @@
   position: absolute;
   top: 0;
   right: 1px;
+}
+.taskDownData{
+  font-size: 26px;
+  div{
+    margin: 10px;
+  }
+  .yes{
+    color:#67C23A;
+  }
 }
 </style>

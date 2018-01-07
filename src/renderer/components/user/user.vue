@@ -174,7 +174,7 @@
     methods: {
       // 菜单数据
       getMenuData() {
-        const users = this.DB.getAll.map((item) => {
+        const users = this.DB.reverseGetAll().map((item) => {
           return { name: item.projectName };
         });
         if (users.length > 0 && this.nowName === null) {

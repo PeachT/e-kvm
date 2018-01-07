@@ -25,7 +25,7 @@
           </div>
           <!-- :style="{'padding-top': `${pgNo * 52}px`}" -->
           <div class="items" v-show="menuId === item.id"  @scroll="onScroll($event)" >
-            <div style="height: 3120px" :style="{'padding-top': `${pgNo * 52}px`}">
+            <div :style="{'height': paNoLength ? '3120px' : 'auto','padding-top': `${pgNo * 52}px`}">
               <li class="item" v-for="(childern, index) in childrenMenuData" :class="{'active' : childrenMenuId === childern.id}" :key="index"
                 @click.stop="childernMenuFunc(childern.id)">
                 <i class="state" :class="`g${childern.state}`"></i>
@@ -50,7 +50,7 @@
 <script>
   export default {
     name: 'taskmenu',
-    props: ['menuData', 'childrenMenuData', 'childrenMenuId', 'menuId', 'pgNo'],
+    props: ['menuData', 'childrenMenuData', 'childrenMenuId', 'menuId', 'pgNo', 'paNoLength'],
     computed: {
       edit() {
         return this.$store.state.global.editState;
@@ -82,7 +82,7 @@
       onScroll() {
         // const offsetHeight = event.currentTarget.offsetHeight;
         // const scrollHeight = event.target.scrollHeight;
-        const scrollTop = event.target.scrollTop;
+        const scrollTop = event.target.scrollTop; // 滚动条位置
         // const scrollBottom = offsetHeight + scrollTop;
         // console.log(offsetHeight, scrollHeight, scrollTop, scrollBottom);
         this.$emit('update:pgNo', Math.floor(scrollTop / 1300) * 25);

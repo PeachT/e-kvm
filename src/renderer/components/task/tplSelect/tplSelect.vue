@@ -34,12 +34,12 @@
     computed: {
       menuData() {
         try {
-          const tplData = window.tplDB.getAll.map((item) => {
+          const tplData = window.tplDB.reverseGetAll().map((item) => {
             return item.structureId;
           });
           console.log(tplData);
           const menuData = [];
-          window.girderDB.getAll.map((item) => {
+          window.girderDB.reverseGetAll().map((item) => {
             console.log(tplData.indexOf(item.id), item.id);
             if (tplData.indexOf(item.id) > -1) {
               menuData.push({

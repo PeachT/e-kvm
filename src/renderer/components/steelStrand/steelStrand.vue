@@ -86,7 +86,7 @@
       // 菜单数据
       getMenuData() {
         try {
-          const menus = window.steelStrandsDB.getAll.map((item) => {
+          const menus = window.steelStrandsDB.reverseGetAll().map((item) => {
             return {
               name: item.specs,
             };

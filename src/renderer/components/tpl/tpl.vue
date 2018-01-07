@@ -54,11 +54,11 @@
     steelStrandId: '', // 钢绞线id 未张拉使用全局的钢绞线 已张拉使用用户下的钢绞线
     state: 0,
     concretes: { // 混凝土数据
-      sampleNumber: '试块编号',
-      sampleStrength: '试块强度',
-      designStrength: '设计强度',
-      tensioningStrengthNow: '张拉时强度',
-      castingDate: '浇筑日期',
+      sampleNumber: null, // '试块编号',
+      sampleStrength: null, // '试块强度',
+      designStrength: null, // '设计强度',
+      tensioningStrengthNow: null, // '张拉时强度',
+      castingDate: null, // '浇筑日期',
     },
     data: null,
   };
@@ -157,12 +157,12 @@
       // 主菜单数据获取
       getMenuData() {
         try {
-          const tplData = window.tplDB.getAll.map((item) => {
+          const tplData = window.tplDB.reverseGetAll().map((item) => {
             return item.structureId;
           });
           console.log(tplData);
           const menuData = [];
-          window.girderDB.getAll.map((item) => {
+          window.girderDB.reverseGetAll().map((item) => {
             console.log(tplData.indexOf(item.id), item.id);
             if (tplData.indexOf(item.id) > -1) {
               menuData.push({

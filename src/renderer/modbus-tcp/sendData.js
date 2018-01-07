@@ -7,7 +7,8 @@
  * @returns 返回拼接十六进制数据
  */
 function Dec2Hex(dec, num) {
-  return dec.toString(16).padStart(num, '00000000').toUpperCase();
+  const r = dec.toString(16).padStart(num, '00000000').toUpperCase();
+  return r;
 }
 function Hex4Byte(dec) {
   const hexStr = dec.toString(16).padStart(4, '0000').toUpperCase();
@@ -54,15 +55,15 @@ function FC15(data) {
   };
 }
 function FC16_16(data) {
-  // :01 0F 0500 0003 01 7 E0
-  const quantity = data.length; // 强制线圈数量
+  const quantity = data.length; // 写入寄存器数量
   const typeNumber = quantity * 2; // 数据需要的字节数
   let dataHexStr = ''; // 十六进制字符串
   let dataDec = 0; // 十进制数据
   for (const index = 0; index < data.length;) {
-    const dec = data.shift();
-    dataDec += dec;
-    dataHexStr = `${dataHexStr}${Dec2Hex(dec, 4)}`;
+    const dec = data.shift(); // 抛出第一个数据
+    const dh = Hex4Byte(dec);
+    dataDec += dh.decSum;
+    dataHexStr = `${dataHexStr}${dh.hexStr}`;
   }
   const hexStr = `${Dec2Hex(quantity, 4)}${Dec2Hex(typeNumber, 2)}${dataHexStr}`; // 拼接十六进制字符串
   const decSum = quantity + typeNumber + dataDec;// 计算LRC需要的值
@@ -83,6 +84,7 @@ function commandStr(deviceId, fc, address, data) {
   let datas = null;
   switch (fc) {
     case 1:
+    case 2:
       datas = Hex4Byte(data);
       break;
     case 3:

@@ -80,12 +80,10 @@ const initData = {
           stage: [10, 20, 50, 100], // 张拉阶段
           time: [30, 30, 30, 30], // 持荷时间
         },
-        curveId: '', // 曲线id
-        time: [], // 持荷时间
-        date: '2017-12-12', // 张拉日期
-        startTime: '12:12', // 张拉开始时间
-        endTime: '12:12', // 张拉开始时间
         recird: { // 记录数据
+          startDate: '2017-12-12', // 张拉时间
+          endDate: '12:12', // 张拉完成时间
+          time: [], // 持荷时间
           A1: {
             Mpa: [], // 压力
             mm: [], // 位移
@@ -121,7 +119,6 @@ const initData = {
         },
         curves: [ // 曲线
           {
-            id: '',
             time: [],
             A1Mpa: [],
             A2Mpa: [],

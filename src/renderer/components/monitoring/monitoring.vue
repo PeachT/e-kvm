@@ -16,7 +16,7 @@
       </el-header>
       <el-main>
         <div>
-          <steps></steps>
+          <steps :stage="stageStr" :nowStage="nowStage" :times="nowData.task.time" :recirdTime="recird.time" :tAB="tABNumber"></steps>
 
           <table width="100%" border="1" cellspacing="0">
             <tr>
@@ -31,15 +31,15 @@
               <th>总伸长量</th>
               <th>总偏差率</th>
             </tr>
-            <tr :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
+            <tr :class="item" v-for="(item, index) in stage" :key="index">
               <td>{{item}}</td>
-              <td>状态</td>
-              <td>顶位移</td>
-              <td>设备压力</td>
-              <td>目标压力</td>
+              <td>{{abStage[currentlyState[`${item}s`]]}}</td>
+              <td>{{currentlyData[`${item}mm`] | plc2mm}}</td>
+              <td>{{currentlyData[`${item}mpa`] | plc2mpa}}</td>
+              <td>{{pressure.stagesMpa[item][PLCStage]}}</td>
               <td>单顶伸长量</td>
               <td rowspan="2" v-if="item === 'A1' || item === 'B1'">单顶偏差率</td>
-              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">理论伸长量</td>
+              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{nowData.task[item].LL}}</td>
               <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总伸长量</td>
               <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总偏差率</td>
             </tr>
@@ -52,14 +52,46 @@
       </el-main>
       <el-footer height="40px">Footer</el-footer>
     </el-container>
+    <el-dialog
+      title="张拉"
+      :visible="taskDownData.state"
+      width="60%"
+      >
+      <div>
+        可以张拉
+        <el-form label-width="85">
+          <h3>混泥土信息</h3>
+          <div class="row-flex">
+            <el-form-item :label="item[1]"
+              v-for="(item, index) in [['sampleNumber', '试块编号'], ['sampleStrength', '试块强度'], ['designStrength', '设计强度'],['tensioningStrengthNow','张拉时砼强度']]"
+              :key="index">
+              <el-input v-model="taskData.concretes[item[0]]"></el-input>
+            </el-form-item>
+            <el-form-item label="浇筑日期">
+              <el-date-picker style="width:100%;" type="date" placeholder="选择日期" v-model="taskData.concretes.castingDate" @change="concretesFunc()"></el-date-picker>
+            </el-form-item>
+          </div>
+          <p>{{concretesState ? '请设置浇筑日期！' : '可以启动张拉'}}</p>
+        </el-form>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="cancel()">取消张拉</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
-
 <script>
+// concretes: { // 混凝土数据
+//       sampleNumber: '试块编号',
+//       sampleStrength: '试块强度',
+//       designStrength: '设计强度',
+//       tensioningStrengthNow: '张拉时强度',
+//       castingDate: '浇筑日期',
+//     },
 import Veline from '../task_record_template/base/veline';
 import Steps from './steps/steps';
 
-const returnData16 = require('../../modbus-tcp/returnData').default.returnData16;
+const returnData = require('../../modbus-tcp/returnData').default.returnData16;
 
 export default {
   name: 'monitoring',
@@ -69,7 +101,115 @@ export default {
   },
   data: () => ({
     mpas: [2, 3, 4, 5, 8, 10],
+    start: false,
+    taskDownData: {
+      state: false,
+    },
+    concretesState: false,
+    taskData: {
+      concretes: { // 混凝土数据
+        sampleNumber: null, // '试块编号',
+        sampleStrength: null, // '试块强度',
+        designStrength: null, // '设计强度',
+        tensioningStrengthNow: null, // '张拉时强度',
+        castingDate: null, // '浇筑日期',
+      },
+    },
+    nowData: null,
+    stage: [],
+    pressure: null,
+    nowStage: 0,
+    PLCStage: 0,
+    stageStr: [],
+    currentlyState: {
+      A1s: 0,
+      A2s: 0,
+      B1s: 0,
+      B2s: 0,
+    },
+    tA1: null,
+    tA2: null,
+    tB1: null,
+    tB2: null,
+    tAB: null,
+    tGet: null,
+    tABNumber: 0,
+    sA1: null,
+    sA2: null,
+    sB1: null,
+    sB2: null,
+    recird: { // 记录数据
+      startDate: null, // 张拉时间
+      endDate: null, // 张拉完成时间
+      time: [0, 0, 0, 0, 0, 0], // 持荷时间
+      A1: {
+        Mpa: [], // 压力
+        mm: [], // 位移
+        initMpa: null, // 回到初张拉压力
+        initMM: null, // 回到初张拉位移
+        retractionMM: 0, // 力筋回缩量
+        LZ: 0, // 总伸长量（LZ）
+        deviation: 0, // 偏差率
+      },
+      A2: {
+        Mpa: [], // 压力
+        mm: [], // 位移
+        initMpa: 0, // 回到初张拉压力
+        initMM: 0, // 回到初张拉位移
+        retractionMM: 0, // 力筋回缩量
+      },
+      B1: {
+        Mpa: [], // 压力
+        mm: [], // 位移
+        initMpa: null, // 回到初张拉压力
+        initMM: null, // 回到初张拉位移
+        retractionMM: 0, // 力筋回缩量
+        LZ: 0, // 总伸长量（LZ）
+        deviation: 0, // 偏差率
+      },
+      B2: {
+        Mpa: [], // 压力
+        mm: [], // 位移
+        initMpa: 0, // 回到初张拉压力
+        initMM: 0, // 回到初张拉位移
+        retractionMM: 0, // 力筋回缩量
+      },
+    },
+    curves: {
+      A1Mpa: [],
+      A2Mpa: [],
+      B1Mpa: [],
+      B2Mpa: [],
+      A1mm: [],
+      A2mm: [],
+      B1mm: [],
+      B2mm: [],
+    },
   }),
+  beforeMount() {
+    if (window.nowDB.getAll.length > 0) {
+      this.taskDownData.state = true;
+      const uid = window.nowDB.getAll[0].uid;
+      const id = window.nowDB.getAll[0].id;
+      const name = window.nowDB.getAll[0].name;
+      this.pressure = window.nowDB.getAll[0].pressure;
+      this.taskData = window.tensioningDB.getCollection(uid).findOne({ id: id });
+      this.nowData = this.taskData.data.filter(item => item.name === name)[0];
+      this.stage = this.$Ounity.abModel(this.nowData.tensioningPattern);
+      this.stageStr = this.$Ounity.stage(this.nowData.stage, this.nowData.exceed);
+      this.stageDownPLC();
+      if (this.taskData.concretes.castingDate === null) {
+        this.concretesState = true;
+      }
+      this.x0();
+    }
+    console.log(this.taskData, this.taskData.concretes.castingDate, this.stageStr);
+  },
+  watch: {
+    currentlyData(nval) {
+      console.log(nval);
+    },
+  },
   computed: {
     PLCState1() {
       return this.$store.state.global.PLC1State;
@@ -77,27 +217,48 @@ export default {
     PLCState2() {
       return this.$store.state.global.PLC2State;
     },
+    abStage() {
+      const abStage = [
+        ['等待张拉', '初张拉', '阶段一张拉', '终张拉'],
+        ['等待张拉', '初张拉', '阶段一张拉', '阶段二张拉', '终张拉'],
+        ['等待张拉', '初张拉', '阶段一张拉', '阶段二张拉', '阶段三张拉', '阶段三保压', '终张拉'],
+      ];
+      const arr = abStage[this.nowData.stage];
+      if (this.nowData.exceed) {
+        arr.push('超张拉');
+      }
+      arr.push('卸荷', '回程', '等待保压', '保压中...');
+      return arr;
+    },
+    currentlyData() {
+      const p1 = this.$store.state.global.PLC1Data;
+      const p2 = this.$store.state.global.PLC2Data;
+      return {
+        A1mpa: p1.A1mpa,
+        A1mm: p1.A1mm,
+        B1mpa: p1.B1mpa,
+        B1mm: p1.B1mm,
+        A2mpa: p2.A2mpa,
+        A2mm: p2.A2mm,
+        B2mpa: p2.B2mpa,
+        B2mm: p2.B2mm,
+      };
+    },
   },
   methods: {
     bitOut(address, value) {
-      // console.time('s');
       this.$plc1.writeSingleCoil(address, value, (data) => {
         console.log('PLC返回写入单线圈：', data);
       });
-      // this.$plc1.readCoilStatue(1280, 5, (data) => {
-      //   console.log('PLC返回的数据2', data);
-      // });
-      // this.$plc1.writeSingleCoil(address, false, (data) => {
-      //   console.log('PLC返回的数据3', data);
-      // });
-      // this.$plc1.readCoilStatue(1280, 5, (data) => {
-      //   console.log('PLC返回的数据4', data);
-      // });
-      // console.timeEnd('s');
     },
     get() {
       this.$plc1.readCoilStatue(1280, 5, (data) => {
         console.log('PLC返回读取多线圈', data);
+      });
+    },
+    readRegisters16() {
+      this.$plc1.readRegisters16(1536, 6, (data) => {
+        console.log('PLC返回读取16位寄存器：', returnData(data));
       });
     },
     writeMultipleCoil() {
@@ -111,17 +272,196 @@ export default {
       });
     },
     writeMultipleRegisters16() {
-      this.$plc1.writeMultipleRegisters16(1536, [100, 101, 102, 103, 104, 105], (data) => {
+      const datas = [54, 101, 102, 103, 104, 105];
+      this.$plc1.writeMultipleRegisters16(4596, datas, (data) => {
         console.log('PLC返回写入16位多寄存器：', data);
-      });
-    },
-    readRegisters16() {
-      this.$plc1.readRegisters16(1536, 6, (data) => {
-        console.log('PLC返回读取16位寄存器：', returnData16(data));
       });
     },
     reconnect() {
       this.$plc1.reconnect();
+    },
+    // 设置浇筑日期
+    concretesFunc() {
+      if (this.taskData.concretes.castingDate !== null) {
+        this.concretesState = false;
+      }
+    },
+    // 取消张拉
+    cancel() {
+      try {
+        window.nowDB.c.chain().find().remove();
+        // $db.save();
+        window.nowDB.db.save();
+      } catch (error) {
+        console.error(error);
+      }
+      console.log(window.nowDB.getAll);
+      this.$router.push('/menu');
+    },
+    // 监控启动
+    x0() {
+      window.setTimeout(() => {
+        this.$plc1.readInputStatue(1024, 1, (data) => {
+          const x0 = returnData(data)[0];
+          if (x0 === '1' && !this.concretesState) {
+            new Promise(
+              (resolve, reject) => {
+                this.$plc2.writeSingleCoil(2560, true, (data) => {
+                  console.log('PLC返回写入单线圈：', data);
+                });
+                this.$plc1.writeSingleCoil(2560, true, (data) => {
+                  console.log('PLC返回写入单线圈：', data);
+                  resolve();
+                });
+              },
+            ).then(this.startFunc());
+          } else if (x0 === '1') {
+            this.$message.error('请输入浇筑日期！');
+          }
+          if (window.nowDB.getAll.length > 0 && this.taskDownData.state) {
+            this.x0();
+          }
+        });
+      }, 0);
+    },
+    // 启动张拉
+    startFunc() {
+      this.taskDownData.state = false;
+      this.nowStage = 1;
+      this.currentlyState.A1s = 1;
+      this.currentlyState.A2s = 1;
+      this.currentlyState.B1s = 1;
+      this.currentlyState.B2s = 1;
+      // 保存开始时间
+      this.recird.startDate = this.$unity.timeS();
+      // this.mmBase =
+      this.$message.success('开始张拉！！');
+      this.getPLC();
+    },
+    // 下载压力数据到PLC
+    stageDownPLC() {
+      const m = this.nowData.tensioningPattern;
+      const mpas = this.pressure.plcPressure;
+      const stage = this.PLCStage;
+      console.log(mpas, mpas.A1[stage]);
+      if (m === 0 || m === 1 || m === 4) {
+        this.$plc1.writeSingleRegister16(4106, mpas.A1[stage], (data) => {
+          console.log('PLC返回写入16位多寄存器：', data);
+        });
+      }
+      if (m === 2 || m === 3 || m === 4) {
+        this.$plc1.writeSingleRegister16(4107, mpas.B1[stage], (data) => {
+          console.log('PLC返回写入16位多寄存器：', data);
+        });
+      }
+      if (m === 1 || m === 4) {
+        this.$plc2.writeSingleRegister16(4106, mpas.A2[stage], (data) => {
+          console.log('PLC返回写入16位多寄存器：', data);
+        });
+      }
+      if (m === 3 || m === 4) {
+        this.$plc2.writeSingleRegister16(4107, mpas.B2[stage], (data) => {
+          console.log('PLC返回写入16位多寄存器：', data);
+        });
+      }
+    },
+    getPLC() {
+      this.tGet = setTimeout(() => {
+        const m = this.nowData.tensioningPattern;
+        const mpas = this.pressure.plcPressure;
+        const stage = this.PLCStage;
+        switch (m) {
+          case 0:
+            if (this.currentlyData.A1mpa >= mpas.A1[stage]) {
+              if (this.tA1 === null) {
+                this.tA1 = setTimeout(() => {
+                  this.currentlyState.A1s = this.abStage.length - 2;
+                }, 1500);
+              }
+            } else {
+              clearTimeout(this.tA1);
+              this.tA1 = null;
+            }
+            break;
+          case 1:
+            if (this.currentlyData.A1mpa >= mpas.A1[stage]) {
+              if (this.tA1 === null) {
+                this.tA1 = setTimeout(() => {
+                  this.currentlyState.A1s = this.abStage.length - 2;
+                  this.sA1 = true;
+                }, 1500);
+              }
+            } else {
+              clearTimeout(this.tA1);
+              this.tA1 = null;
+            }
+            if (this.currentlyData.A2mpa >= mpas.A2[stage]) {
+              if (this.tA2 === null) {
+                this.tA2 = setTimeout(() => {
+                  this.currentlyState.A2s = this.abStage.length - 2;
+                  this.sA2 = true;
+                }, 1500);
+              }
+            } else {
+              clearTimeout(this.tA2);
+              this.tA2 = null;
+            }
+            if (this.sA1 && this.sA2) {
+              if (this.tAB === null) {
+                this.currentlyState.A1s = this.abStage.length - 1;
+                this.currentlyState.A2s = this.abStage.length - 1;
+                this.currentlyState.B1s = this.abStage.length - 1;
+                this.currentlyState.B2s = this.abStage.length - 1;
+                this.time();
+              }
+            }
+            break;
+          default:
+            break;
+        }
+        if (this.stageStr.length - 1 > this.nowStage) {
+          this.getPLC();
+        }
+      }, 0);
+    },
+    time() {
+      this.tAB = setInterval(() => {
+        const PLCStage = this.PLCStage;
+        this.tABNumber += 1;
+        this.recird.time[PLCStage] = this.tABNumber;
+        // this.$set(this, 'recird.time', this.recird.time);
+        // this.$message.success(this.recird.time[PLCStage]);
+        if (this.tABNumber === this.nowData.task.time[PLCStage]) {
+          window.clearInterval(this.tAB);
+          this.tAB = null;
+          this.nowStage += 1;
+          this.currentlyState.A1s = this.nowStage;
+          this.currentlyState.A2s = this.nowStage;
+          this.currentlyState.B1s = this.nowStage;
+          this.currentlyState.B2s = this.nowStage;
+          this.sA1 = false;
+          this.sA2 = false;
+          this.sB1 = false;
+          this.sB2 = false;
+          this.tA1 = null;
+          this.tA2 = null;
+          this.tB1 = null;
+          this.tB2 = null;
+          this.tABNumber = 0;
+          this.stage.forEach((item, key) => {
+            this.recird[item].Mpa[PLCStage] = this.currentlyData[`${item}mpa`];
+            this.recird[item].mm[PLCStage] = this.currentlyData[`${item}mm`];
+          });
+          if (this.stageStr.length - 1 > this.nowStage) {
+            this.PLCStage += 1;
+            this.stageDownPLC();
+          } else {
+            console.log(this.recird);
+            window.clearTimeout(this.tGet);
+            this.tGet = null;
+          }
+        }
+      }, 1000);
     },
   },
 };

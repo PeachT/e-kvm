@@ -134,6 +134,7 @@
         window.girderDB = this.$db.systemDB.girder;
         window.systemDB = this.$db.systemDB.system;
         window.tplDB = this.$db.systemDB.tpl;
+        window.nowDB = this.$db.nowDB.now;
       }
     },
     computed: {
@@ -141,7 +142,7 @@
       users() {
         try {
           // const users = this.DBmain.getCollection('users').data;
-          const users = window.usersDB.getAll;
+          const users = window.usersDB.reverseGetAll();
           if (users.length > 0) {
             if (this.nowName === null) {
               this.nowName = users[0].projectName;

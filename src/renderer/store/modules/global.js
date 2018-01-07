@@ -8,6 +8,18 @@ const state = {
   addState: false,
   PLC1State: false,
   PLC2State: false,
+  PLC1Data: {
+    A1mpa: null,
+    A1mm: null,
+    B1mpa: null,
+    B1mm: null,
+  },
+  PLC2Data: {
+    A2mpa: null,
+    A2mm: null,
+    B2mpa: null,
+    B2mm: null,
+  },
   operator: null,
   user: null,
 };
@@ -40,6 +52,18 @@ const mutations = {
   PLC2State(state, data) {
     state.PLC2State = data;
   },
+  PLC1Data(state, data) {
+    state.PLC1Data.A1mpa = data[0];
+    state.PLC1Data.A1mm = data[1];
+    state.PLC1Data.B1mpa = data[2];
+    state.PLC1Data.B1mm = data[3];
+  },
+  PLC2Data(state, data) {
+    state.PLC2Data.A2mpa = data[0];
+    state.PLC2Data.A2mm = data[1];
+    state.PLC2Data.B2mpa = data[2];
+    state.PLC2Data.B2mm = data[3];
+  },
   operator(state, data) {
     state.operator = data;
   },
@@ -49,6 +73,12 @@ const mutations = {
 };
 
 const actions = {
+  PLC1Data(context, data) {
+    context.commit('PLC1Data', data);
+  },
+  PLC2Data(context, data) {
+    context.commit('PLC2Data', data);
+  },
 };
 
 export default {

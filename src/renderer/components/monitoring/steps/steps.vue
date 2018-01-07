@@ -1,25 +1,26 @@
 <template>
   <div class="steps">
-    <div
+     <div
       class="item"
-      :class="{'active': active >= index, 'active-ok': active > index || jd.length === index+1, 'flex-1': jd.length === index+1}"
-      v-for="(item, index) in jd" :key="index"
+      :class="{'active': nowStage >= index+1, 'active-ok': nowStage > index+1, 'flex-1': index+2 >= stageArr.length}"
+      v-for="(item, index) in stageArr" :key="index"
     >
       <div class="main">
-        <div class="text" :class="{'rainbow': active*1 === index}">
+        <div class="text" :class="{'rainbow': nowStage*1 === index+1}">
           <span>{{item}}</span>
           <!-- <i class="el-icon-loading" v-show="active*1 === index"></i> -->
         </div>
-        <div class="line" v-if="jd.length > index+1" >
-          <el-progress :percentage="50" :show-text="false" status="success" :stroke-width="25"></el-progress>
+        <div class="line" v-if="index+2 < stageArr.length" >
+          <el-progress :percentage="(recirdTime[index] / times[index]) * 100" :show-text="false" status="success" :stroke-width="25"></el-progress>
           <div class="line-top">
-            {{jd.length}}/{{index+1}}
+            {{recirdTime[index]}}/{{times[index]}}
           </div>
         </div>
       </div>
       <!-- <div class="info">
         持荷时间：<span>123456</span>
       </div> -->
+      <p hidden="hidden">{{tAB}}</p>
     </div>
   </div>
 </template>
@@ -27,10 +28,26 @@
 <script>
 export default {
   name: 'steps',
+  props: ['stage', 'nowStage', 'times', 'recirdTime', 'tAB'],
   data: () => ({
-    active: 1,
+    active: 0,
     jd: ['初张拉', '阶段一', '阶段二', '阶段三', '终张拉', '超张拉', '卸荷', '完成'],
   }),
+  computed: {
+    stageArr() {
+      let arr = this.stage;
+      if (arr.length > 0) {
+        arr.push('卸荷', '完成');
+      } else {
+        arr = ['没有数据'];
+      }
+      return arr;
+    },
+  },
+  watch: {
+    tAB(nval) {
+    },
+  },
 };
 </script>
 

@@ -88,7 +88,7 @@
       // 菜单数据
       getMenuData() {
         try {
-          const menus = window.girderDB.getAll.map((item) => {
+          const menus = window.girderDB.reverseGetAll().map((item) => {
             return {
               name: item.name,
             };

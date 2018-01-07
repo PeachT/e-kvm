@@ -48,7 +48,7 @@ export default {
     },
   },
   beforeMount() {
-    this.structureData = window.girderDB.getAll.map((item) => {
+    this.structureData = window.girderDB.reverseGetAll().map((item) => {
       return { name: item.name, id: item.id, holes: item.holes };
     });
   },

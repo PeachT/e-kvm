@@ -44,7 +44,7 @@ export default {
     },
   },
   beforeMount() {
-    this.dadas = window.deviceDB.getAll.map((item) => {
+    this.dadas = window.deviceDB.reverseGetAll().map((item) => {
       return item;
     });
   },

@@ -73,6 +73,13 @@ function dbFunc(db, collection) {
     db: db,
     c: collection,
     getAll: collection.data,
+    reverseGetAll: () => {
+      return collection.chain().find()
+        .sort((o1, o2) => {
+          return o1.$loki > o2.$loki ? -1 : 1;
+        })
+        .data();
+    },
     getOne: (query) => {
       return collection.findOne(query);
     },
@@ -139,6 +146,16 @@ function systemDB() {
       girder: dbFunc($db, girder),
       system: dbFunc($db, system),
       tpl: dbFunc($db, tpl),
+    };
+  }
+  return null;
+}
+function nowDB() {
+  if (ifDb()) {
+    const $db = db('now');
+    const now = $db.getCollection('now');
+    return {
+      now: dbFunc($db, now),
     };
   }
   return null;
@@ -210,6 +227,7 @@ const Db = {
           displacementPLC: 2000,
           pressure: 60, // 压力传感器
           pressurePLC: 2000,
+          toFixed: 2,
         });
         sys.insert({
           name: 'control',
@@ -219,6 +237,11 @@ const Db = {
         });
         // 模板文档
         $db.addCollection('tpl', { indices: ['name', 'id'] });
+        $db.save();
+        // 张拉实时数据库
+        $db = db('now');
+        // 实时数据文档
+        $db.addCollection('now');
         $db.save();
       }
       return true;
@@ -231,6 +254,7 @@ const Db = {
   ifDb: ifDb(),
   mainDB: mainDB(),
   systemDB: systemDB(),
+  nowDB: nowDB(),
 };
 
 export default Db;

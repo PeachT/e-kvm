@@ -46,7 +46,7 @@
     { name: '无', path: '/', icon: '', permissions: 0 },
     { name: '无', path: '/', icon: '', permissions: 0 },
     { name: '无16', path: '/', icon: '', permissions: 1 },
-    { name: '监控', path: '/', icon: '', permissions: 0 },
+    { name: '监控', path: '/monitoring', icon: '', permissions: 0 },
     { name: '记录', path: '/', icon: '', permissions: 0 },
   ];
   export default {

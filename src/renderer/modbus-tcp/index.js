@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import store from '../store/index';
 const Socket = require('net').Socket;
 const sendCommand = require('./sendData').default.sendCommand;
+const returnData = require('./returnData').default.returnData16;
 
 Vue.use(Vuex);
 class Modbus {
@@ -56,8 +57,31 @@ class Modbus {
     }
   }
   init() {
-    this.readCoilStatue(2048, 1, (data) => {
-      this.PLCState(true);
+    new Promise((resolve, reject) => {
+      let b1 = false;
+      let b2 = false;
+      this.readCoilStatue(2048, 1, (data) => {
+        this.PLCState(true);
+        b1 = true;
+        if (b1 && b2) {
+          resolve();
+        }
+      });
+      this.readRegisters16(4096, 4, (data) => {
+        const d = returnData(data);
+        if (this.path === '192.168.181.101') {
+          // store.commit('PLC1Data', d);
+          store.dispatch('PLC1Data', d);
+        } else {
+          // store.commit('PLC2Data', d);
+          store.dispatch('PLC2Data', d);
+        }
+        b2 = true;
+        if (b1 && b2) {
+          resolve();
+        }
+      });
+    }).then(() => {
       this.init();
     });
   }
@@ -93,6 +117,10 @@ class Modbus {
     this.write(commandCode, next);
   }
   // FC2 "Read Input Status" 读取输入状态
+  readInputStatue(address, quantity, next) {
+    const commandCode = this.getCommand(2, address, quantity);
+    this.write(commandCode, next);
+  }
   // FC3 "Read Holding Registers" 读取16位寄存器数据 : 01 03 0C 0064 0065 0066 0067 0068 0069 89
   readRegisters16(address, quantity, next) {
     const commandCode = this.getCommand(3, address, quantity);

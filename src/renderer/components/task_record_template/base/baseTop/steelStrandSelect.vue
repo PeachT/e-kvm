@@ -41,7 +41,7 @@ export default {
     };
   },
   beforeMount() {
-    this.datas = window.steelStrandsDB.getAll;
+    this.datas = window.steelStrandsDB.reverseGetAll();
     console.log('01010202', this.datas);
   },
   methods: {
