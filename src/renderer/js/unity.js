@@ -17,12 +17,12 @@ const unity = {
     return `${new Date().getTime()}`;
   },
   /**
-   * 生成实际戳秒（s）
+   * 生成实际戳毫秒（ms）
    *
-   * @returns 返回秒（s）实际戳
+   * @returns 返回毫秒（ms）实际戳
    */
-  timeS() {
-    return new Date().getTime() / 1000;
+  timeMs() {
+    return new Date().getTime();
   },
   /**
    * input获取焦点时选择内容

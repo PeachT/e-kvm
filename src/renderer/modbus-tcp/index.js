@@ -20,7 +20,7 @@ class Modbus {
     });
     client.on('data', (data) => {
       const func = this.func.shift();
-      console.log('func数量：', this.func.length);
+      // console.log('func数量：', this.func.length);
       if (this.func.length > 0) {
         this.write();
       }

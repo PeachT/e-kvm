@@ -33,7 +33,7 @@
             </tr>
             <tr :class="item" v-for="(item, index) in stage" :key="index">
               <td>{{item}}</td>
-              <td>{{abStage[currentlyState[`${item}s`]]}}</td>
+              <td>{{abStage[currentlyState[`${item}`]]}}</td>
               <td>{{currentlyData[`${item}mm`] | plc2mm}}</td>
               <td>{{currentlyData[`${item}mpa`] | plc2mpa}}</td>
               <td>{{pressure.stagesMpa[item][PLCStage]}}</td>
@@ -47,7 +47,14 @@
         </div>
         <div style="display: flex;">
           <!-- <veline style="flex:1;" title="压力曲线" max="60"></veline>
-          <veline style="flex:1;" title="压力曲线" max="220"></veline> -->
+          <veline style="flex:1;" title="压力曲线" max="220"></veline>
+          'data', 'time', 'showState', 'stageStr'-->
+          <curves-svg
+            ref="mpaCurves"
+            :data="cMpa"
+            :time="{start: recird.startDate, end: recird.endDate}"
+            :showState="false"
+            :stageStr="stage"/>
         </div>
       </el-main>
       <el-footer height="40px">Footer</el-footer>
@@ -88,15 +95,15 @@
 //       tensioningStrengthNow: '张拉时强度',
 //       castingDate: '浇筑日期',
 //     },
-import Veline from '../task_record_template/base/veline';
 import Steps from './steps/steps';
+import CurvesSvg from './d3curves';
 
 const returnData = require('../../modbus-tcp/returnData').default.returnData16;
 
 export default {
   name: 'monitoring',
   components: {
-    Veline,
+    CurvesSvg,
     Steps,
   },
   data: () => ({
@@ -122,10 +129,10 @@ export default {
     PLCStage: 0,
     stageStr: [],
     currentlyState: {
-      A1s: 0,
-      A2s: 0,
-      B1s: 0,
-      B2s: 0,
+      A1: 0,
+      A2: 0,
+      B1: 0,
+      B2: 0,
     },
     tA1: null,
     tA2: null,
@@ -175,6 +182,8 @@ export default {
         retractionMM: 0, // 力筋回缩量
       },
     },
+    tcurves: null,
+    tcurves1: null,
     curves: {
       A1Mpa: [],
       A2Mpa: [],
@@ -203,12 +212,6 @@ export default {
       }
       this.x0();
     }
-    console.log(this.taskData, this.taskData.concretes.castingDate, this.stageStr);
-  },
-  watch: {
-    currentlyData(nval) {
-      console.log(nval);
-    },
   },
   computed: {
     PLCState1() {
@@ -230,6 +233,7 @@ export default {
       arr.push('卸荷', '回程', '等待保压', '保压中...');
       return arr;
     },
+    // 实时压力位移数据
     currentlyData() {
       const p1 = this.$store.state.global.PLC1Data;
       const p2 = this.$store.state.global.PLC2Data;
@@ -243,6 +247,19 @@ export default {
         B2mpa: p2.B2mpa,
         B2mm: p2.B2mm,
       };
+    },
+    // 压力曲线数据
+    cMpa() {
+      const d = {
+        A1: [],
+        A2: [],
+        B1: [],
+        B2: [],
+      };
+      this.stage.forEach((item) => {
+        d[item] = this.curves[`${item}Mpa`];
+      });
+      return d;
     },
   },
   methods: {
@@ -328,15 +345,16 @@ export default {
     startFunc() {
       this.taskDownData.state = false;
       this.nowStage = 1;
-      this.currentlyState.A1s = 1;
-      this.currentlyState.A2s = 1;
-      this.currentlyState.B1s = 1;
-      this.currentlyState.B2s = 1;
+      this.currentlyState.A1 = 1;
+      this.currentlyState.A2 = 1;
+      this.currentlyState.B1 = 1;
+      this.currentlyState.B2 = 1;
       // 保存开始时间
-      this.recird.startDate = this.$unity.timeS();
+      this.recird.startDate = this.$unity.timeMs();
       // this.mmBase =
       this.$message.success('开始张拉！！');
       this.getPLC();
+      this.curvesTime();
     },
     // 下载压力数据到PLC
     stageDownPLC() {
@@ -365,103 +383,123 @@ export default {
         });
       }
     },
+    // 压力监控
     getPLC() {
       this.tGet = setTimeout(() => {
         const m = this.nowData.tensioningPattern;
         const mpas = this.pressure.plcPressure;
         const stage = this.PLCStage;
-        switch (m) {
-          case 0:
-            if (this.currentlyData.A1mpa >= mpas.A1[stage]) {
-              if (this.tA1 === null) {
-                this.tA1 = setTimeout(() => {
-                  this.currentlyState.A1s = this.abStage.length - 2;
-                }, 1500);
-              }
-            } else {
-              clearTimeout(this.tA1);
-              this.tA1 = null;
+        this.stage.forEach((item) => {
+          if (this.currentlyData[`${item}mpa`] >= mpas[item][stage]) {
+            if (this[`t${item}`] === null) {
+              this[`t${item}`] = setTimeout(() => {
+                this.currentlyState[item] = this.abStage.length - 2;
+                this[`s${item}`] = true;
+              }, 1500);
             }
+          } else {
+            clearTimeout(this[`t${item}`]);
+            this[`t${item}`] = null;
+          }
+        });
+        switch (true) {
+          case m === 0 && this.sA1:
+            this.currentlyState.A1 = this.abStage.length - 1;
+            // 进入保压
+            this.time();
             break;
-          case 1:
-            if (this.currentlyData.A1mpa >= mpas.A1[stage]) {
-              if (this.tA1 === null) {
-                this.tA1 = setTimeout(() => {
-                  this.currentlyState.A1s = this.abStage.length - 2;
-                  this.sA1 = true;
-                }, 1500);
-              }
-            } else {
-              clearTimeout(this.tA1);
-              this.tA1 = null;
-            }
-            if (this.currentlyData.A2mpa >= mpas.A2[stage]) {
-              if (this.tA2 === null) {
-                this.tA2 = setTimeout(() => {
-                  this.currentlyState.A2s = this.abStage.length - 2;
-                  this.sA2 = true;
-                }, 1500);
-              }
-            } else {
-              clearTimeout(this.tA2);
-              this.tA2 = null;
-            }
-            if (this.sA1 && this.sA2) {
-              if (this.tAB === null) {
-                this.currentlyState.A1s = this.abStage.length - 1;
-                this.currentlyState.A2s = this.abStage.length - 1;
-                this.currentlyState.B1s = this.abStage.length - 1;
-                this.currentlyState.B2s = this.abStage.length - 1;
-                this.time();
-              }
-            }
+          case m === 1 && this.sA1 && this.sA2:
+            this.stage.forEach((item) => {
+              this.currentlyState[`${item}`] = this.abStage.length - 1;
+            });
+            // 进入保压
+            this.time();
+            break;
+          case m === 2 && this.sB1:
+            this.currentlyState.B1 = this.abStage.length - 1;
+            // 进入保压
+            this.time();
+            break;
+          case m === 3 && this.sB1 && this.sB2:
+            this.stage.forEach((item) => {
+              this.currentlyState[`${item}`] = this.abStage.length - 1;
+            });
+            // 进入保压
+            this.time();
+            break;
+          case m === 4 && this.sA1 && this.sA2 && this.sB1 && this.sB2:
+            this.stage.forEach((item) => {
+              this.currentlyState[`${item}`] = this.abStage.length - 1;
+            });
+            // 进入保压
+            this.time();
             break;
           default:
+            this.getPLC();
             break;
-        }
-        if (this.stageStr.length - 1 > this.nowStage) {
-          this.getPLC();
         }
       }, 0);
     },
+    // 保压延时
     time() {
+      clearTimeout(this.tGet);
+      this.tGet = null;
       this.tAB = setInterval(() => {
         const PLCStage = this.PLCStage;
         this.tABNumber += 1;
         this.recird.time[PLCStage] = this.tABNumber;
-        // this.$set(this, 'recird.time', this.recird.time);
-        // this.$message.success(this.recird.time[PLCStage]);
+        // 判断保压完成？
         if (this.tABNumber === this.nowData.task.time[PLCStage]) {
           window.clearInterval(this.tAB);
           this.tAB = null;
+          // 下一阶段
           this.nowStage += 1;
-          this.currentlyState.A1s = this.nowStage;
-          this.currentlyState.A2s = this.nowStage;
-          this.currentlyState.B1s = this.nowStage;
-          this.currentlyState.B2s = this.nowStage;
-          this.sA1 = false;
-          this.sA2 = false;
-          this.sB1 = false;
-          this.sB2 = false;
-          this.tA1 = null;
-          this.tA2 = null;
-          this.tB1 = null;
-          this.tB2 = null;
+          // 延时清零
           this.tABNumber = 0;
-          this.stage.forEach((item, key) => {
+          this.stage.forEach((item) => {
             this.recird[item].Mpa[PLCStage] = this.currentlyData[`${item}mpa`];
             this.recird[item].mm[PLCStage] = this.currentlyData[`${item}mm`];
+            // 保压状态解除
+            this[`s${item}`] = false;
+            // 保压定时器清楚
+            this[`t${item}`] = null;
+            // 顶阶段
+            this.currentlyState[`${item}`] = this.nowStage;
           });
           if (this.stageStr.length - 1 > this.nowStage) {
             this.PLCStage += 1;
             this.stageDownPLC();
+            this.getPLC();
           } else {
-            console.log(this.recird);
-            window.clearTimeout(this.tGet);
-            this.tGet = null;
+            // 张拉完成定时器清除
+            clearTimeout(this.tcurves);
+            clearTimeout(this.tcurves1);
+            this.curvesFunc();
           }
         }
       }, 1000);
+    },
+    // 曲线采集
+    curvesTime() {
+      this.tcurves = setInterval(() => {
+        this.curvesFunc();
+      }, 5000);
+      this.tcurves1 = setInterval(() => {
+        this.stage.forEach((item) => {
+          this.curves[`${item}Mpa`][this.curves[`${item}Mpa`].length - 1] = (this.currentlyData[`${item}mpa`]);
+          this.curves[`${item}mm`][this.curves[`${item}mm`].length - 1] = (this.currentlyData[`${item}mm`]);
+        });
+        this.recird.endDate = this.$unity.timeMs();
+        this.$refs.mpaCurves.initData(); // 曲线更新
+      }, 1000);
+    },
+    // 曲线保存
+    curvesFunc() {
+      this.stage.forEach((item) => {
+        this.curves[`${item}Mpa`].push(this.currentlyData[`${item}mpa`]);
+        this.curves[`${item}mm`].push(this.currentlyData[`${item}mm`]);
+      });
+      this.recird.endDate = this.$unity.timeMs();
     },
   },
 };
@@ -495,6 +533,6 @@ table{
   // 50% { background: orange; }
   // 100% { background: yellowgreen; }
   0% { opacity: 1 }
-  to { opacity: .3 }
+  to { opacity: .5 }
 }
 </style>
