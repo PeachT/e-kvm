@@ -19,11 +19,20 @@
             :editState="editState" />
             <base-group :groups="groups" :nowGroupName.sync="nowGroupName" v-if="groups" />
             <base-tendon-data :taskData.sync="taskData" :deviceId="nowData.deviceId" v-if="taskData" />
-            <div v-if="touterPath === '记录' && nowDataState">
-              <base-record-data />
-              <!-- <d3-svg-loading/> -->
-              <base-svg :data="svg1" refName="svg1"/>
-              <base-svg :data="svg2" refName="svg2"/>
+            <div v-if="taskData !== null && taskData.state > 0">
+              <base-record-data :taskData.sync="taskData" :deviceId="nowData.deviceId"/>
+              <!-- <d3-svg-loading/>
+              'data', 'time', 'tensioningPattern', refName-->
+              <base-svg
+              :data="taskData.curves"
+              :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
+              :tensioningPattern="taskData.tensioningPattern"
+              refName="Mpa"/>
+              <base-svg
+              :data="taskData.curves"
+              :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
+              :tensioningPattern="taskData.tensioningPattern"
+              refName="mm"/>
             </div>
           </el-tab-pane>
           <el-tab-pane label="设备消息">
@@ -90,36 +99,36 @@
   import UserInfo from '../user/template/userInfo.vue';
   import TplSelect from './tplSelect/tplSelect.vue';
 
-  // import BaseRecordData from '../task_record_template/base/baseRecordData.vue';
+  import BaseRecordData from '../task_record_template/base/baseRecordData.vue';
   import D3SvgLoading from '../task_record_template/base/d3SvgLoading.vue';
-  // import BaseSvg from '../task_record_template/base/d3svg';
+  import BaseSvg from '../task_record_template/d3svg';
   // import BaseSvg from '../task_record_template/base/svg.vue';
   // import BaseSvg from '../task_record_template/base/veline.vue';
   // const BaseSvg = (resolve) => require('./service-search.vue', resolve);
-  const BaseSvg = () => ({
-  // 需要加载的组件。应当是一个 Promise
-    component: import('../task_record_template/base/d3svg'),
-    // 加载中应当渲染的组件
-    loading: D3SvgLoading,
-    // 出错时渲染的组件
-    error: D3SvgLoading,
-    // 渲染加载中组件前的等待时间。默认：200ms。
-    delay: 500,
-    // 最长等待时间。超出此时间则渲染错误组件。默认：Infinity
-    timeout: 3000,
-  });
-  const BaseRecordData = () => ({
-  // 需要加载的组件。应当是一个 Promise
-    component: import('../task_record_template/base/baseRecordData.vue'),
-    // 加载中应当渲染的组件
-    loading: D3SvgLoading,
-    // 出错时渲染的组件
-    error: D3SvgLoading,
-    // 渲染加载中组件前的等待时间。默认：200ms。
-    delay: 500,
-    // 最长等待时间。超出此时间则渲染错误组件。默认：Infinity
-    timeout: 3000,
-  });
+  // const BaseSvg = () => ({
+  // // 需要加载的组件。应当是一个 Promise
+  //   component: import('../task_record_template/base/d3svg'),
+  //   // 加载中应当渲染的组件
+  //   loading: D3SvgLoading,
+  //   // 出错时渲染的组件
+  //   error: D3SvgLoading,
+  //   // 渲染加载中组件前的等待时间。默认：200ms。
+  //   delay: 500,
+  //   // 最长等待时间。超出此时间则渲染错误组件。默认：Infinity
+  //   timeout: 3000,
+  // });
+  // const BaseRecordData = () => ({
+  // // 需要加载的组件。应当是一个 Promise
+  //   component: import('../task_record_template/base/baseRecordData.vue'),
+  //   // 加载中应当渲染的组件
+  //   loading: D3SvgLoading,
+  //   // 出错时渲染的组件
+  //   error: D3SvgLoading,
+  //   // 渲染加载中组件前的等待时间。默认：200ms。
+  //   delay: 500,
+  //   // 最长等待时间。超出此时间则渲染错误组件。默认：Infinity
+  //   timeout: 3000,
+  // });
 
   const baseData = { // 张拉数据
     id: '',
@@ -193,8 +202,8 @@
       },
       taskDown() {
         const state = this.groups.filter(item => item.name === this.nowGroupName)[0].state;
-        const titles = ['张  拉', '二次张拉', '重新张拉'];
-        const types = ['primary', 'warning', 'danger'];
+        const titles = ['张  拉', '重新张拉', '二次张拉', '重新张拉'];
+        const types = ['primary', 'danger', 'warning', 'danger'];
         return {
           state: state,
           title: titles[state],
@@ -299,7 +308,6 @@
         console.log(nval);
         if (nval) {
           this.taskData = this.nowData.data.filter(item => item.name === nval)[0];
-          console.log(this.taskData);
         } else {
           this.taskData = null;
         }
@@ -365,6 +373,7 @@
       },
       // 子菜单切换
       getChildrenMenuData() {
+        this.nowGroupName = null;
         try {
           // const datass = window.tensioningDB.getCollection(this.menuId).data;
           const datass = window.tensioningDB.getCollection(this.menuId).chain().find()
@@ -388,7 +397,6 @@
             };
           });
           // datass.reverse();
-          console.log('datas', datas, 'datass', this.childrenMenuData);
           const id = this.childrenMenuId;
           if (this.menuId && id === null) {
             this.childrenMenuId = this.childrenMenuData[0].id;
@@ -396,7 +404,6 @@
           if (id) {
             this.nowData = this.$unity.copyObj(datas.filter(item => item.id === id)[0]);
           }
-          console.log('子菜单', this.nowData);
         } catch (error) {}
       },
       // 保存取消切换菜单
@@ -475,21 +482,6 @@
         try {
           // 添加
           if (this.addState) {
-            // 判断数据是否存在
-            // for (let index = 0; index < 100; index += 1) {
-            //   console.log(index);
-            //   nowData.bridgeName = `梁${index}t`;
-            //   if (cstate && collection.findOne({
-            //     bridgeName: nowData.bridgeName,
-            //   })) {
-            //     this.$message.error('该梁号已经存在！请重新输入！');
-            //     return;
-            //   }
-            //   nowData.id = `${this.$unity.timeId()}${index}`;
-            //   // nowData.id = this.$unity.timeId();
-            //   collection.insert(this.$unity.copyObj(nowData));
-            //   db.save();
-            // }
             if (cstate && collection.findOne({
               bridgeName: nowData.bridgeName,
             })) {
@@ -600,7 +592,7 @@
           case 4:
             this.taskDownData.plc1 = true;
             this.taskDownData.plc2 = true;
-            if (!this.PLCState && !this.PLCState2) {
+            if (!this.PLCState1 && !this.PLCState2) {
               this.$message.error('设备连接有误！');
               return;
             }
@@ -609,37 +601,37 @@
             break;
         }
         this.taskDownData.state = true;
-        const pressure = pressurePLC(taskData, this.nowData.deviceId);
-        if ('A1' in pressure) {
-          this.taskDownData.A1show = true;
-          this.$plc1.writeSingleRegister16(4096, pressure.A1[0], (data) => {
-            this.taskDownData.A1 = true;
-          });
-        }
-        if ('A2' in pressure) {
-          this.taskDownData.A2show = true;
-          this.$plc2.writeSingleRegister16(4096, pressure.A1[0], (data) => {
-            this.taskDownData.A2 = true;
-          });
-        }
-        if ('B1' in pressure) {
-          this.taskDownData.B1show = true;
-          this.$plc1.writeSingleRegister16(4196, pressure.A1[0], (data) => {
-            this.taskDownData.B1 = true;
-          });
-        }
-        if ('B2' in pressure) {
-          this.taskDownData.B2show = true;
-          this.$plc2.writeSingleRegister16(4196, pressure.A1[0], (data) => {
-            this.taskDownData.B2 = true;
-          });
-        }
+        // const pressure = pressurePLC(taskData, this.nowData.deviceId);
+        // if ('A1' in pressure) {
+        //   this.taskDownData.A1show = true;
+        //   this.$plc1.writeSingleRegister16(4096, pressure.A1[0], (data) => {
+        //     this.taskDownData.A1 = true;
+        //   });
+        // }
+        // if ('A2' in pressure) {
+        //   this.taskDownData.A2show = true;
+        //   this.$plc2.writeSingleRegister16(4096, pressure.A1[0], (data) => {
+        //     this.taskDownData.A2 = true;
+        //   });
+        // }
+        // if ('B1' in pressure) {
+        //   this.taskDownData.B1show = true;
+        //   this.$plc1.writeSingleRegister16(4196, pressure.A1[0], (data) => {
+        //     this.taskDownData.B1 = true;
+        //   });
+        // }
+        // if ('B2' in pressure) {
+        //   this.taskDownData.B2show = true;
+        //   this.$plc2.writeSingleRegister16(4196, pressure.A1[0], (data) => {
+        //     this.taskDownData.B2 = true;
+        //   });
+        // }
         this.taskDownData.dwon = true;
         window.nowDB.insert({
           uid: this.menuId,
           id: this.childrenMenuId,
           name: this.nowGroupName,
-          pressure: pressure,
+          // pressure: pressure,
         });
         console.log(this.taskDownData);
       },

@@ -41,12 +41,19 @@ Vue.filter('imgPath', (val, vv) => {
   return val;
 });
 Vue.filter('plc2mpa', (val, vv) => {
-  console.log('123312123', val, vv);
   return UnitConversion.plc2mpa(val);
 });
 Vue.filter('plc2mm', (val, vv) => {
-  console.log('123312123', val, vv);
   return UnitConversion.plc2mm(val);
+});
+Vue.filter('plc2kn', (val, deviceId, name) => {
+  return UnitConversion.plc2kn(val, deviceId, name);
+});
+Vue.filter('LZ', (val, NS, LQ) => {
+  return UnitConversion.LZ(val, NS, LQ);
+});
+Vue.filter('deviation', (val, d2) => {
+  return UnitConversion.LZ(val, d2);
 });
 
 /* eslint-disable no-new */

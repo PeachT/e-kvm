@@ -57,33 +57,35 @@ class Modbus {
     }
   }
   init() {
-    new Promise((resolve, reject) => {
-      let b1 = false;
-      let b2 = false;
-      this.readCoilStatue(2048, 1, (data) => {
-        this.PLCState(true);
-        b1 = true;
-        if (b1 && b2) {
-          resolve();
-        }
+    setTimeout(() => {
+      new Promise((resolve, reject) => {
+        let b1 = false;
+        let b2 = false;
+        this.readCoilStatue(2048, 1, (data) => {
+          this.PLCState(true);
+          b1 = true;
+          if (b1 && b2) {
+            resolve();
+          }
+        });
+        this.readRegisters16(4096, 4, (data) => {
+          const d = returnData(data);
+          if (this.path === '192.168.181.101') {
+            // store.commit('PLC1Data', d);
+            store.dispatch('PLC1Data', d);
+          } else {
+            // store.commit('PLC2Data', d);
+            store.dispatch('PLC2Data', d);
+          }
+          b2 = true;
+          if (b1 && b2) {
+            resolve();
+          }
+        });
+      }).then(() => {
+        this.init();
       });
-      this.readRegisters16(4096, 4, (data) => {
-        const d = returnData(data);
-        if (this.path === '192.168.181.101') {
-          // store.commit('PLC1Data', d);
-          store.dispatch('PLC1Data', d);
-        } else {
-          // store.commit('PLC2Data', d);
-          store.dispatch('PLC2Data', d);
-        }
-        b2 = true;
-        if (b1 && b2) {
-          resolve();
-        }
-      });
-    }).then(() => {
-      this.init();
-    });
+    }, 0);
   }
   PLCState(state) {
     if (this.path === '192.168.181.101') {

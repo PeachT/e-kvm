@@ -36,17 +36,17 @@
         top: 0;
         left: 0;
         &.g0{
-          background-color: #909399;
+          background-color: #909399; // 未张拉
         }
         &.g1{
-          background-color: #67C23A;
-          animation: 2s rainbow infinite alternate;
+          background-color: #67C23A; // 张拉完成
+          // animation: 2s rainbow infinite alternate;
         }
         &.g2{
-          background-color: #E6A23C;
+          background-color: #E6A23C; // 一次张拉完成
         }
         &.g3{
-          background-color: #F56C6C;
+          background-color: #F56C6C; // 张拉有异常
         }
       }
     }
