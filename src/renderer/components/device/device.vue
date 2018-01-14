@@ -5,8 +5,8 @@
         <menu-two :menuData="menuData" :nowName.sync="nowName" @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel"></menu-two>
       </el-aside>
       <el-main class="task-main">
-        <h1 v-if="!nowData">没有数据</h1>
-        <div v-if="nowData" class="wh100 device-info">
+        <h1 v-show="!nowData">没有数据</h1>
+        <div v-show="'id' in nowData" class="wh100 device-info">
           <el-form :model="nowData" :rules="nowDataRules" ref="nowData" label-width="100px">
             <div class="row-flex">
               <el-form-item label="设备名称" prop="name">
@@ -161,7 +161,7 @@
   export default {
     name: 'device',
     components: {
-      MenuTwo,
+      MenuTwo: MenuTwo,
     },
     computed: {
       // 编辑状态
@@ -172,14 +172,19 @@
         return this.$store.state.global.addState;
       },
     },
+    beforeUpdate() {
+      console.time('c');
+    },
     updated() {
       if (this.editState) {
         this.disabled(null);
       } else {
         this.disabled();
       }
+      console.timeEnd('c');
     },
     beforeMount() {
+      this.nowData = baseData;
       this.getMenuData();
       console.log(this.menuData);
       if (this.menuData.length > 0) {

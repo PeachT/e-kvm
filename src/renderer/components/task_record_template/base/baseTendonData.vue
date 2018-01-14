@@ -34,8 +34,6 @@
           </el-select>
         </el-form-item>
         <div class="el-checkbox-group" style="display: flex; justify-content: center;">
-          <!-- <el-radio v-model="taskData.two" :label="true" border>二次张拉</el-radio> -->
-          <!-- <el-radio v-model="taskData.exceed" :label="true" border>超张拉</el-radio> -->
           <el-checkbox v-model="taskData.two" :label="true" border @change="stageFunc()">二次张拉</el-checkbox>
           <el-checkbox v-model="taskData.exceed" :label="true" border @change="stageFunc()">超张拉</el-checkbox>
         </div>
@@ -43,7 +41,6 @@
     <!-- 张拉数据 -->
       <table class="tendon-item" width="100%">
         <tr>
-          <!-- ['初张拉','阶段一','阶段二','阶段三','终张拉','超张拉'] -->
           <th width="80px">张拉数据</th>
           <th v-for="(item, index) in stageStr" :key="index" :class="{'two': index===2&&taskData.two, 'exceed': index===stageStr.length-1&&taskData.exceed, }">{{item}}</th>
           <th width="108px">工作长度</th>
@@ -52,8 +49,8 @@
         </tr>
         <tr>
           <td>张拉阶段</td>
-          <td v-for="(item, index) in matrixing.stages" :key="index">
-            <el-input v-model.number="taskData.task.stage[index]" type="number">
+          <td v-for="(item) in matrixing.stages.length" :key="item">
+            <el-input v-model.number="taskData.task.stage[item-1]" type="number">
               <i slot="suffix" class="el-input__icon">%</i>
             </el-input>
           </td>
@@ -66,8 +63,7 @@
             </el-input>
           </td>
         </tr>
-        <tr :class="item" v-for="(item, index) in ['A1','A2','B1','B2']" :key="index"
-          v-if="item in taskData.task">
+        <tr :class="item" v-for="(item, index) in PatternStr" :key="index">
           <td>{{item}}</td>
           <td v-for="(i, index) in matrixing.stagesMpa[item]" :key="index" >
             <el-input :value="i">
@@ -107,8 +103,8 @@
         </tr>
         <tr>
           <td>持荷时间</td>
-          <td v-for="(item, index) in taskData.task.time" :key="index">
-            <el-input v-model.number="taskData.task.time[index]" type="number">
+          <td v-for="(item) in taskData.task.time.length" :key="item">
+            <el-input v-model.number="taskData.task.time[item-1]" type="number">
               <i slot="suffix" class="el-input__icon">s</i>
             </el-input>
           </td>
@@ -125,17 +121,26 @@
     name: 'main',
     props: ['taskData', 'deviceId'],
     data: () => ({
-      ccc: 0,
       value: '',
     }),
     computed: {
       matrixing() {
-        const s = pressure(this.taskData, this.deviceId);
-        this.taskData.task.stage = s.stages;
-        return s;
+        if (this.deviceId !== '') {
+          const s = pressure(this.taskData, this.deviceId);
+          this.taskData.task.stage = s.stages;
+          return s;
+        }
+        return {
+          stages: [],
+          stagesKN: [],
+          stagesMpa: [],
+        };
       },
       device() {
-        return window.deviceDB.getOne({ id: this.deviceId });
+        if (this.deviceId !== '') {
+          return window.deviceDB.getOne({ id: this.deviceId });
+        }
+        return { name: '' };
       },
       groupAB() {
         const arr = this.taskData.name.split('/');
@@ -144,13 +149,13 @@
       stageStr() {
         return this.$Ounity.stage(this.taskData.stage, this.taskData.exceed);
       },
+      PatternStr() {
+        return this.$Ounity.abModel(this.taskData.tensioningPattern);
+      },
     },
     methods: {
-      ttt(e) {
-        console.log(e, this.taskData.task.stage);
-      },
+      // 切换张拉阶段
       stageFunc() {
-        // ['初张拉','阶段一','阶段二','阶段三','终张拉','超张拉']
         const d = this.taskData;
         if (d.two && d.stage < 1) {
           d.stage = 1;

@@ -3,42 +3,20 @@ import Vuex from 'vuex';
 import Router from 'vue-router';
 
 import store from '../store/index';
-import Root from '../components/root.vue';
 
-const Login = require('../components/login').default;
-const Menu = require('../components/menus/menu').default;
-const Task = require('../components/task/task').default;
-const User = require('../components/user/user.vue').default;
-const Device = require('../components/device/device.vue').default;
-const Girder = require('../components/girder/girder.vue').default;
-const Monitoring = require('../components/monitoring/monitoring.vue').default;
-const Operator = require('../components/operator/operator.vue').default;
-const SteelStrand = require('../components/steelStrand/steelStrand.vue').default;
-const Tpl = require('../components/tpl/tpl.vue').default;
-const System = require('../components/system/system.vue').default;
-// import Login from '../components/login';
-// import Menu from '../components/menus/menu';
-// import Task from '../components/task/task';
-// import User from '../components/user/user.vue';
-// import Device from '../components/device/device.vue';
-// import Girder from '../components/girder/girder.vue';
-// import Monitoring from '../components/monitoring/monitoring.vue';
-// import Operator from '../components/operator/operator.vue';
-// import SteelStrand from '../components/steelStrand/steelStrand.vue';
-// import Tpl from '../components/tpl/tpl.vue';
-// import System from '../components/system/system.vue';
-
-// const Login = require('@/components/login').default;
-// const Menu = require('@/components/menus/menu').default;
-// const Task = require('@/components/task/task').default;
-// const Record = require('../components/record/record.vue').default;
-// const User = require('@/components/user/user.vue').default;
-// const Device = require('@/components/device/device.vue').default;
-// const Girder = require('@/components/girder/girder.vue').default;
-// const Monitoring = require('../components/monitoring/monitoring.vue').default;
-// const Operator = require('../components/operator/operator.vue').default;
-// const SteelStrand = require('../components/steelStrand/steelStrand.vue').default;
-// const Tpl = require('../components/tpl/tpl.vue').default;
+const Root = () => import('../components/root.vue');
+const Login = () => import('../components/login');
+const Menu = () => import('../components/menus/menu');
+const Task = () => import('../components/task/task');
+const User = () => import('../components/user/user.vue');
+const Device = () => import('../components/device/device.vue');
+const Girder = () => import('../components/girder/girder.vue');
+const Monitoring = () => import('../components/monitoring/monitoring.vue');
+const Operator = () => import('../components/operator/operator.vue');
+const SteelStrand = () => import('../components/steelStrand/steelStrand.vue');
+const Tpl = () => import('../components/tpl/tpl.vue');
+const System = () => import('../components/system/system.vue');
+const D0 = () => import('../components/0/0.vue');
 
 Vue.use(Router);
 Vue.use(Vuex);
@@ -58,6 +36,14 @@ const routes = [
     path: '/menu',
     name: 'menu',
     component: Menu,
+  },
+  {
+    path: '/d0',
+    name: 'd0',
+    component: Root,
+    children: [
+      { path: '', component: D0, name: 'dd' },
+    ],
   },
   {
     path: '/task',

@@ -6,33 +6,32 @@
         @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel" :pgNo.sync="pgNo" :paNoLength="paNoLength"/>
       </el-aside>
       <el-main class="task-record-main">
-        <h1 v-if="!nowDataState">没有数据--{{touterPath}}</h1>
+        <h1 v-show="!nowDataState">没有数据</h1>
         <el-tabs v-show="nowDataState">
           <el-tab-pane label="基础信息">
             <base-top
-            :holeId.sync="nowData.holeId"
-            :structureId.sync="structureId"
-            :deviceId.sync="nowData.deviceId"
-            :bridgeName.sync="nowData.bridgeName"
-            :steelStrandId.sync="nowData.steelStrandId"
-            :data.sync="nowData.data"
-            :editState="editState" />
-            <base-group :groups="groups" :nowGroupName.sync="nowGroupName" v-if="groups" />
-            <base-tendon-data :taskData.sync="taskData" :deviceId="nowData.deviceId" v-if="taskData" />
-            <div v-if="taskData !== null && taskData.state > 0">
+              :holeId.sync="nowData.holeId"
+              :structureId.sync="structureId"
+              :deviceId.sync="nowData.deviceId"
+              :bridgeName.sync="nowData.bridgeName"
+              :steelStrandId.sync="nowData.steelStrandId"
+              :data.sync="nowData.data"
+              :editState="editState" />
+            <base-group :groups="groups" :nowGroupName.sync="nowGroupName" v-show="groups" />
+            <base-tendon-data :taskData.sync="taskData" :deviceId="nowData.deviceId" v-show="nowGroupName" />
+            <!-- 记录 -->
+            <div v-if="taskData && 'recird' in taskData">
               <base-record-data :taskData.sync="taskData" :deviceId="nowData.deviceId"/>
-              <!-- <d3-svg-loading/>
-              'data', 'time', 'tensioningPattern', refName-->
               <base-svg
-              :data="taskData.curves"
-              :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
-              :tensioningPattern="taskData.tensioningPattern"
-              refName="Mpa"/>
+                :data="taskData.curves"
+                :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
+                :tensioningPattern="taskData.tensioningPattern"
+                refName="Mpa"/>
               <base-svg
-              :data="taskData.curves"
-              :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
-              :tensioningPattern="taskData.tensioningPattern"
-              refName="mm"/>
+                :data="taskData.curves"
+                :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
+                :tensioningPattern="taskData.tensioningPattern"
+                refName="mm"/>
             </div>
           </el-tab-pane>
           <el-tab-pane label="设备消息">
@@ -99,43 +98,42 @@
   import UserInfo from '../user/template/userInfo.vue';
   import TplSelect from './tplSelect/tplSelect.vue';
 
-  import BaseRecordData from '../task_record_template/base/baseRecordData.vue';
+  // import BaseRecordData from '../task_record_template/base/baseRecordData.vue';
   import D3SvgLoading from '../task_record_template/base/d3SvgLoading.vue';
-  import BaseSvg from '../task_record_template/d3svg';
-  // import BaseSvg from '../task_record_template/base/svg.vue';
-  // import BaseSvg from '../task_record_template/base/veline.vue';
-  // const BaseSvg = (resolve) => require('./service-search.vue', resolve);
-  // const BaseSvg = () => ({
-  // // 需要加载的组件。应当是一个 Promise
-  //   component: import('../task_record_template/base/d3svg'),
-  //   // 加载中应当渲染的组件
-  //   loading: D3SvgLoading,
-  //   // 出错时渲染的组件
-  //   error: D3SvgLoading,
-  //   // 渲染加载中组件前的等待时间。默认：200ms。
-  //   delay: 500,
-  //   // 最长等待时间。超出此时间则渲染错误组件。默认：Infinity
-  //   timeout: 3000,
-  // });
-  // const BaseRecordData = () => ({
-  // // 需要加载的组件。应当是一个 Promise
-  //   component: import('../task_record_template/base/baseRecordData.vue'),
-  //   // 加载中应当渲染的组件
-  //   loading: D3SvgLoading,
-  //   // 出错时渲染的组件
-  //   error: D3SvgLoading,
-  //   // 渲染加载中组件前的等待时间。默认：200ms。
-  //   delay: 500,
-  //   // 最长等待时间。超出此时间则渲染错误组件。默认：Infinity
-  //   timeout: 3000,
-  // });
+  // import BaseSvg from '../task_record_template/d3svg';
+
+  const BaseSvg = () => ({
+  // 需要加载的组件。应当是一个 Promise
+    component: import('../task_record_template/d3svg'),
+    // component: new Promise((resolve, reject) => {
+    //   setTimeout(() => {
+    //     resolve(import('../task_record_template/d3svg'))
+    //     // reject()
+    //   }, 2000)
+    // }),
+    // 加载中应当渲染的组件
+    loading: D3SvgLoading,
+    // 出错时渲染的组件
+    error: D3SvgLoading,
+    // 渲染加载中组件前的等待时间。默认：200ms。
+    delay: 200,
+    // 最长等待时间。超出此时间则渲染错误组件。默认：Infinity
+    timeout: 5000,
+  });
+  const BaseRecordData = () => ({
+    component: import('../task_record_template/base/baseRecordData.vue'),
+    loading: D3SvgLoading,
+    error: D3SvgLoading,
+    delay: 200,
+    timeout: 8000,
+  });
 
   const baseData = { // 张拉数据
-    id: '',
-    bridgeName: '梁号',
-    holeId: '',
-    deviceId: '', // 设备id 未张拉使用全局的设备 已张拉使用用户下的设备
-    steelStrandId: '', // 钢绞线id 未张拉使用全局的钢绞线 已张拉使用用户下的钢绞线
+    id: null,
+    bridgeName: null, // 梁号
+    holeId: null,
+    deviceId: null, // 设备id 未张拉使用全局的设备 已张拉使用用户下的设备
+    steelStrandId: null, // 钢绞线id 未张拉使用全局的钢绞线 已张拉使用用户下的钢绞线
     state: 0, // 张拉状态
     concretes: { // 混凝土数据
       sampleNumber: null, // '试块编号',
@@ -160,27 +158,93 @@
     B1show: false,
     B2show: false,
   };
+  const taskData = {
+    name: null, // 用 ‘/’ 号隔开A，B组张拉孔号 只有一个孔时不要‘/’号
+    state: 0, // 张拉状态 0未张拉 1已张拉
+    tensioningKN: 0, // 张拉控制应力
+    steelStrandNumber: 0, // 钢绞线数量
+    length: 0, // 张拉长度
+    tensioningPattern: 0, // 0~4 依次 A1单顶 A两顶 B1单顶 B两顶 四顶
+    two: false, // 二次张拉
+    exceed: false, // 超张拉
+    stage: 0, // 张拉阶段
+    task: { // 任务数据
+      A1: {
+        LQ: 4, // 千斤顶工作段伸长量（LQ
+        NS: 6, // 钢绞线内缩量均值（NS）
+        LL: 125, // 理论伸长量(LL)
+      },
+      time: [], // 持荷时间
+    },
+    recird: { // 记录数据
+      startDate: null, // 张拉时间
+      endDate: null, // 张拉完成时间
+      time: [], // 持荷时间
+      A1: {
+        Mpa: [], // 压力
+        mm: [], // 位移
+        initMpa: [], // 回到初张拉压力
+        initMM: [], // 回到初张拉位移
+        retractionMM: 8, // 力筋回缩量
+        LZ: 128, // 总伸长量（LZ）
+        deviation: 0.5, // 偏差率
+      },
+      A2: {
+        Mpa: [], // 压力
+        mm: [], // 位移
+        initMpa: [], // 回到初张拉压力
+        initMM: [], // 回到初张拉位移
+        retractionMM: 8, // 力筋回缩量
+      },
+      B1: {
+        Mpa: [], // 压力
+        mm: [], // 位移
+        initMpa: [], // 回到初张拉压力
+        initMM: [], // 回到初张拉位移
+        retractionMM: 8, // 力筋回缩量
+        LZ: 128, // 总伸长量（LZ）
+        deviation: 0.5, // 偏差率
+      },
+      B2: {
+        Mpa: [], // 压力
+        mm: [], // 位移
+        initMpa: [], // 回到初张拉压力
+        initMM: [], // 回到初张拉位移
+        retractionMM: 8, // 力筋回缩量
+      },
+    },
+    curves: [ // 曲线
+      {
+        time: [],
+        A1Mpa: [],
+        A2Mpa: [],
+        B1Mpa: [],
+        B2Mpa: [],
+        A1mm: [],
+        A2mm: [],
+        B1mm: [],
+        B2mm: [],
+      },
+    ],
+  };
   const pressurePLC = require('../../objJS/matrixing').default.pressurePLC;
   export default {
     name: 'task',
     components: {
       TaskMenu,
-      BaseTop,
-      BaseGroup,
-      BaseTendonData,
       DeviceInfo,
       OtherInfo,
       UserInfo,
       TplSelect,
-      BaseRecordData,
       D3SvgLoading,
+      BaseTop,
+      BaseTop,
+      BaseTendonData,
+      BaseGroup,
+      BaseRecordData,
       BaseSvg,
     },
     computed: {
-      //
-      touterPath() {
-        return this.$store.state.global.menuTitle;
-      },
       // 编辑状态
       editState() {
         return this.$store.state.global.editState;
@@ -193,22 +257,11 @@
           const s = this.nowData.data.map((item) => {
             return { name: item.name, state: item.state };
           });
-          console.log('张拉组数据改变', s[0]);
           this.nowGroupName = s[0].name;
           return s;
         } catch (error) {
           return null;
         }
-      },
-      taskDown() {
-        const state = this.groups.filter(item => item.name === this.nowGroupName)[0].state;
-        const titles = ['张  拉', '重新张拉', '二次张拉', '重新张拉'];
-        const types = ['primary', 'danger', 'warning', 'danger'];
-        return {
-          state: state,
-          title: titles[state],
-          type: types[state],
-        };
       },
       PLCState1() {
         return this.$store.state.global.PLC1State;
@@ -249,18 +302,92 @@
       this.getMenuData();
       console.log(this.$store.state.global.menuTitle);
     },
+    beforeUpdate() {
+      console.time('c');
+    },
     updated() {
-      if (this.editState) {
-        this.disabled(null);
-      } else {
-        this.disabled();
-      }
+      // if (this.editState) {
+      //   this.disabled(null);
+      // } else {
+      //   this.disabled();
+      // }
+      console.timeEnd('c');
     },
     data: () => ({
+      // 梁数据
+      nowData: {
+        bridgeName: '',
+        holeId: '',
+        deviceId: '',
+        steelStrandId: '',
+        state: 0,
+        concretes: {
+          sampleNumber: null,
+          sampleStrength: null,
+          designStrength: null,
+          tensioningStrengthNow: null,
+          castingDate: '',
+        },
+      },
+      // 孔数据
+      taskData: {
+        name: '',
+        state: 0,
+        tensioningKN: 0,
+        steelStrandNumber: 0,
+        length: 0,
+        tensioningPattern: 0,
+        stage: 0,
+        two: false,
+        exceed: false,
+        task: {
+          stage: [],
+          time: [],
+          A1: { LQ: 0, NS: 0, LL: 0 },
+          A2: { LQ: 0, NS: 0 },
+        },
+        recird: {
+          time: [],
+          A1: {
+            Mpa: [],
+            mm: [],
+            initMpa: 0,
+            initMM: 0,
+            retractionMM: 0,
+            LZ: 0,
+            deviation: 0,
+          },
+          A2: {
+            Mpa: [],
+            mm: [],
+            initMpa: 0,
+            initMM: 0,
+            retractionMM: 0,
+          },
+          startDate: 0,
+          endDate: 0,
+        },
+        curves: {
+          A1Mpa: [],
+          A1mm: [],
+          A2Mpa: [],
+          A2mm: [],
+          B1Mpa: [],
+          B1mm: [],
+          B2Mpa: [],
+          B2mm: [],
+        },
+      },
+      // 孔张拉状态
+      taskDown: {
+        state: null,
+        title: null,
+        type: null,
+      },
+      // 加载数据
       pgNo: 0,
       paNoLength: false,
       role: false,
-      nowData: baseData,
       nowDataState: false,
       menuId: null,
       childrenMenuData: null,
@@ -279,9 +406,7 @@
         }],
       },
       menuData: null,
-      nowId: null,
       nowGroupName: null,
-      taskData: null,
       structureId: null,
       tplState: false,
       tplName: null,
@@ -298,18 +423,18 @@
       nowData() {
         this.nowDataState = true;
       },
-      taskData() {
-        console.log('数据变了');
-        this.svg1 = this.svgData();
-        this.svg2 = this.svgData(225);
-      },
       // 张拉组切换
       nowGroupName(nval) {
-        console.log(nval);
         if (nval) {
-          this.taskData = this.nowData.data.filter(item => item.name === nval)[0];
-        } else {
-          this.taskData = null;
+          this.taskData = this.$unity.copyObj(this.nowData.data.filter(item => item.name === nval)[0]);
+          const state = this.groups.filter(item => item.name === this.nowGroupName)[0].state;
+          const titles = ['张  拉', '重新张拉', '二次张拉', '重新张拉'];
+          const types = ['primary', 'danger', 'warning', 'danger'];
+          this.taskDown = {
+            state: state,
+            title: titles[state],
+            type: types[state],
+          };
         }
       },
       menuId(nval) {
@@ -328,19 +453,9 @@
       },
     },
     methods: {
-      // 曲线测试数据
-      svgData(max = 60) {
-        const arr = [[], [], [], []];
-        for (let index = 0; index < 36; index += 1) {
-          arr[0].push(Math.ceil(Math.random() * max));
-          arr[1].push(Math.ceil(Math.random() * max));
-          arr[2].push(Math.ceil(Math.random() * max));
-          arr[3].push(Math.ceil(Math.random() * max));
-        }
-        return arr;
-      },
       // 主菜单数据获取
       getMenuData() {
+        console.time('b');
         try {
           const ids = [];
           window.tensioningDB.collections.map((item) => {
@@ -366,16 +481,16 @@
             this.getChildrenMenuData();
           } else {
             this.nowDataState = false;
-            // this.nowData = null;
           }
           this.menuData = menuData;
         } catch (error) {}
+        console.timeEnd('b');
       },
       // 子菜单切换
       getChildrenMenuData() {
+        console.time('a');
         this.nowGroupName = null;
         try {
-          // const datass = window.tensioningDB.getCollection(this.menuId).data;
           const datass = window.tensioningDB.getCollection(this.menuId).chain().find()
             .sort((o1, o2) => {
               return o1.$loki > o2.$loki ? -1 : 1;
@@ -405,6 +520,7 @@
             this.nowData = this.$unity.copyObj(datas.filter(item => item.id === id)[0]);
           }
         } catch (error) {}
+        console.timeEnd('a');
       },
       // 保存取消切换菜单
       showMenu(menuId, childrenMenuId) {
@@ -527,11 +643,11 @@
           });
         });
       },
-      errorShow(msg) {
+      errorShow(msg, title) {
         this.$notify.error({
           showClose: true,
           duration: 0,
-          title: '错误',
+          title: `错误--${title}`,
           message: msg,
         });
       },
@@ -601,31 +717,6 @@
             break;
         }
         this.taskDownData.state = true;
-        // const pressure = pressurePLC(taskData, this.nowData.deviceId);
-        // if ('A1' in pressure) {
-        //   this.taskDownData.A1show = true;
-        //   this.$plc1.writeSingleRegister16(4096, pressure.A1[0], (data) => {
-        //     this.taskDownData.A1 = true;
-        //   });
-        // }
-        // if ('A2' in pressure) {
-        //   this.taskDownData.A2show = true;
-        //   this.$plc2.writeSingleRegister16(4096, pressure.A1[0], (data) => {
-        //     this.taskDownData.A2 = true;
-        //   });
-        // }
-        // if ('B1' in pressure) {
-        //   this.taskDownData.B1show = true;
-        //   this.$plc1.writeSingleRegister16(4196, pressure.A1[0], (data) => {
-        //     this.taskDownData.B1 = true;
-        //   });
-        // }
-        // if ('B2' in pressure) {
-        //   this.taskDownData.B2show = true;
-        //   this.$plc2.writeSingleRegister16(4196, pressure.A1[0], (data) => {
-        //     this.taskDownData.B2 = true;
-        //   });
-        // }
         this.taskDownData.dwon = true;
         window.nowDB.insert({
           uid: this.menuId,

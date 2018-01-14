@@ -1,2 +1,6 @@
 /src/renderer/js/iconfont.js
 /src/renderer/js/**/*
+/src/renderer/components/task/task.vue
+/src/renderer/router/index.js
+/src/renderer/components/device/device.vue
+/src/renderer/components/0/0.vue

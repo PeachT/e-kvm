@@ -44,18 +44,6 @@
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
-          <!-- 工作长度 -->
-          <!-- <td class="h3">
-            <el-input value="123456">
-              <i slot="suffix" class="el-input__icon">mm</i>
-            </el-input>
-          </td> -->
-          <!-- 理论生长量 -->
-          <!-- <td rowspan="2" class="h6" v-if="index===0 || index===2">
-            <el-input value="123456">
-              <i slot="suffix" class="el-input__icon">mm</i>
-            </el-input>
-          </td> -->
           <!-- 总伸长量 -->
           <td rowspan="2" class="h6" v-if="index===0 || index===2">
             <el-input :value="taskData.recird[item].mm | LZ(taskData.task[item].NS, taskData.task[item].LQ)">
@@ -92,8 +80,20 @@
       stageStr: [],
     }),
     beforeMount() {
-      this.patternStr = this.$Ounity.abModel(this.taskData.tensioningPattern); // 张拉模式
-      this.stageStr = this.$Ounity.stage(this.taskData.stage, this.taskData.exceed); // 张拉阶段
+      this.get();
+    },
+    watch: {
+      taskData() {
+        this.get();
+      },
+    },
+    methods: {
+      get() {
+        if (this.deviceId !== '') {
+          this.patternStr = this.$Ounity.abModel(this.taskData.tensioningPattern); // 张拉模式
+          this.stageStr = this.$Ounity.stage(this.taskData.stage, this.taskData.exceed); // 张拉阶段
+        }
+      },
     },
   };
 

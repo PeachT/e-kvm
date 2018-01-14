@@ -8,12 +8,27 @@
 
 <script>
   const { mapState } = require('vuex');
+  const { ipcRenderer } = require('electron');
+  const plc1 = require('electron').remote.getGlobal('plc1');
+  const plc2 = require('electron').remote.getGlobal('plc2');
+  ipcRenderer.on('modbus', (event, arg) => {
+    if (arg.id === 1) {
+      console.log(arg, plc1, plc2); // prints "pong"
+      ipcRenderer.send('write1', { address: 1280, data: true });
+    } else {
+      ipcRenderer.send('write2', { address: 1280, data: true });
+    }
+  });
+  ipcRenderer.on('msg', (event, arg) => {
+    console.log(arg); // prints "pong"
+  });
   export default {
     name: 'electronTemplate',
     computed: {
       // ...mapState({ path: state => state.global.path }),
     },
     beforeMount() {
+      ipcRenderer.send('RendererShow');
     },
     watch: {
     },
