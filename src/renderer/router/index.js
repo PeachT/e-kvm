@@ -16,6 +16,7 @@ const Operator = () => import('../components/operator/operator.vue');
 const SteelStrand = () => import('../components/steelStrand/steelStrand.vue');
 const Tpl = () => import('../components/tpl/tpl.vue');
 const System = () => import('../components/system/system.vue');
+const Manual = () => import('../components/manual/manual.vue');
 const D0 = () => import('../components/0/0.vue');
 
 Vue.use(Router);
@@ -43,6 +44,14 @@ const routes = [
     component: Root,
     children: [
       { path: '', component: D0, name: 'dd' },
+    ],
+  },
+  {
+    path: '/manual',
+    name: 'manual',
+    component: Root,
+    children: [
+      { path: '', component: Manual, name: '手动' },
     ],
   },
   {

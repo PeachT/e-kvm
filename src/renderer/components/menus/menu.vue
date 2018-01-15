@@ -44,7 +44,7 @@
     { name: '无', path: '/', icon: '', permissions: 0 },
     { name: '无', path: '/', icon: '', permissions: 0 },
     { name: '无', path: '/', icon: '', permissions: 0 },
-    { name: '无', path: '/', icon: '', permissions: 0 },
+    { name: '手动', path: '/manual', icon: '', permissions: 0 },
     { name: '测试', path: '/d0', icon: '', permissions: 0 },
     { name: '监控', path: '/monitoring', icon: '', permissions: 0 },
     { name: '记录', path: '/', icon: '', permissions: 0 },

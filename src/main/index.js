@@ -30,7 +30,7 @@ function createWindow() {
     },
   });
   mainWindow.loadURL(winURL);
-  BrowserWindow.addDevToolsExtension('C:/Users/peach/AppData/Local/Google/Chrome/User Data/Default/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/4.0.0_0');
+  BrowserWindow.addDevToolsExtension('C:/Users/peach/AppData/Local/Google/Chrome/User Data/Default/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/4.0.1_0');
   global.mainWindow = mainWindow;
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -38,14 +38,21 @@ function createWindow() {
 }
 
 app.on('ready', createWindow);
-
-ipcMain.on('RendererShow', () => {
+// 网络连接成功！连接设备
+ipcMain.on('WIFIonline', () => {
+  global.netLine = true;
   if (!plc1) {
     plc1 = new Modbus('192.168.181.101');
   }
   if (!plc2) {
     plc2 = new Modbus('192.168.181.102');
   }
+});
+// 网络连接失败！断开设备
+ipcMain.on('WIFIoffline', () => {
+  global.netLine = false;
+  plc1 = null;
+  plc2 = null;
 });
 ipcMain.on('write1', (event, data) => {
   plc1.writeSingleCoil(1280, true);
@@ -66,19 +73,12 @@ app.on('activate', () => {
   }
 });
 
-
 export function PLC(id) {
   if (id === 1) {
     mainWindow.webContents.send('modbus', { id: id });
-    // plc1.writeSingleCoil(1280, true, (data) => {
-    //   console.log('PLC1返回写入单线圈：', data);
-    // });
   }
   if (id === 2) {
     mainWindow.webContents.send('modbus', { id: id });
-    // plc2.writeSingleCoil(1280, true, (data) => {
-    //   console.log('PLC2返回写入单线圈：', data);
-    // });
   }
 }
 

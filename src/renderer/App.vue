@@ -22,13 +22,25 @@
   ipcRenderer.on('msg', (event, arg) => {
     console.log(arg); // prints "pong"
   });
+
   export default {
     name: 'electronTemplate',
     computed: {
       // ...mapState({ path: state => state.global.path }),
     },
     beforeMount() {
-      ipcRenderer.send('RendererShow');
+      window.addEventListener('offline', (e) => {
+        alert('网络断开连接！');
+        ipcRenderer.send('WIFIoffline');
+      });
+      window.addEventListener('online', (e) => {
+        alert('网络已连接');
+        ipcRenderer.send('WIFIonline');
+      });
+      if (navigator.onLine) {
+        ipcRenderer.send('WIFIonline');
+      }
+      alert(navigator.onLine);
     },
     watch: {
     },

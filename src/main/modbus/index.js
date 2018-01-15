@@ -17,7 +17,9 @@ class Modbus {
     client.on('error', (error) => {
       PLCError(`${this.path}连接错误`);
       this.GState = false;
-      this.reconnect();
+      if (global.netLine) {
+        this.reconnect();
+      }
     });
     client.on('data', (data) => {
       const func = this.func.shift();
