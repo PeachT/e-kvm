@@ -79,6 +79,12 @@ const actions = {
   PLC2Data(context, data) {
     context.commit('PLC2Data', data);
   },
+  PLC1State(context, data) {
+    context.commit('PLC1State', data);
+  },
+  PLC2State(context, data) {
+    context.commit('PLC2State', data);
+  },
 };
 
 export default {

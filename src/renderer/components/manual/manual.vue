@@ -1,7 +1,11 @@
 <template>
-  <div class="wh100 manual">
+  <div class="wh100 manual"
+    v-loading="dataState"
+    element-loading-text="没有可用的设备"
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)">
     <div class="operation">
-      <el-input size="medium">
+      <el-input size="medium"  @click.native="deviceState = true" :value="deviceName">
         <i slot="suffix" class="el-input__icon el-icon-news"></i>
         <template slot="prepend">泵顶组</template>
       </el-input>
@@ -17,19 +21,19 @@
         <div class="item" v-for="(item, index) in patternStr.A" :key="index" v-show="shows.indexOf(item) > -1">
           <div class="i">
             <div class="title">{{item}}</div>
-            <el-input size="medium" v-model="ab[item].setMap">
+            <el-input size="medium" v-model.number="ab[item].setMpa" type="numner" @change="writeMpa(item)">
               <template slot="prepend">设置压力</template>
               <template slot="append">Mpa</template>
             </el-input>
-            <el-input size="medium" :value="ab[item].map" disabled>
+            <el-input size="medium" :value="currentlyData[`${item}mpa`] | plc2mpa" disabled>
               <template slot="prepend">当前压力</template>
               <template slot="append">Mpa</template>
             </el-input>
-            <el-input size="medium" v-model="ab[item].setMM">
+            <el-input size="medium" v-model.number="ab[item].setMM" type="number" @change="writeMM(item)">
               <template slot="prepend">设置位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
-            <el-input size="medium" :value="ab[item].mm" disabled>
+            <el-input size="medium" :value="currentlyData[`${item}mm`] | plc2mm" disabled>
               <template slot="prepend">当前位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
@@ -44,19 +48,19 @@
         <div class="item" v-for="(item, index) in patternStr.B" :key="index" v-show="shows.indexOf(item) > -1">
           <div class="i">
             <div class="title">{{item}}</div>
-            <el-input size="medium" v-model="ab[item].setMap">
+            <el-input size="medium" v-model.number="ab[item].setMpa" type="number" @change="writeMpa(item)" >
               <template slot="prepend">设置压力</template>
               <template slot="append">Mpa</template>
             </el-input>
-            <el-input size="medium" :value="ab[item].map" disabled>
+            <el-input size="medium" :value="currentlyData[`${item}mpa`] | plc2mpa" disabled>
               <template slot="prepend">当前压力</template>
               <template slot="append">Mpa</template>
             </el-input>
-            <el-input size="medium" v-model="ab[item].setMM">
+            <el-input size="medium" v-model.number="ab[item].setMM" type="number" @change="writeMM(item)">
               <template slot="prepend">设置位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
-            <el-input size="medium" :value="ab[item].mm" disabled>
+            <el-input size="medium" :value="currentlyData[`${item}mm`] | plc2mm" disabled>
               <template slot="prepend">当前位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
@@ -68,85 +72,201 @@
         </div>
       </div>
     </div>
+    <div v-if="deviceState">
+      <device-select :show.sync="deviceState" :deviceId.sync="deviceId" />
+    </div>
   </div>
 </template>
 
 <script>
+  import DeviceSelect from './deviceSelect.vue';
+  const { ipcRenderer } = require('electron');
+
   export default {
     name: 'manual',
+    components: {
+      DeviceSelect,
+    },
     data() {
       return {
         device: null,
+        deviceId: null,
+        deviceName: null,
+        deviceState: false,
+        dataState: false,
+        sensor: null,
         // patternStr: ['A1', 'A2', 'B1', 'B2'],
         shows: ['A1', 'A2', 'B1', 'B2'],
         ab: {
           A1: {
-            map: null,
-            mm: null,
-            setMpa: null,
-            setMM: null,
+            setMpa: 0,
+            setMM: 0,
           },
           A2: {
-            map: null,
-            mm: null,
-            setMpa: null,
-            setMM: null,
+            setMpa: 0,
+            setMM: 0,
           },
           B1: {
-            map: null,
-            mm: null,
-            setMpa: null,
-            setMM: null,
+            setMpa: 0,
+            setMM: 0,
           },
           B2: {
-            map: null,
-            mm: null,
-            setMpa: null,
-            setMM: null,
+            setMpa: 0,
+            setMM: 0,
           },
         },
       };
     },
     beforeMount() {
-      this.device = window.deviceDB.getAll[0];
+      this.sensor = window.systemDB.getOne({ name: 'sensor' });
+      if (this.$store.state.global.PLC1State) {
+        ipcRenderer.send('write1', { func: 'writeSingleCoil', address: 2058, data: true });
+      }
+      if (this.$store.state.global.PLC1State) {
+        ipcRenderer.send('write2', { func: 'writeSingleCoil', address: 2058, data: true });
+      }
+      const s = window.manual.getAll[0];
+      if (s.id) {
+        this.device = window.deviceDB.getOne({ id: s.id });
+        this.deviceName = this.device.name;
+      } if (window.deviceDB.getAll[0]) {
+        this.device = window.deviceDB.getAll[0];
+        this.deviceName = this.device.name;
+      }
     },
     computed: {
       patternStr() {
-        const p = this.device.tensioningPattern.sort();
-        if (p.indexOf(4) !== -1) {
-          return {
-            AB: ['A1', 'A2', 'B1', 'B2'],
-            A: ['A1', 'A2'],
-            B: ['B1', 'B2'],
-          };
-        }
-        const ps = {
-          AB: [],
-          A: [],
-          B: [],
-        };
-        p.map((item) => {
-          ps.AB.push(item);
-          switch (item) {
-            case 0:
-              ps.A.push('A1');
-              break;
-            case 1:
-              ps.A.push('A2');
-              break;
-            case 2:
-              ps.B.push('B1');
-              break;
-            case 3:
-              ps.B.push('B2');
-              break;
-            default:
-              break;
+        if (this.device) {
+          const p = this.device.tensioningPattern.sort();
+          if (p.indexOf(4) !== -1) {
+            return {
+              AB: ['A1', 'A2', 'B1', 'B2'],
+              A: ['A1', 'A2'],
+              B: ['B1', 'B2'],
+            };
           }
-          return null;
-        });
-        return ps;
+          const ps = {
+            AB: [],
+            A: [],
+            B: [],
+          };
+          p.map((item) => {
+            ps.AB.push(item);
+            switch (item) {
+              case 0:
+                ps.A.push('A1');
+                break;
+              case 1:
+                ps.A.push('A2');
+                break;
+              case 2:
+                ps.B.push('B1');
+                break;
+              case 3:
+                ps.B.push('B2');
+                break;
+              default:
+                break;
+            }
+            return null;
+          });
+          return ps;
+        }
+        this.dataState = true;
+        return {
+          AB: ['A1', 'A2', 'B1', 'B2'],
+          A: ['A1', 'A2'],
+          B: ['B1', 'B2'],
+        };
       },
+      currentlyData() {
+        const p1 = this.$store.state.global.PLC1Data;
+        const p2 = this.$store.state.global.PLC2Data;
+        return {
+          A1mpa: p1.A1mpa,
+          A1mm: p1.A1mm,
+          B1mpa: p1.B1mpa,
+          B1mm: p1.B1mm,
+          A2mpa: p2.A2mpa,
+          A2mm: p2.A2mm,
+          B2mpa: p2.B2mpa,
+          B2mm: p2.B2mm,
+        };
+      },
+    },
+    methods: {
+      writeMpa(item) {
+        let address = 0;
+        switch (item) {
+          case 'A1':
+            address = 4106;
+            break;
+          case 'A2':
+            address = 4106;
+            break;
+          case 'B1':
+            address = 4108;
+            break;
+          case 'B2':
+            address = 4108;
+            break;
+          default:
+            break;
+        }
+        let setMpa = this.ab[item].setMpa;
+        setMpa = setMpa > 60 ? this.sensor.pressure : setMpa;
+        setMpa = setMpa < 0 ? 0 : setMpa;
+        this.ab[item].setMpa = setMpa;
+        const mpa = this.$UC.mpa2plc(setMpa);
+        // if (item === 'A1' || item === 'B1') {
+        //   ipcRenderer.send('write1',
+        //     { func: 'writeSingleRegister16', address: address, data: mpa });
+        // }
+        // ipcRenderer.send('write2', { func: 'writeSingleRegister16', address: address, data: mpa });
+      },
+      writeMM(item) {
+        let address = 0;
+        switch (item) {
+          case 'A1':
+            address = 4107;
+            break;
+          case 'A2':
+            address = 4107;
+            break;
+          case 'B1':
+            address = 4109;
+            break;
+          case 'B2':
+            address = 4109;
+            break;
+          default:
+            break;
+        }
+        let setMM = this.ab[item].setMM;
+        setMM = setMM > 255 ? this.sensor.displacement : setMM;
+        setMM = setMM < 0 ? 0 : setMM;
+        this.ab[item].setMM = setMM;
+        const mm = this.$UC.mm2plc(setMM);
+        // if (item === 'A1' || item === 'B1') {
+        //   ipcRenderer.send('write1',
+        //     { func: 'writeSingleRegister16', address: address, data: mm });
+        // }
+        // ipcRenderer.send('write2', { func: 'writeSingleRegister16', address: address, data: mm });
+      },
+    },
+    beforeRouteLeave(to, from, next) {
+      // 导航离开该组件的对应路由时调用
+      // 可以访问组件实例 `this`
+      const s = window.manual.getAll[0];
+      s.id = this.deviceId;
+      window.manual.update(s);
+      if (this.$store.state.global.PLC1State) {
+        ipcRenderer.send('write1', { func: 'writeSingleCoil', address: 2058, data: false });
+      }
+      if (this.$store.state.global.PLC1State) {
+        ipcRenderer.send('write2', { func: 'writeSingleCoil', address: 2058, data: false });
+      }
+      next();
     },
   };
 </script>

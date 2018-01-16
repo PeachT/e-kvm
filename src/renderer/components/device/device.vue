@@ -6,7 +6,7 @@
       </el-aside>
       <el-main class="task-main">
         <h1 v-show="!nowData">没有数据</h1>
-        <div v-show="'id' in nowData" class="wh100 device-info">
+        <div v-if="nowData" class="wh100 device-info">
           <el-form :model="nowData" :rules="nowDataRules" ref="nowData" label-width="100px">
             <div class="row-flex">
               <el-form-item label="设备名称" prop="name">

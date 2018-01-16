@@ -2,20 +2,19 @@
 // import Vuex from 'vuex';
 // import store from '../store/index';
 
-import { PLC, PLCError } from '../index';
 const Socket = require('net').Socket;
 const sendCommand = require('./sendData').default.sendCommand;
 const returnData = require('./returnData').default.returnData16;
 // Vue.use(Vuex);
 class Modbus {
-  constructor(path = '127.0.0.1', host = 502, devId = 1, timeout = 3000, autoReconnect = true, reconnectTimeout = 10000) {
+  constructor(path = '127.0.0.1', devId = 1, timeout = 3000, reconnectTimeout = 10000) {
     const client = new Socket();
     client.setEncoding('utf8');
     client.setNoDelay(false);
-    client.connect(host, path);
+    client.connect(502, path);
     client.setTimeout(timeout);
     client.on('error', (error) => {
-      PLCError(`${this.path}连接错误`);
+      // PLCError(`${this.path}连接错误`);
       this.GState = false;
       if (global.netLine) {
         this.reconnect();
@@ -32,31 +31,35 @@ class Modbus {
       }
     });
     client.on('connect', () => {
-      PLCError(`${this.path}连接成功`);
+      this.reconnectState = false;
+      // PLCError(`${this.path}连接成功`);
       this.init();
       if (!this.GState) {
-        this.PLCState();
+        // if (this.path === '192.168.181.110') {
+        //   global.mainWindow.webContents.send('lineOK', 1);
+        // } else {
+        //   global.mainWindow.webContents.send('lineOK', 2);
+        // }
+        this.toRenderer('lineOK');
         this.GState = true;
       }
     });
     client.on('timeout', () => {
-      PLCError(`${this.path}连接超时`);
+      // PLCError(`${this.path}连接超时`);
+      this.toRenderer('lineError');
       this.GState = false;
       this.reconnectState = true;
     });
     this.path = path;
-    this.host = host;
     this.timeout = timeout;
     this.devId = devId;
-    this.autoReconnect = autoReconnect;
     this.reconnectTimeout = reconnectTimeout;
     this.client = client;
     this.huitiao = null;
     this.func = [];
-    this.reconnectState = false;
   }
   reconnect() {
-    PLCError(`${this.path}正在重新启动...`);
+    // PLCError(`${this.path}正在重新启动...`);
     if (this.reconnectState || this.client.readyState !== 'open') {
       this.reconnectState = false;
       this.client = null;
@@ -76,13 +79,12 @@ class Modbus {
         });
         this.readRegisters16(4096, 4, (data) => {
           const d = returnData(data);
-          if (this.path === '192.168.181.101') {
-            // store.commit('PLC1Data', d);
-            // store.dispatch('PLC1Data', d);
-          } else {
-            // store.commit('PLC2Data', d);
-            // store.dispatch('PLC2Data', d);
-          }
+          // if (this.path === '192.168.181.110') {
+          //   global.mainWindow.webContents.send('realTime', { id: 1, data: d });
+          // } else {
+          //   global.mainWindow.webContents.send('realTime', { id: 2, data: d });
+          // }
+          this.toRenderer('realTime', d);
           b2 = true;
           if (b1 && b2) {
             resolve();
@@ -93,12 +95,11 @@ class Modbus {
       });
     }, 0);
   }
-  PLCState() {
-    console.log('path-----', this.path);
-    if (this.path === '192.168.181.101') {
-      PLC(1);
+  toRenderer(func, data = null) {
+    if (this.path === '192.168.181.110') {
+      global.mainWindow.webContents.send(func, { id: 1, data: data });
     } else {
-      PLC(2);
+      global.mainWindow.webContents.send(func, { id: 2, data: data });
     }
   }
   getCommand(fc, address, data) {

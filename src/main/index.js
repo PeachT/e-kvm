@@ -38,28 +38,6 @@ function createWindow() {
 }
 
 app.on('ready', createWindow);
-// 网络连接成功！连接设备
-ipcMain.on('WIFIonline', () => {
-  global.netLine = true;
-  if (!plc1) {
-    plc1 = new Modbus('192.168.181.101');
-  }
-  if (!plc2) {
-    plc2 = new Modbus('192.168.181.102');
-  }
-});
-// 网络连接失败！断开设备
-ipcMain.on('WIFIoffline', () => {
-  global.netLine = false;
-  plc1 = null;
-  plc2 = null;
-});
-ipcMain.on('write1', (event, data) => {
-  plc1.writeSingleCoil(1280, true);
-});
-ipcMain.on('write2', (event, data) => {
-  plc2.writeSingleCoil(1280, true);
-});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -73,15 +51,26 @@ app.on('activate', () => {
   }
 });
 
-export function PLC(id) {
-  if (id === 1) {
-    mainWindow.webContents.send('modbus', { id: id });
+// 网络连接成功！连接设备
+ipcMain.on('WIFIonline', () => {
+  global.netLine = true;
+  if (!plc1) {
+    plc1 = new Modbus('192.168.181.110');
   }
-  if (id === 2) {
-    mainWindow.webContents.send('modbus', { id: id });
+  if (!plc2) {
+    plc2 = new Modbus('192.168.181.111');
   }
-}
-
-export function PLCError(msg) {
-  mainWindow.webContents.send('msg', msg);
-}
+});
+// 网络连接失败！断开设备
+ipcMain.on('WIFIoffline', () => {
+  global.netLine = false;
+  plc1 = null;
+  plc2 = null;
+});
+ipcMain.on('write1', (event, data) => {
+  plc1[data.func](data.address, data.data);
+});
+ipcMain.on('write2', (event, data) => {
+  plc2[data.func](data.address, data.data);
+  // plc2.writeSingleCoil(1280, true);
+});

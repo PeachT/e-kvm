@@ -134,6 +134,7 @@
         window.girderDB = this.$db.systemDB.girder;
         window.systemDB = this.$db.systemDB.system;
         window.tplDB = this.$db.systemDB.tpl;
+        window.manual = this.$db.systemDB.manual;
         window.nowDB = this.$db.nowDB.now;
       }
     },

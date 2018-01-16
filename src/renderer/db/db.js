@@ -140,12 +140,14 @@ function systemDB() {
     const girder = $db.getCollection('girder');
     const system = $db.getCollection('system');
     const tpl = $db.getCollection('tpl');
+    const manual = $db.getCollection('manual');
     return {
       steelStrands: dbFunc($db, steelStrands),
       device: dbFunc($db, device),
       girder: dbFunc($db, girder),
       system: dbFunc($db, system),
       tpl: dbFunc($db, tpl),
+      manual: dbFunc($db, manual),
     };
   }
   return null;
@@ -219,6 +221,11 @@ const Db = {
         $db.addCollection('device', { indices: ['name', 'id'] });
         // 构件文档
         $db.addCollection('girder', { indices: ['name', 'id'] });
+        // 手动文档
+        const manual = $db.addCollection('manual');
+        manual.insert({
+          id: '',
+        });
         // 系统参数文档
         const sys = $db.addCollection('system');
         sys.insert({
