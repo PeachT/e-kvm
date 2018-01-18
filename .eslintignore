@@ -4,3 +4,5 @@
 /src/renderer/router/index.js
 /src/renderer/components/device/device.vue
 /src/renderer/components/0/0.vue
+/src/renderer/objJS/unitConversion.js
+/src/main/modbus/sendData.js

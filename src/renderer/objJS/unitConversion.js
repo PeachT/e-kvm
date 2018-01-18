@@ -1,3 +1,9 @@
+function netage(data) {
+  if (data > 32767) {
+    return parseInt((0xFFFF ^ data) + 1, 10) * -1;
+  }
+  return data;
+}
 const unity = {
   /**
    * plc转压力（Mpa）
@@ -6,8 +12,12 @@ const unity = {
    * @returns 返回压力（mpa）值
    */
   plc2mpa(data) {
+    const d = netage(data);
+    if (d < -100) {
+      return '未连接传感器';
+    }
     const sensor = window.systemDB.getOne({ name: 'sensor' });
-    return ((data * sensor.pressure) / sensor.pressurePLC).toFixed(sensor.toFixed);
+    return ((d * sensor.pressure) / sensor.pressurePLC).toFixed(sensor.toFixed);
   },
   /**
    * 压力（Mpa）转plc
@@ -26,8 +36,12 @@ const unity = {
    * @returns 返回位移（mm）值
    */
   plc2mm(data) {
+    const d = netage(data);
+    if (d < -100) {
+      return '未连接传感器';
+    }
     const sensor = window.systemDB.getOne({ name: 'sensor' });
-    return ((data * sensor.displacement) / sensor.displacementPLC).toFixed(sensor.toFixed);
+    return ((d * sensor.displacement) / sensor.displacementPLC).toFixed(sensor.toFixed);
   },
   /**
    * 位移(mm)转plc
@@ -95,31 +109,7 @@ const unity = {
     }
     return ((mpa - Number(device[name].b)) / Number(device[name].a)).toFixed(fixed);
   },
-  /**
-   * 总伸长量计算
-   *
-   * @param {any} datas 位移值
-   * @param {any} NS 回缩量
-   * @param {any} LQ 工作长度
-   * @returns 总伸长量
-   */
-  LZ(datas, NS, LQ) {
-    // 总伸长量LZ=(LK+L1-2L0)-NS-LQ
-    console.log(datas[datas.length - 1], datas[1], datas[0], NS, LQ);
-    return unity.plc2mm(((datas[datas.length - 1] + datas[1]) - (2 * datas[0]))) - NS - LQ;
-  },
-  /**
-   * 偏差率
-   *
-   * @param {any} d1 比较值
-   * @param {any} d2 被比较值
-   * @returns 偏差率%
-   */
-  deviation(d1, d2) {
-    const sensor = window.systemDB.getOne({ name: 'sensor' }); // 传感器
-    const fixed = sensor.toFixed;
-    return (((d2 - d1) / d1) * 100).toFixed(fixed);
-  },
+
 };
 
 export default {

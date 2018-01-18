@@ -15,10 +15,11 @@ class Modbus {
     client.setTimeout(timeout);
     client.on('error', (error) => {
       // PLCError(`${this.path}连接错误`);
+      this.toRenderer('lineError', '连接错误');
       this.GState = false;
-      if (global.netLine) {
-        this.reconnect();
-      }
+      // if (global.netLine) {
+      //   this.reconnect();
+      // }
     });
     client.on('data', (data) => {
       const func = this.func.shift();
@@ -42,13 +43,19 @@ class Modbus {
         // }
         this.toRenderer('lineOK');
         this.GState = true;
+        clearTimeout(this.tReconnent);
       }
     });
     client.on('timeout', () => {
       // PLCError(`${this.path}连接超时`);
-      this.toRenderer('lineError');
+      this.toRenderer('lineError', '连接超时');
       this.GState = false;
       this.reconnectState = true;
+      this.tReconnent = setTimeout(() => {
+        if (global.netLine && !this.GState) {
+          this.reconnect();
+        }
+      }, 3000);
     });
     this.path = path;
     this.timeout = timeout;
@@ -60,6 +67,7 @@ class Modbus {
   }
   reconnect() {
     // PLCError(`${this.path}正在重新启动...`);
+    this.toRenderer('lineError', '正在重新启动。。。');
     if (this.reconnectState || this.client.readyState !== 'open') {
       this.reconnectState = false;
       this.client = null;
@@ -79,11 +87,6 @@ class Modbus {
         });
         this.readRegisters16(4096, 4, (data) => {
           const d = returnData(data);
-          // if (this.path === '192.168.181.110') {
-          //   global.mainWindow.webContents.send('realTime', { id: 1, data: d });
-          // } else {
-          //   global.mainWindow.webContents.send('realTime', { id: 2, data: d });
-          // }
           this.toRenderer('realTime', d);
           b2 = true;
           if (b1 && b2) {

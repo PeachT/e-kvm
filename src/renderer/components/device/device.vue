@@ -27,7 +27,7 @@
             <el-tabs v-model="tabsActive" type="card">
               <el-tab-pane label="顶参数" name="a">
                 <!-- 顶参数 -->
-                <h3 style="background-color: rgb(245, 247, 250);">顶参数</h3>
+                <!-- <h3 style="background-color: rgb(245, 247, 250);">顶参数</h3>
                 <div class="row-flex">
                   <el-form-item label="位移上限">
                     <el-input v-model="nowData.ceiling"></el-input>
@@ -41,10 +41,7 @@
                   <el-form-item label="工作位移下限">
                     <el-input v-model="nowData.WorkLower"></el-input>
                   </el-form-item>
-                  <!-- <el-form-item label="传感器参数">
-                    <el-input v-model="nowData[item].sensor"></el-input>
-                  </el-form-item> -->
-                </div>
+                </div> -->
                 <div :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
                   <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}顶参数</h3>
                   <!-- 位移校正 displacementCorrection -->

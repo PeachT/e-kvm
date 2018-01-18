@@ -46,13 +46,13 @@
           </td>
           <!-- 总伸长量 -->
           <td rowspan="2" class="h6" v-if="index===0 || index===2">
-            <el-input :value="taskData.recird[item].mm | LZ(taskData.task[item].NS, taskData.task[item].LQ)">
+            <el-input :value="LZ[item].mm">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
           <!-- 伸长量偏差 -->
           <td rowspan="2" class="h6" v-if="index===0 || index===2">
-            <el-input :value="taskData.recird[item].deviation">
+            <el-input :value="LZ[item].deviation">
               <i slot="suffix" class="el-input__icon">%</i>
             </el-input>
           </td>
@@ -85,6 +85,11 @@
     watch: {
       taskData() {
         this.get();
+      },
+    },
+    computed: {
+      LZ() {
+        return this.$Ounity.LZ(this.taskData.task, this.record, this.taskData.tensioningPattern);
       },
     },
     methods: {

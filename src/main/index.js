@@ -56,9 +56,13 @@ ipcMain.on('WIFIonline', () => {
   global.netLine = true;
   if (!plc1) {
     plc1 = new Modbus('192.168.181.110');
+  } else if (plc1.GState) {
+    mainWindow.webContents.send('lineOK', { id: 1 });
   }
   if (!plc2) {
     plc2 = new Modbus('192.168.181.111');
+  } else if (plc2.GState) {
+    mainWindow.webContents.send('lineOK', { id: 2 });
   }
 });
 // 网络连接失败！断开设备
@@ -67,10 +71,33 @@ ipcMain.on('WIFIoffline', () => {
   plc1 = null;
   plc2 = null;
 });
-ipcMain.on('write1', (event, data) => {
-  plc1[data.func](data.address, data.data);
+ipcMain.on('wPLC1', (event, data) => {
+  plc1[data.func](data.address, data.data, (d) => {
+    if ('callback' in data) {
+      event.sender.send(data.callback, { data: data, callbackData: d });
+    }
+  });
 });
-ipcMain.on('write2', (event, data) => {
-  plc2[data.func](data.address, data.data);
+ipcMain.on('wPLC2', (event, data) => {
+  plc2[data.func](data.address, data.data, (d) => {
+    if ('callback' in data) {
+      event.sender.send(data.callback, { data: data, callbackData: d });
+    }
+  });
+  // plc2.writeSingleCoil(1280, true);
+});
+ipcMain.on('rPLC1', (event, data) => {
+  plc1[data.func](data.address, data.data, (d) => {
+    if ('callback' in data) {
+      event.sender.send(data.callback, { id: 1, callbackData: d });
+    }
+  });
+});
+ipcMain.on('rPLC2', (event, data) => {
+  plc2[data.func](data.address, data.data, (d) => {
+    if ('callback' in data) {
+      event.sender.send(data.callback, { id: 2, callbackData: d });
+    }
+  });
   // plc2.writeSingleCoil(1280, true);
 });

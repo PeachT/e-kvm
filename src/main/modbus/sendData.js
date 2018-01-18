@@ -109,6 +109,9 @@ function commandStr(deviceId, fc, address, data) {
   // LRC 码计算
   const LRC = (256 - ((deviceId + fc + ar.decSum + datas.decSum) % 256))
     .toString(16).toUpperCase();
+    if (fc === 6) {
+      console.log((256 - ((deviceId + fc + ar.decSum + datas.decSum) % 256)), deviceId, fc, ar.decSum, datas.decSum);
+    }
   const commandCode = `:${Dec2Hex(deviceId, 2)}${Dec2Hex(fc, 2)}${ar.hexStr}${datas.hexStr}${LRC}\r\n`;
   return commandCode;
 }

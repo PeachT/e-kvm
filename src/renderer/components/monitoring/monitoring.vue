@@ -109,6 +109,7 @@ import HomeMenu from '../menus/menu.vue';
 
 const returnData = require('../../modbus-tcp/returnData').default.returnData16;
 const pressurePLC = require('../../objJS/matrixing').default.pressurePLC;
+const { ipcRenderer } = require('electron');
 
 export default {
   name: 'monitoring',
@@ -208,11 +209,11 @@ export default {
           };
         }
       });
-      this.stageDownPLC();
+      this.stageDownPLC(this.x0);
       if (this.taskData.concretes.castingDate === null) {
         this.concretesState = true;
       }
-      this.x0();
+      // this.x0();
     }
   },
   computed: {
@@ -321,24 +322,55 @@ export default {
     x0() {
       window.setTimeout(() => {
         console.log('1启动');
-        this.$plc1.readInputStatue(1024, 1, (data) => {
-          const x0 = returnData(data)[0];
-          if (x0 === '1' && !this.concretesState) {
-            new Promise(
-              (resolve, reject) => {
-                this.$plc2.writeSingleCoil(2560, true, (data) => {
-                  console.log('PLC返回写入单线圈：', data);
-                });
-                this.$plc1.writeSingleCoil(2560, true, (data) => {
-                  console.log('PLC返回写入单线圈：', data);
-                  resolve();
-                });
-              },
-            ).then(this.startFunc());
-          } else if (x0 === '1') {
-            this.$message.error('请输入浇筑日期！');
-          }
-          if (window.nowDB.getAll.length > 0 && this.taskDownData.state) {
+        const m = this.nowData.tensioningPattern; // 张拉泵顶组合
+        // this.$plc1.readInputStatue(1024, 1, (data) => {
+        //   const x0 = returnData(data)[0];
+        //   if (x0 === '1' && !this.concretesState) {
+        //     new Promise(
+        //       (resolve, reject) => {
+        //         this.$plc2.writeSingleCoil(2560, true, (data) => {
+        //           console.log('PLC返回写入单线圈：', data);
+        //         });
+        //         this.$plc1.writeSingleCoil(2560, true, (data) => {
+        //           console.log('PLC返回写入单线圈：', data);
+        //           resolve();
+        //         });
+        //       },
+        //     ).then(this.startFunc());
+        //   } else if (x0 === '1') {
+        //     this.$message.error('请输入浇筑日期！');
+        //   }
+        //   if (window.nowDB.getAll.length > 0 && this.taskDownData.state) {
+        //     this.x0();
+        //   }
+        // });
+        // 主站下载
+        ipcRenderer.send('rPLC1', { func: 'readInputStatue', address: 1025, data: 16, callback: 'tensionRun' });
+        ipcRenderer.on('tensionRun', (event, data) => {
+          const xs = returnData(data.callbackData);
+          const x0 = xs[0] || xs[15] ? 1 : 0;
+          if (x0) {
+            // 启动 这里要设置PLC启动. M520 => 2568
+            this.zTension = false;
+            this.cTension = true;
+            ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2568, data: true, callback: 'zTension' });
+            if (m === 1 || m === 3 || m === 4) {
+              this.cTension = false;
+              ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2568, data: true, callback: 'cTension' });
+            }
+            ipcRenderer.on('zTension', (event, data) => {
+              this.zTension = true;
+              if (this.zTension && this.cTension) {
+                this.startFunc();
+              }
+            });
+            ipcRenderer.on('cTension', (event, data) => {
+              this.cTension = true;
+              if (this.zTension && this.cTension) {
+                this.startFunc();
+              }
+            });
+          } else {
             this.x0();
           }
         });
@@ -362,32 +394,70 @@ export default {
       this.$refs.mpaCurves.show();
       this.$refs.mmCurves.show();
     },
-    // 下载压力数据到PLC
-    stageDownPLC() {
-      const m = this.nowData.tensioningPattern;
-      const mpas = this.pressure.plcPressure;
-      const stage = this.PLCStage;
+    // 下载压力数据到PLC A=>D410=>4506 B=>D411
+    stageDownPLC(callback) {
+      const m = this.nowData.tensioningPattern; // 张拉泵顶组合
+      const dowmZC = { // 下载完成回调名称
+        z: `autoDown${m}Z`,
+        c: `autoDown${m}C`,
+      };
+      const mpas = this.pressure.plcPressure; // 转换的压力数据
+      const stage = this.PLCStage; // 张拉阶段
       console.log(mpas, mpas.A1[stage]);
-      if (m === 0 || m === 1 || m === 4) {
-        this.$plc1.writeSingleRegister16(4106, mpas.A1[stage], (data) => {
-          console.log('PLC返回写入16位多寄存器：', data);
+      const zData = []; // 下载到主站的数据
+      const cData = []; // 下载到从站的数据
+      this.zDowm = true; // 主站下载完成标示
+      this.cDowm = true; // 从站下载完成标示
+      // 数据拼接
+      this.stage.forEach((item) => {
+        if (item === 'A1' || item === 'B1') {
+          zData.push(mpas[item][stage]);
+          this.zDowm = false;
+        } else {
+          cData.push(mpas[item][stage]);
+          this.cDowm = false;
+        }
+      });
+      // 主站下载
+      if (m === 0 || m === 2 || m === 4) {
+        ipcRenderer.send('wPLC1', { func: 'writeMultipleRegisters16', address: 4506, data: zData, callback: dowmZC.z });
+        ipcRenderer.on(dowmZC.z, (event, data) => {
+          this.zDowm = true;
+          if (this.zDowm && this.cDowm) {
+            callback();
+          }
         });
       }
-      if (m === 2 || m === 3 || m === 4) {
-        this.$plc1.writeSingleRegister16(4107, mpas.B1[stage], (data) => {
-          console.log('PLC返回写入16位多寄存器：', data);
+      // 从站下载
+      if (m === 1 || m === 3 || m === 4) {
+        ipcRenderer.send('wPLC2', { func: 'writeMultipleRegisters16', address: 4506, data: cData, callback: dowmZC.c });
+        ipcRenderer.on(dowmZC.c, (event, data) => {
+          this.cDowm = true;
+          if (this.zDowm && this.cDowm) {
+            callback();
+          }
         });
       }
-      if (m === 1 || m === 4) {
-        this.$plc2.writeSingleRegister16(4106, mpas.A2[stage], (data) => {
-          console.log('PLC返回写入16位多寄存器：', data);
-        });
-      }
-      if (m === 3 || m === 4) {
-        this.$plc2.writeSingleRegister16(4107, mpas.B2[stage], (data) => {
-          console.log('PLC返回写入16位多寄存器：', data);
-        });
-      }
+      // if (m === 0 || m === 1 || m === 4) {
+      //   this.$plc1.writeSingleRegister16(4106, mpas.A1[stage], (data) => {
+      //     console.log('PLC返回写入16位多寄存器：', data);
+      //   });
+      // }
+      // if (m === 2 || m === 3 || m === 4) {
+      //   this.$plc1.writeSingleRegister16(4107, mpas.B1[stage], (data) => {
+      //     console.log('PLC返回写入16位多寄存器：', data);
+      //   });
+      // }
+      // if (m === 1 || m === 4) {
+      //   this.$plc2.writeSingleRegister16(4106, mpas.A2[stage], (data) => {
+      //     console.log('PLC返回写入16位多寄存器：', data);
+      //   });
+      // }
+      // if (m === 3 || m === 4) {
+      //   this.$plc2.writeSingleRegister16(4107, mpas.B2[stage], (data) => {
+      //     console.log('PLC返回写入16位多寄存器：', data);
+      //   });
+      // }
     },
     // 压力监控
     getPLC() {
@@ -479,30 +549,50 @@ export default {
           // 下一阶段
           if (this.stageStr.length - 1 > this.nowStage) {
             this.PLCStage += 1;
-            this.stageDownPLC();
-            this.getPLC();
+            this.stageDownPLC(this.getPLC);
+            // this.getPLC();
             // 张拉完成
           } else {
             // 曲线保存
             this.curvesFunc();
             // 卸荷执行
-            new Promise(
-              (resolve, reject) => {
-                this.$plc2.writeSingleCoil(2561, true, (data) => {
-                  console.log('PLC返回写入单线圈：', data);
-                });
-                this.$plc1.writeSingleCoil(2561, true, (data) => {
-                  console.log('PLC返回写入单线圈：', data);
-                  resolve();
-                });
-              },
-              // 进入卸荷监控
-            ).then(this.unloadFunc());
+            const m = this.nowData.tensioningPattern; // 张拉模式
+            this.zUnload = false;
+            this.cUnload = true;
+            ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2971, data: true, callback: 'zUnload' });
+            if (m === 1 || m === 3 || m === 4) {
+              this.cUnload = false;
+              ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2971, data: true, callback: 'cUnload' });
+            }
+            ipcRenderer.on('zUnload', (event, data) => {
+              this.zUnload = true;
+              if (this.zUnload && this.cUnload) {
+                this.unloadFunc();
+              }
+            });
+            ipcRenderer.on('cUnload', (event, data) => {
+              this.cUnload = true;
+              if (this.zUnload && this.cUnload) {
+                this.unloadFunc();
+              }
+            });
+            // new Promise(
+            //   (resolve, reject) => {
+            //     this.$plc2.writeSingleCoil(2561, true, (data) => {
+            //       console.log('PLC返回写入单线圈：', data);
+            //     });
+            //     this.$plc1.writeSingleCoil(2561, true, (data) => {
+            //       console.log('PLC返回写入单线圈：', data);
+            //       resolve();
+            //     });
+            //   },
+            //   // 进入卸荷监控
+            // ).then(this.unloadFunc());
           }
         }
       }, 1000);
     },
-    // 卸荷
+    // 卸荷监控
     unloadFunc() {
       window.setTimeout(() => {
         console.log('4启动');

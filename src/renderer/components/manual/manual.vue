@@ -10,7 +10,7 @@
         <template slot="prepend">泵顶组</template>
       </el-input>
       <div class="el-checkbox-group" >
-        <el-checkbox :label="true" border>强制运行</el-checkbox>
+        <el-checkbox :label="true" v-model="ensorce" border @change="ensorceFunc()">强制运行</el-checkbox>
       </div>
       <el-checkbox-group v-model="shows">
         <el-checkbox :label="item" v-for="(item, index) in patternStr.AB" :key="index" border></el-checkbox>
@@ -94,7 +94,7 @@
         deviceName: null,
         deviceState: false,
         dataState: false,
-        sensor: null,
+        ensorce: false,
         // patternStr: ['A1', 'A2', 'B1', 'B2'],
         shows: ['A1', 'A2', 'B1', 'B2'],
         ab: {
@@ -115,15 +115,22 @@
             setMM: 0,
           },
         },
+        sensor: {
+          displacement: null, // 位移传感器
+          displacementPLC: null,
+          pressure: null, // 压力传感器
+          pressurePLC: null,
+          toFixed: null,
+        },
       };
     },
     beforeMount() {
       this.sensor = window.systemDB.getOne({ name: 'sensor' });
       if (this.$store.state.global.PLC1State) {
-        ipcRenderer.send('write1', { func: 'writeSingleCoil', address: 2058, data: true });
+        ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2058, data: true });
       }
       if (this.$store.state.global.PLC1State) {
-        ipcRenderer.send('write2', { func: 'writeSingleCoil', address: 2058, data: true });
+        ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2058, data: true });
       }
       const s = window.manual.getAll[0];
       if (s.id) {
@@ -195,6 +202,11 @@
       },
     },
     methods: {
+      // 强制运行
+      ensorceFunc() {
+        ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2059, data: this.ensorce });
+        ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2059, data: this.ensorce });
+      },
       writeMpa(item) {
         let address = 0;
         switch (item) {
@@ -214,15 +226,12 @@
             break;
         }
         let setMpa = this.ab[item].setMpa;
-        setMpa = setMpa > 60 ? this.sensor.pressure : setMpa;
+        setMpa = setMpa > this.sensor.pressurePLC ? this.sensor.pressure : setMpa;
         setMpa = setMpa < 0 ? 0 : setMpa;
         this.ab[item].setMpa = setMpa;
         const mpa = this.$UC.mpa2plc(setMpa);
-        // if (item === 'A1' || item === 'B1') {
-        //   ipcRenderer.send('write1',
-        //     { func: 'writeSingleRegister16', address: address, data: mpa });
-        // }
-        // ipcRenderer.send('write2', { func: 'writeSingleRegister16', address: address, data: mpa });
+        const func = (item === 'A1' || item === 'B1') ? 'wPLC1' : 'wPLC2';
+        ipcRenderer.send(func, { func: 'writeMultipleRegisters16', address: address, data: [mpa] });
       },
       writeMM(item) {
         let address = 0;
@@ -243,15 +252,12 @@
             break;
         }
         let setMM = this.ab[item].setMM;
-        setMM = setMM > 255 ? this.sensor.displacement : setMM;
+        setMM = setMM > this.sensor.displacementPLC ? this.sensor.displacement : setMM;
         setMM = setMM < 0 ? 0 : setMM;
         this.ab[item].setMM = setMM;
         const mm = this.$UC.mm2plc(setMM);
-        // if (item === 'A1' || item === 'B1') {
-        //   ipcRenderer.send('write1',
-        //     { func: 'writeSingleRegister16', address: address, data: mm });
-        // }
-        // ipcRenderer.send('write2', { func: 'writeSingleRegister16', address: address, data: mm });
+        const func = (item === 'A1' || item === 'B1') ? 'wPLC1' : 'wPLC2';
+        ipcRenderer.send(func, { func: 'writeMultipleRegisters16', address: address, data: [mm] });
       },
     },
     beforeRouteLeave(to, from, next) {
@@ -261,10 +267,12 @@
       s.id = this.deviceId;
       window.manual.update(s);
       if (this.$store.state.global.PLC1State) {
-        ipcRenderer.send('write1', { func: 'writeSingleCoil', address: 2058, data: false });
+        ipcRenderer.send('wPLC1', { func: 'writeMultipleCoil', address: 2058, data: [0, 0] });
+        ipcRenderer.send('wPLC1', { func: 'writeMultipleRegisters16', address: 4106, data: [0, 0, 0, 0] });
       }
       if (this.$store.state.global.PLC1State) {
-        ipcRenderer.send('write2', { func: 'writeSingleCoil', address: 2058, data: false });
+        ipcRenderer.send('wPLC2', { func: 'writeMultipleCoil', address: 2058, data: [0, 0] });
+        ipcRenderer.send('wPLC2', { func: 'writeMultipleRegisters16', address: 4106, data: [0, 0, 0, 0] });
       }
       next();
     },

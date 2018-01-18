@@ -9,8 +9,6 @@
 <script>
   const { mapState } = require('vuex');
   const { ipcRenderer } = require('electron');
-  const plc1 = require('electron').remote.getGlobal('plc1');
-  const plc2 = require('electron').remote.getGlobal('plc2');
 
   export default {
     name: 'electronTemplate',

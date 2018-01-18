@@ -49,11 +49,13 @@ Vue.filter('plc2mm', (val, vv) => {
 Vue.filter('plc2kn', (val, deviceId, name) => {
   return UnitConversion.plc2kn(val, deviceId, name);
 });
-Vue.filter('LZ', (val, NS, LQ) => {
-  return UnitConversion.LZ(val, NS, LQ);
+// 单顶伸长量
+Vue.filter('dLZ', (val, NS, LQ) => {
+  return ObjUnity.LZ(val, NS, LQ);
 });
+// 偏差率
 Vue.filter('deviation', (val, d2) => {
-  return UnitConversion.LZ(val, d2);
+  return ObjUnity.deviation(val, d2);
 });
 
 /* eslint-disable no-new */
