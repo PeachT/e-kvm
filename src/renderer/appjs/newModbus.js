@@ -1,31 +1,19 @@
-// import Vue from 'vue';
-// import Vuex from 'vuex';
-// import store from '../store/index';
-
 const Socket = require('net').Socket;
 const sendCommand = require('./sendData').default.sendCommand;
 const returnData = require('./returnData').default.returnData16;
-// Vue.use(Vuex);
+
 class Modbus {
-  constructor(path = '127.0.0.1', devId = 1, timeout = 3000, reconnectTimeout = 10000) {
+  constructor(path = '127.0.0.1', plc = 1) {
     const client = new Socket();
     client.setEncoding('utf8');
     client.setNoDelay(true);
     client.connect(502, path);
-    client.setTimeout(timeout);
+    client.setTimeout(3000);
     client.on('error', (error) => {
-      // PLCError(`${this.path}连接错误`);
       this.toRenderer('lineError', '连接错误');
-      if (global.netLine) {
-        this.reconnect();
-      }
-      // if (global.netLine) {
-      //   this.reconnect();
-      // }
     });
     client.on('data', (data) => {
       const func = this.func.shift();
-      // console.log('func数量：', this.func.length);
       if (this.func.length > 0) {
         this.write();
       }
@@ -34,40 +22,16 @@ class Modbus {
       }
     });
     client.on('connect', () => {
-      this.reconnectState = false;
-      this.toRenderer('lineError', '连接成功');
-      this.toRenderer('lineOK');
-      this.init();
       this.GState = true;
-      clearTimeout(this.tReconnent);
+      this.toRenderer('lineError', '连接成功');
+      this.init();
     });
     client.on('timeout', () => {
-      // PLCError(`${this.path}连接超时`);
       this.toRenderer('lineError', '连接超时');
-      this.GState = false;
-      this.reconnectState = true;
-      // this.tReconnent = setTimeout(() => {
-      //   if (global.netLine && !this.GState) {
-      //     this.reconnect();
-      //   }
-      // }, 3000);
     });
-    this.path = path;
-    this.timeout = timeout;
-    this.devId = devId;
-    this.reconnectTimeout = reconnectTimeout;
     this.client = client;
     this.huitiao = null;
     this.func = [];
-  }
-  reconnect() {
-    // PLCError(`${this.path}正在重新启动...`);
-    this.toRenderer('lineError', '正在重新启动。。。');
-    if (this.reconnectState || this.client.readyState !== 'open') {
-      this.reconnectState = false;
-    }
-    this.client = null;
-    this.constructor(this.path);
   }
   init() {
     setTimeout(() => {
@@ -94,11 +58,7 @@ class Modbus {
     }, 0);
   }
   toRenderer(func, data = null) {
-    if (this.path === '192.168.181.110') {
-      global.mainWindow.webContents.send(func, { id: 1, data: data });
-    } else {
-      global.mainWindow.webContents.send(func, { id: 2, data: data });
-    }
+    global.win.webContents.send(func, { id: this.pcl, data: data });
   }
   getCommand(fc, address, data) {
     return sendCommand(this.devId, fc, address, data);
@@ -156,11 +116,7 @@ class Modbus {
     if (func.length === 0) {
       this.func.push({ data: data, next: next });
     }
-    if (this.client.readyState === 'open') {
-      this.client.write(func[0].data);
-    } else {
-      // this.reconnect();
-    }
+    this.client.write(func[0].data);
   }
 }
 

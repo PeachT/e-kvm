@@ -7,7 +7,7 @@
       </el-aside>
       <el-main class="task-record-main">
         <h1 v-show="!nowDataState">没有数据</h1>
-        <el-tabs v-show="nowDataState">
+        <el-tabs v-if="nowDataState">
           <el-tab-pane label="基础信息">
             <base-top
               :holeId.sync="nowData.holeId"
@@ -17,10 +17,10 @@
               :steelStrandId.sync="nowData.steelStrandId"
               :data.sync="nowData.data"
               :editState="editState" />
-            <base-group :groups="groups" :nowGroupName.sync="nowGroupName" v-show="groups" />
-            <base-tendon-data :taskData.sync="taskData" :deviceId="nowData.deviceId" v-show="nowGroupName" />
+            <base-group :groups="groups" :nowGroupName.sync="nowGroupName" v-if="groups" />
+            <base-tendon-data :taskData.sync="taskData" :deviceId="nowData.deviceId" v-if="nowGroupName" />
             <!-- 记录 -->
-            <div v-if="taskData && 'recird' in taskData">
+            <div v-if="taskData && 'curves' in taskData">
               <base-record-data :taskData.sync="taskData" :deviceId="nowData.deviceId"/>
               <base-svg
                 :data="taskData.curves"
@@ -44,25 +44,25 @@
             <user-info />
           </el-tab-pane>
         </el-tabs>
-        <div class="tpl" v-if="nowDataState && nowData.id !== ''">
+        <div class="tpl" v-if="nowDataState && nowData.id">
           <el-button :type="taskDown.type" plain round style="height:40px;" @click="taskDownFunc(taskDown.state)">{{taskDown.title}}</el-button>
-          <el-button plain round style="height:40px;" @click="tplState = true">创建为模板</el-button>
+          <el-button plain round style="height:40px;" @click="newTaskState = true">创建新任务</el-button>
         </div>
       </el-main>
     </el-container>
-    <el-dialog title="创建模板" :visible.sync="tplState" width="60%" >
+    <el-dialog title="创建新任务" :visible.sync="newTaskState" width="60%" >
       <div >
         <el-form label-width="120px">
-          <el-form-item label="模板名称" prop="name">
-            <el-input v-model="tplName"></el-input>
+          <el-form-item label="梁号" prop="name">
+            <el-input v-model="newTaskName"></el-input>
           </el-form-item>
         </el-form>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="tplCreateFunc">完 成</el-button>
+        <el-button type="primary" @click="tplCreateFunc()">完 成</el-button>
       </span>
     </el-dialog>
-    <tpl-select v-if="tplSelectState" :show.sync="tplSelectState" @addOk="addOk" @cancel="cancel"/>
+    <!-- <tpl-select v-if="tplSelectState" :show.sync="tplSelectState" @addOk="addOk" @cancel="cancel"/> -->
     <!-- 下载任务 -->
     <el-dialog
       title="任务下载中..."
@@ -301,6 +301,7 @@
     beforeMount() {
       this.getMenuData();
       console.log(this.$store.state.global.menuTitle);
+      console.log(this.nowData, this.taskData);
     },
     beforeUpdate() {
       console.time('c');
@@ -314,6 +315,8 @@
       console.timeEnd('c');
     },
     data: () => ({
+      // 创建为新任务
+      newTaskName: null,
       // 梁数据
       nowData: {
         bridgeName: '',
@@ -330,54 +333,7 @@
         },
       },
       // 孔数据
-      taskData: {
-        name: '',
-        state: 0,
-        tensioningKN: 0,
-        steelStrandNumber: 0,
-        length: 0,
-        tensioningPattern: 0,
-        stage: 0,
-        two: false,
-        exceed: false,
-        task: {
-          stage: [],
-          time: [],
-          A1: { LQ: 0, NS: 0, LL: 0 },
-          A2: { LQ: 0, NS: 0 },
-        },
-        recird: {
-          time: [],
-          A1: {
-            Mpa: [],
-            mm: [],
-            initMpa: 0,
-            initMM: 0,
-            retractionMM: 0,
-            LZ: 0,
-            deviation: 0,
-          },
-          A2: {
-            Mpa: [],
-            mm: [],
-            initMpa: 0,
-            initMM: 0,
-            retractionMM: 0,
-          },
-          startDate: 0,
-          endDate: 0,
-        },
-        curves: {
-          A1Mpa: [],
-          A1mm: [],
-          A2Mpa: [],
-          A2mm: [],
-          B1Mpa: [],
-          B1mm: [],
-          B2Mpa: [],
-          B2mm: [],
-        },
-      },
+      taskData: null,
       // 孔张拉状态
       taskDown: {
         state: null,
@@ -408,11 +364,10 @@
       menuData: null,
       nowGroupName: null,
       structureId: null,
-      tplState: false,
       tplName: null,
-      tplSelectState: false,
       svg1: null,
       svg2: null,
+      newTaskState: false,
       taskDownData: taskDownData,
     }),
     watch: {
@@ -426,7 +381,7 @@
       // 张拉组切换
       nowGroupName(nval) {
         if (nval) {
-          this.taskData = this.$unity.copyObj(this.nowData.data.filter(item => item.name === nval)[0]);
+          this.taskData = this.nowData.data.filter(item => item.name === nval)[0];
           const state = this.groups.filter(item => item.name === this.nowGroupName)[0].state;
           const titles = ['张  拉', '重新张拉', '二次张拉', '重新张拉'];
           const types = ['primary', 'danger', 'warning', 'danger'];
@@ -435,6 +390,7 @@
             title: titles[state],
             type: types[state],
           };
+          // this.newTaskName = this.taskData.bridgeName;
         }
       },
       menuId(nval) {
@@ -518,6 +474,7 @@
           }
           if (id) {
             this.nowData = this.$unity.copyObj(datas.filter(item => item.id === id)[0]);
+            this.newTaskName = this.nowData.bridgeName;
           }
         } catch (error) {}
         console.timeEnd('a');
@@ -529,22 +486,23 @@
       },
       add() {
         this.$message('添加');
-        this.tplSelectState = true;
+        this.nowDataState = true;
       },
-      addOk(data = false, structureId) {
+      addOk() {
+        this.add();
+        this.$store.commit('addState', true);
+        this.$store.commit('editState', true);
         this.menuId = null;
         this.childrenMenuId = null;
         this.nowGroupName = null;
-        if (data) {
-          this.structureId = structureId;
-          delete data.meta;
-          delete data.$loki;
-          this.nowData = data;
-        } else {
-          this.nowData = this.$unity.copyObj(baseData);
-        }
-        this.tplSelectState = false;
-        console.log(this.nowData);
+        const data = this.$unity.copyObj(this.nowData);
+        data.bridgeName = this.newTaskName;
+        data.id = null;
+        delete data.meta;
+        delete data.$loki;
+        this.nowData = data;
+        this.newTaskState = false;
+        console.log(this.nowData, data);
       },
       edit() {
         this.$message('编辑');
@@ -655,27 +613,10 @@
       disabled(state = true) {
         // this.$d3.selectAll('input').attr('disabled', state);
       },
-      // 创建模板
+      // 创建为新的任务
       tplCreateFunc() {
-        if (this.tplName) {
-          const name = `${this.tplName}-${this.menuId}`;
-          const data = this.$unity.copyObj(this.nowData);
-          data.bridgeName = '';
-          const tplData = {
-            name: name,
-            id: this.$unity.timeId(),
-            structureId: this.menuId,
-            data: data,
-          };
-          if (window.tplDB.insert(tplData, { name: name })) {
-            this.$message.error('模板已经存在！请重新输入！');
-            return;
-          }
-          this.$message.success('模板保存成功！');
-          this.tplState = false;
-        } else {
-          this.$message.error('必须输入模板名称！');
-        }
+        console.log('创建为新的任务');
+        this.addOk();
       },
       // 下载任务
       taskDownFunc(state) {

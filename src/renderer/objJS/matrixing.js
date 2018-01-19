@@ -21,7 +21,7 @@ function pressure(data, deviceId) {
     return null;
   });
   stages.map((item) => {
-    const stageKN = (item / 100) * tensioningKN;
+    const stageKN = ((item / 100) * tensioningKN).toFixed(fixed);
     stagesKN.push(stageKN);
     ts.map((t) => {
       let stageMpa = 0;

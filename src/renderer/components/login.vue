@@ -4,18 +4,26 @@
       <ul>
         <li v-if="users===0">没有数据</li>
         <li v-for="(item, index) in users" :key="index" :class="{'active': item.name===nowName}" @click="nowName = item.name">
-          <img :src="item.img" alt="">
-          <p>{{item.name}}</p>
+          <div class="img">
+            <img :src="item.img" alt="">
+          </div>
+          <div class="txt">
+            <p>{{item.name}}</p>
+          </div>
         </li>
       </ul>
     </div>
     <div class="main">
       <div class="info">
-        <img :src="nowData.img" alt="">
-        <h1>{{nowData.name}}</h1>
+        <div class="img">
+          <img :src="nowData.img" alt="没有图片">
+        </div>
+        <div class="h1">
+          <h1>{{nowData.name}}</h1>
+        </div>
       </div>
       <div class="login">
-        <el-form label-width="110px" size="medium">
+        <el-form label-width="50px" size="medium">
           <h1> 登录信息</h1>
           <el-form-item label="用 户">
             <el-autocomplete style="width:100%;" v-model="user.name" :fetch-suggestions="querySearch" placeholder="请输入内容"></el-autocomplete>
@@ -241,6 +249,7 @@
 
 <style scoped lang="scss">
   .home {
+    color: #5a5e66;
     background-image: url(../assets/background-image.png);
     background-repeat: no-repeat;
     background-size: cover;
@@ -263,16 +272,34 @@
         font-size: 24px;
         float: left;
         background-color: rgba(0, 0, 0, .5);
-        padding: 15px 30px;
+        padding: 15px 15px;
         border-right: 1px solid rgba(255, 255, 255, .5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.5;
+        animation: fadein2 ease-in .5s;
         &.active {
-          color: black;
+          animation: fadein ease-in .5s;
+          animation-fill-mode: forwards;
+          // opacity: 1;
+          color: #5a5e66;
           background-color: white;
+          img {
+            box-shadow: 2px 2px 3px #5a5e66;
+          }
+          box-shadow: 2px 2px 3px #ccc;
         }
-      }
-      img {
-        height: 64px;
-        width: 64px;
+        .img{
+          img{
+            height: 96px;
+            width: 96px;
+          }
+        }
+        .txt{
+          padding-top: 5px;
+        }
       }
     }
     .main {
@@ -281,25 +308,34 @@
       height: 100%;
       margin: 3%;
       .info {
-        background-color: white;
         flex: auto;
-        text-align: center;
-        img {
-          padding-top: 100px;
-          height: 360px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        .img {
+          flex: 3;
+          img{
+            padding-top: 50px;
+            height: 320px;
+            width: 100%;
+            max-width: 320px;
+          }
         }
-        h1 {
-          padding-top: 50px;
-          font-size: 90px;
+        .h1 {
+          padding-top: 15px;
+          flex: 2;
+          font-size: 32px;
         }
       }
       .login {
-        padding: 0 0 50px 50px;
+        padding-left: 35px;
         width: 500px;
         color: white;
         h1 {
           padding-bottom: 50px;
-          margin-left: 100px;
+          margin-left: 50px;
           text-align: center;
         }
       }

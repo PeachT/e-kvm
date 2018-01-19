@@ -4,32 +4,32 @@
     <el-form label-width="85px">
       <div class="row-flex">
         <el-form-item label="控制应力">
-          <el-input v-model.number="taskData.tensioningKN" type="number"></el-input>
+          <el-input @focus="$unity.focusAllVal($event)" v-model.number="taskData.tensioningKN" type="number"></el-input>
         </el-form-item>
         <el-form-item label="张拉长度">
-          <el-input v-model.number="taskData.length" type="number">
+          <el-input @focus="$unity.focusAllVal($event)" v-model.number="taskData.length" type="number">
             <i slot="suffix" class="el-input__icon">m</i>
           </el-input>
         </el-form-item>
         <el-form-item label="钢绞线数量">
-          <el-input v-model.number="taskData.steelStrandNumber" type="number"></el-input>
+          <el-input @focus="$unity.focusAllVal($event)" v-model.number="taskData.steelStrandNumber" type="number"></el-input>
         </el-form-item>
       </div>
       <div class="row-flex">
         <el-form-item label="设备/孔号" >
           <div class="row-flex">
-            <el-input v-model="device.name"></el-input>
-            <el-input v-model="groupAB.a">
+            <el-input v-model="device.name" disabled></el-input>
+            <el-input v-model="groupAB.a" disabled>
               <i slot="suffix" class="el-input__icon">A组</i>
             </el-input>
-            <el-input v-model="groupAB.b">
+            <el-input v-model="groupAB.b" disabled>
               <i slot="suffix" class="el-input__icon">B组</i>
             </el-input>
           </div>
         </el-form-item>
         <el-form-item label="张拉工艺">
-          <el-select v-model="taskData.stage" placeholder="请选择" style="width:100%;">
-            <el-option v-for="(item, index) in ['3段', '4段', '5段']" :key="index" :label="item" :value="index" @change="stageFunc()">
+          <el-select v-model="taskData.stage" placeholder="请选择" style="width:100%;" @change="stageFunc()">
+            <el-option v-for="(item, index) in ['3段', '4段', '5段']" :key="index" :label="item" :value="index">
             </el-option>
           </el-select>
         </el-form-item>
@@ -72,13 +72,13 @@
           </td>
           <!-- 工作长度 -->
           <td>
-            <el-input v-model="taskData.task[item].LQ">
+            <el-input @focus="$unity.focusAllVal($event)" v-model="taskData.task[item].LQ">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
           <!-- 内缩量均值 -->
           <td>
-            <el-input v-model="taskData.task[item].NS">
+            <el-input @focus="$unity.focusAllVal($event)" v-model="taskData.task[item].NS">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
@@ -87,8 +87,8 @@
             :rowspan="taskData.tensioningPattern !== 0 ? 2 : 1"
             :class="{'h': taskData.tensioningPattern !== 0}"
             v-if="item === 'A1'">
-            <el-input v-model="taskData.task[item].LL">
-              <i slot="suffix" class="el-input__icon">mm</i>
+            <el-input @focus="$unity.focusAllVal($event)" v-model="taskData.task[item].LL">
+              <i slot="suffix" class="el-input__icon">mm{{item}}</i>
             </el-input>
           </td>
           <!-- 理论生长量 -->
@@ -96,15 +96,15 @@
             :rowspan="taskData.tensioningPattern !== 2 ? 2 : 1"
             :class="{'h' : taskData.tensioningPattern !== 2}"
             v-if="item === 'B1'">
-            <el-input v-model="taskData.task[item].LL">
-              <i slot="suffix" class="el-input__icon">mm</i>
+            <el-input @focus="$unity.focusAllVal($event)" v-model="taskData.task[item].LL">
+              <i slot="suffix" class="el-input__icon">mm{{item}}</i>
             </el-input>
           </td>
         </tr>
         <tr>
           <td>持荷时间</td>
           <td v-for="(item) in taskData.task.time.length" :key="item">
-            <el-input v-model.number="taskData.task.time[item-1]" type="number">
+            <el-input @focus="$unity.focusAllVal($event)" v-model.number="taskData.task.time[item-1]" type="number">
               <i slot="suffix" class="el-input__icon">s</i>
             </el-input>
           </td>
@@ -157,6 +157,7 @@
       // 切换张拉阶段
       stageFunc() {
         const d = this.taskData;
+        console.log(d.stage);
         if (d.two && d.stage < 1) {
           d.stage = 1;
         }

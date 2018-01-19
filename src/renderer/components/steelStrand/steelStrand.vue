@@ -219,8 +219,8 @@
 <style lang="scss" scoped>
   .stell-strand-info {
     display: flex;
-    align-items: center;
     justify-content: center;
+    padding-top: 10%;
   }
 
 </style>

@@ -25,11 +25,11 @@
         </div>
         <div class="row-flex">
           <el-form-item label="梁 号">
-            <el-input :value="bridgeName" @change="$emit('update:bridgeName', $event)"></el-input>
+            <el-input @focus="$unity.focusAllVal($event)" :value="bridgeName" @change="$emit('update:bridgeName', $event)"></el-input>
           </el-form-item>
           <el-form-item label="钢绞线">
             <div class="row-flex" @click="steelStrandState = true">
-              <el-input v-model="steelStrand">
+              <el-input @focus="$unity.focusAllVal($event)" v-model="steelStrand">
                 <i slot="suffix" class="el-input__icon el-icon-news"></i>
               </el-input>
             </div>
@@ -210,10 +210,10 @@
               d.task.B2 = ab2;
               break;
             case 4:
-              d.task.A1 = ab;
-              d.task.A2 = ab2;
-              d.task.B1 = ab;
-              d.task.B2 = ab2;
+              d.task.A1 = this.$unity.copyObj(ab);
+              d.task.A2 = this.$unity.copyObj(ab2);
+              d.task.B1 = this.$unity.copyObj(ab);
+              d.task.B2 = this.$unity.copyObj(ab2);
               break;
             default:
               break;

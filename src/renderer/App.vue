@@ -7,8 +7,8 @@
 </template>
 
 <script>
-  const { mapState } = require('vuex');
   const { ipcRenderer } = require('electron');
+  const { BrowserWindow } = require('electron').remote;
 
   export default {
     name: 'electronTemplate',
@@ -38,7 +38,7 @@
       // 连接中断
       ipcRenderer.on('lineError', (event, data) => {
         this.$store.dispatch(`PLC${data.id}State`, false);
-        console.log(data); // prints "pong"
+        console.error(data); // prints "pong"
       });
     },
     watch: {
@@ -53,6 +53,8 @@
 @import "./css/global.scss";
 @import "./css/menuTemplate.scss";
 @import "./css/deviceInfo.scss";
+@import "./css/frames.scss";
+// @import "./css/animate.css";
 // @import "./css/task_record.scss";
 // 路由切换过度动画
 .fade-enter-active, .fade-leave-active {

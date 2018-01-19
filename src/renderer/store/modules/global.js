@@ -22,6 +22,7 @@ const state = {
   },
   operator: null,
   user: null,
+  device: null,
 };
 
 const mutations = {
@@ -69,6 +70,9 @@ const mutations = {
   },
   user(state, data) {
     state.user = data;
+  },
+  device(state, data) {
+    state.device = data;
   },
 };
 

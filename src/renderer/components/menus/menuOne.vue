@@ -14,7 +14,9 @@
         </el-button-group>
       </el-header>
       <el-main>
-        <div class="glub" v-for="(item, index) in menuData" :class="{'active' : menuId === item.id}" :key="index" v-show="menuId===null || menuId === item.id"
+        <div class="glub" v-for="(item, index) in menuData"
+          :class="{'active' : menuId === item.id}" :key="index"
+          v-show="menuId===null || menuId === item.id"
           @click.stop="menuFunc(item.id)">
           <div class="title" :class="{'active' : menuId === item.id}">
             <div>
@@ -58,17 +60,18 @@
     },
     methods: {
       menuFunc(id) {
+        if (this.edit) {
+          this.$message('请完成编辑操作才能切换！');
+          return null;
+        }
         const state = this.menuId === id;
         if (state) {
-          if (this.edit) {
-            this.$message('请完成编辑操作才能切换！');
-          } else {
-            this.$emit('update:menuId', null);
-            this.$emit('update:childrenMenuId', null);
-          }
+          this.$emit('update:menuId', null);
+          this.$emit('update:childrenMenuId', null);
         } else {
           this.$emit('update:menuId', id);
         }
+        return null;
       },
       childernMenuFunc(id) {
         const state = this.childrenMenuId === id;

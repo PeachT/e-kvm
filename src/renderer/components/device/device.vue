@@ -7,58 +7,42 @@
       <el-main class="task-main">
         <h1 v-show="!nowData">没有数据</h1>
         <div v-if="nowData" class="wh100 device-info">
-          <el-form :model="nowData" :rules="nowDataRules" ref="nowData" label-width="100px">
+          <el-form :model="nowData" :rules="nowDataRules" ref="nowData" label-width="90px">
             <div class="row-flex">
               <el-form-item label="设备名称" prop="name">
-                <el-input v-model="nowData.name"></el-input>
+                <el-input v-model="nowData.name" @focus="$unity.focusAllVal($event)"></el-input>
               </el-form-item>
               <el-form-item label="千斤顶型号">
-                <el-input v-model="nowData.liftingJackModel"></el-input>
+                <el-input @focus="$unity.focusAllVal($event)" v-model="nowData.liftingJackModel"></el-input>
               </el-form-item>
               <el-form-item label="油泵型号">
-                <el-input v-model="nowData.oilPumpModel"></el-input>
+                <el-input @focus="$unity.focusAllVal($event)" v-model="nowData.oilPumpModel"></el-input>
               </el-form-item>
             </div>
             <el-form-item label="张拉模式" style="flex:2;">
-              <el-checkbox-group v-model="nowData.tensioningPattern">
+              <el-checkbox-group @focus="$unity.focusAllVal($event)" v-model="nowData.tensioningPattern">
                 <el-checkbox :label="index" border v-for="(item, index) in ['A1单顶', 'A两顶', 'B1单顶', 'B两顶', '四顶']" :key="index">{{item}}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
-            <el-tabs v-model="tabsActive" type="card">
+            <el-tabs @focus="$unity.focusAllVal($event)" v-model="tabsActive" type="card">
               <el-tab-pane label="顶参数" name="a">
-                <!-- 顶参数 -->
-                <!-- <h3 style="background-color: rgb(245, 247, 250);">顶参数</h3>
-                <div class="row-flex">
-                  <el-form-item label="位移上限">
-                    <el-input v-model="nowData.ceiling"></el-input>
-                  </el-form-item>
-                  <el-form-item label="位移下限">
-                    <el-input v-model="nowData.lower"></el-input>
-                  </el-form-item>
-                  <el-form-item label="工作位移上限">
-                    <el-input v-model="nowData.WorkCeiling"></el-input>
-                  </el-form-item>
-                  <el-form-item label="工作位移下限">
-                    <el-input v-model="nowData.WorkLower"></el-input>
-                  </el-form-item>
-                </div> -->
                 <div :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
                   <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}顶参数</h3>
                   <!-- 位移校正 displacementCorrection -->
                   <div class="row-flex">
-                    <el-form-item :label="i" v-for="(i, index) in ['位移0~20%', '20~40%', '40~60%', '60~80%', '80~100%']" :key="index">
-                      <el-input v-model="nowData[item].displacementCorrection[index]"></el-input>
+                    <el-form-item :label="i" v-for="(i, index) in ['20mm', '60mm', '100mm', '140mm', '180mm', '210m']" :key="index">
+                      <el-input  @click.native="setFunc(item, 'displacementCorrection', index)" :value="nowData[item].displacementCorrection[index]"></el-input>
                     </el-form-item>
                   </div>
                   <!-- 压力校正 pressureCorrection -->
-                  <div class="row-flex">
-                    <el-form-item :label="i" v-for="(i, index) in ['2.5Mpa', '7.5Mpa', '12.5Mpa', '17.5Mpa', '22.5Mpa']" :key="index">
-                      <el-input v-model="nowData[item].pressureCorrection[index]"></el-input>
+                  <div class="row-flex mpa">
+                    <el-form-item :label="i" v-for="(i, index) in ['2.5Mpa', '7.5Mpa', '12.5Mpa', '17.5Mpa', '22.5Mpa', '27.5Mpa']" :key="index">
+                      <el-input @click.native="setFunc(item, 'pressureCorrection', index)" v-model="nowData[item].pressureCorrection[index]"></el-input>
                     </el-form-item>
                   </div>
-                  <div class="row-flex">
-                    <el-form-item :label="i" v-for="(i, index) in ['27.5Mpa', '32.5Mpa', '37.5Mpa', '42.5Mpa', '47.5Mpa']" :key="index">
-                      <el-input v-model="nowData[item].pressureCorrection[index + 5]"></el-input>
+                  <div class="row-flex map">
+                    <el-form-item :label="i" v-for="(i, index) in ['32.5Mpa', '37.5Mpa', '42.5Mpa', '47.5Mpa', '52.5Mpa', '57.5Mpa']" :key="index">
+                      <el-input @click.native="setFunc(item, 'pressureCorrection', index + 6)" v-model="nowData[item].pressureCorrection[index + 6]"></el-input>
                     </el-form-item>
                   </div>
                 </div>
@@ -75,21 +59,28 @@
                   <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}标定参数</h3>
                   <div class="row-flex">
                     <el-form-item label="千斤顶编号">
-                      <el-input v-model="nowData[item].liftingJackNumber"></el-input>
+                      <el-input @focus="$unity.focusAllVal($event)" v-model="nowData[item].liftingJackNumber"></el-input>
                     </el-form-item>
                     <el-form-item label="油泵编号">
-                      <el-input v-model="nowData[item].oilPumpNumber"></el-input>
+                      <el-input @focus="$unity.focusAllVal($event)" v-model="nowData[item].oilPumpNumber"></el-input>
                     </el-form-item>
                     <el-form-item >
                     </el-form-item>
                   </div>
                   <div class="row-flex">
-                    <el-form-item :label="`回归方程: ${nowData.equation ? 'F=': 'P='}`">
-                      <el-input type="number" v-model="nowData[item].a"></el-input>
+                    <el-form-item label="回归方程">
+                      <el-input type="number" @focus="$unity.focusAllVal($event)" v-model="nowData[item].a">
+                        <template slot="prepend">{{nowData.equation ? 'F=': 'P='}}</template>
+                      </el-input>
                     </el-form-item>
-                    <el-form-item :label="nowData.equation ? 'P+': 'F+'" class="fc">
+                    <div>
+                      <el-input type="number" @focus="$unity.focusAllVal($event)" v-model="nowData[item].b">
+                        <template slot="prepend">{{nowData.equation ? 'P+': 'F+'}}</template>
+                      </el-input>
+                    </div>
+                    <!-- <el-form-item :label="nowData.equation ? 'P+': 'F+'" class="fc">
                       <el-input type="number" v-model="nowData[item].b"></el-input>
-                    </el-form-item>
+                    </el-form-item> -->
                     <el-form-item label="标定日期">
                       <el-date-picker v-model="nowData[item].demarcationDate" value-format="yyyy-MM-dd" align="right" style="width: auto;" type="date" placeholder="选择日期" :editable="false"></el-date-picker>
                     </el-form-item>
@@ -101,6 +92,30 @@
         </div>
       </el-main>
     </el-container>
+    <el-dialog
+      title="校正值计算"
+      :visible="setState"
+      width="80%"
+      >
+      <el-form label-width="100px">
+        <div class="row-flex">
+          <el-form-item label="设备显示值" >
+            <el-input v-model="correction.a"></el-input>
+          </el-form-item>
+          <el-form-item label="实际测量值">
+            <el-input v-model="correction.b"></el-input>
+          </el-form-item>
+          <el-form-item label="系数">
+            <p hidden="hidden">{{correctionC}}</p>
+            <el-input v-model="correction.c"></el-input>
+          </el-form-item>
+        </div>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setState = false">取 消</el-button>
+        <el-button type="primary" @click="saveCorrection()">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -124,8 +139,8 @@
       demarcationDate: '', // 标定日期
       a: 0, // 方程常数a
       b: 0, // 方程常数b
-      displacementCorrection: [1, 1, 1, 1, 1], // 位移校正
-      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // 压力校正
+      displacementCorrection: [1, 1, 1, 1, 1, 1], // 位移校正
+      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // 压力校正
     },
     A2: {
       liftingJackNumber: '',
@@ -133,8 +148,8 @@
       demarcationDate: '',
       a: 0,
       b: 0,
-      displacementCorrection: [1, 1, 1, 1, 1],
-      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      displacementCorrection: [1, 1, 1, 1, 1, 1],
+      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     B1: {
       liftingJackNumber: '',
@@ -142,8 +157,8 @@
       demarcationDate: '',
       a: 0,
       b: 0,
-      displacementCorrection: [1, 1, 1, 1, 1],
-      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      displacementCorrection: [1, 1, 1, 1, 1, 1],
+      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     B2: {
       liftingJackNumber: '',
@@ -151,8 +166,8 @@
       demarcationDate: '',
       a: 0,
       b: 0,
-      displacementCorrection: [1, 1, 1, 1, 1],
-      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      displacementCorrection: [1, 1, 1, 1, 1, 1],
+      pressureCorrection: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
   };
   export default {
@@ -167,6 +182,9 @@
       },
       addState() {
         return this.$store.state.global.addState;
+      },
+      correctionC() {
+        this.correction.c = Number((this.correction.a / this.correction.b).toFixed(6));
       },
     },
     beforeUpdate() {
@@ -200,6 +218,13 @@
       },
       menuData: null,
       nowName: null,
+      setState: false, //计算参数
+      correction: {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+      },
     }),
     watch: {
       // 切换输入框状态
@@ -341,8 +366,19 @@
       },
       // operation
       disabled(state = true) {
-        this.$d3.selectAll('input').attr('disabled', state);
+        // this.$d3.selectAll('input').attr('disabled', state);
       },
+      // 校正计算
+      setFunc(item, item2, index) {
+        this.setState = true;
+        this.correction.item = item;
+        this.correction.item2 = item2;
+        this.correction.index = index;
+      },
+      saveCorrection() {
+        this.nowData[this.correction.item][this.correction.item2][this.correction.index] = this.correction.c;
+        this.setState = false;
+      }
     },
   };
 
@@ -355,5 +391,17 @@
   &>div{
     margin-right: 15px;
   }
+}
+</style>
+
+<style lang="scss">
+.mpa {
+  .el-form-item--small.el-form-item{
+    margin-bottom: 0;
+  }
+}
+.el-input--small .el-input__inner{
+  padding-left: 1px;
+  padding-right: 1px;
 }
 </style>

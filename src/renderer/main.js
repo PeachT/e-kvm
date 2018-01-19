@@ -37,14 +37,13 @@ Vue.config.productionTip = false;
 
 // 全局过滤注册
 Vue.filter('imgPath', (val, vv) => {
-  console.log(val, vv);
   return val;
 });
-Vue.filter('plc2mpa', (val, vv) => {
-  return UnitConversion.plc2mpa(val);
+Vue.filter('plc2mpa', (val, ab, id) => {
+  return UnitConversion.plc2mpa(val, ab, id);
 });
-Vue.filter('plc2mm', (val, vv) => {
-  return UnitConversion.plc2mm(val);
+Vue.filter('plc2mm', (val, ab, id) => {
+  return UnitConversion.plc2mm(val, ab, id);
 });
 Vue.filter('plc2kn', (val, deviceId, name) => {
   return UnitConversion.plc2kn(val, deviceId, name);

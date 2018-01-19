@@ -2,8 +2,8 @@
   <div class="wh100 menu">
     <img class="bgk-img" :src="bgkimg" alt="">
     <div class="items">
-      <div class="item" v-for="(item, index) in menus" :key="index" @click="$router.push(item.path)">
-        <svg aria-hidden="true">
+      <div class="item" :class="{'active': item.path === $route.path}" v-for="(item, index) in menus" :key="index" @click="$router.push(item.path)">
+        <svg aria-hidden="true" width="100%">
           <use :xlink:href="`#${item.icon}`"></use>
         </svg>
         {{item.name}}
@@ -33,7 +33,6 @@
 <script>
   const menus = [
     // { name: '任务', path: '/task', icon: 'icon-bianji', permissions: 0 },
-    { name: '模板', path: '/tpl', icon: '', permissions: 0 },
     { name: '构件', path: '/girder', icon: '', permissions: 0 },
     { name: '钢绞线', path: '/steelStrand', icon: '', permissions: 1 },
     { name: '千斤顶', path: '/device', icon: '', permissions: 1 },
@@ -52,6 +51,9 @@
   export default {
     name: 'menu',
     components: { },
+    beforeMount() {
+      console.log(this.$route.path);
+    },
     watch: {
       dialogState(nval) {
         if (!nval) {
@@ -111,27 +113,24 @@
   position: relative;
   // background-image: url()
   .items{
-    width: 804px;
-    border-bottom: 1px solid #EDF2FC;
-    border-right: 1px solid #EDF2FC;
+    width: 90%;
+    height: 90%;
     z-index: 3;
+    box-shadow: -1px -1px 1px 0 #ccc;
     .item{
+      opacity: .7;
       position: relative;
       float: left;
-      height: 200px;
-      width: 200px;
+      height: 25%;
+      width: 25%;
       text-align: center;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
       font-size: 36px;
-      border: 0;
-      border-top: 1px;
-      border-left: 1px;
-      border-color: #EDF2FC;
-      border-style: solid;
       color: white;
+      box-shadow: 1px 1px 1px 0 #ccc;
       .bgk{
         position: absolute;
         background-color: rgba(0, 0, 0, 0.5);
@@ -140,7 +139,12 @@
         top:0;
         left: 0;
         z-index: -1;
-        // filter: blur(15px);
+      }
+      &.active{
+        animation: fadein ease-in .5s;
+        animation-fill-mode: forwards;
+        // box-shadow: 3px 3px 6px #fff;
+        box-shadow: 5px 5px 6px #fff;
       }
     }
   }

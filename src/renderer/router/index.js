@@ -14,7 +14,6 @@ const Girder = () => import('../components/girder/girder.vue');
 const Monitoring = () => import('../components/monitoring/monitoring.vue');
 const Operator = () => import('../components/operator/operator.vue');
 const SteelStrand = () => import('../components/steelStrand/steelStrand.vue');
-const Tpl = () => import('../components/tpl/tpl.vue');
 const System = () => import('../components/system/system.vue');
 const Manual = () => import('../components/manual/manual.vue');
 const D0 = () => import('../components/0/0.vue');
@@ -120,14 +119,6 @@ const routes = [
     ],
   },
   {
-    path: '/tpl',
-    name: 'tpl',
-    component: Root,
-    children: [
-      { path: '', component: Tpl, name: '模板' },
-    ],
-  },
-  {
     path: '*',
     redirect: '/',
   },
@@ -141,7 +132,6 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   store.commit('showMenu', false);
   store.commit('menuTitle', to.name);
-  console.log(store.state.global.operator);
   if (store.state.global.operator) {
     next();
   } else if (to.path !== '/') {

@@ -19,7 +19,9 @@ const unity = {
   stage(n, exceed = false) {
     const s = [['初张拉', '阶段一', '终张拉'], ['初张拉', '阶段一', '阶段二', '终张拉'], ['初张拉', '阶段一', '阶段二', '阶段三', '终张拉']];
     if (exceed) {
-      return s[n].push('超张拉');
+      const r = s[n];
+      r.push('超张拉');
+      return r;
     }
     return s[n];
   },

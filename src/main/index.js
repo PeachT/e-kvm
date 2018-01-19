@@ -30,7 +30,9 @@ function createWindow() {
     },
   });
   mainWindow.loadURL(winURL);
-  BrowserWindow.addDevToolsExtension('C:/Users/peach/AppData/Local/Google/Chrome/User Data/Default/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/4.0.1_0');
+  if (process.env.NODE_ENV === 'development') {
+    BrowserWindow.addDevToolsExtension('C:/Users/peach/AppData/Local/Google/Chrome/User Data/Default/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/4.0.1_0');
+  }
   global.mainWindow = mainWindow;
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -54,15 +56,15 @@ app.on('activate', () => {
 // 网络连接成功！连接设备
 ipcMain.on('WIFIonline', () => {
   global.netLine = true;
-  if (!plc1) {
-    plc1 = new Modbus('192.168.181.110');
-  } else if (plc1.GState) {
-    mainWindow.webContents.send('lineOK', { id: 1 });
-  }
   if (!plc2) {
     plc2 = new Modbus('192.168.181.111');
   } else if (plc2.GState) {
     mainWindow.webContents.send('lineOK', { id: 2 });
+  }
+  if (!plc1) {
+    plc1 = new Modbus('192.168.181.110');
+  } else if (plc1.GState) {
+    mainWindow.webContents.send('lineOK', { id: 1 });
   }
 });
 // 网络连接失败！断开设备

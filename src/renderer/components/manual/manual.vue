@@ -21,19 +21,19 @@
         <div class="item" v-for="(item, index) in patternStr.A" :key="index" v-show="shows.indexOf(item) > -1">
           <div class="i">
             <div class="title">{{item}}</div>
-            <el-input size="medium" v-model.number="ab[item].setMpa" type="numner" @change="writeMpa(item)">
+            <el-input size="medium" @focus="$unity.focusAllVal($event)" v-model.number="ab[item].setMpa" type="number" @change="writeMpa(item)">
               <template slot="prepend">设置压力</template>
               <template slot="append">Mpa</template>
             </el-input>
-            <el-input size="medium" :value="currentlyData[`${item}mpa`] | plc2mpa" disabled>
+            <el-input size="medium" :value="currentlyData[`${item}mpa`] | plc2mpa(item, deviceId)" disabled>
               <template slot="prepend">当前压力</template>
               <template slot="append">Mpa</template>
             </el-input>
-            <el-input size="medium" v-model.number="ab[item].setMM" type="number" @change="writeMM(item)">
+            <el-input size="medium" @focus="$unity.focusAllVal($event)" v-model.number="ab[item].setMM" type="number" @change="writeMM(item)">
               <template slot="prepend">设置位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
-            <el-input size="medium" :value="currentlyData[`${item}mm`] | plc2mm" disabled>
+            <el-input size="medium" :value="currentlyData[`${item}mm`] | plc2mm(item, deviceId)" disabled>
               <template slot="prepend">当前位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
@@ -48,19 +48,19 @@
         <div class="item" v-for="(item, index) in patternStr.B" :key="index" v-show="shows.indexOf(item) > -1">
           <div class="i">
             <div class="title">{{item}}</div>
-            <el-input size="medium" v-model.number="ab[item].setMpa" type="number" @change="writeMpa(item)" >
+            <el-input size="medium" @focus="$unity.focusAllVal($event)" v-model.number="ab[item].setMpa" type="number" @change="writeMpa(item)" >
               <template slot="prepend">设置压力</template>
               <template slot="append">Mpa</template>
             </el-input>
-            <el-input size="medium" :value="currentlyData[`${item}mpa`] | plc2mpa" disabled>
+            <el-input size="medium" :value="currentlyData[`${item}mpa`] | plc2mpa(item, deviceId)" disabled>
               <template slot="prepend">当前压力</template>
               <template slot="append">Mpa</template>
             </el-input>
-            <el-input size="medium" v-model.number="ab[item].setMM" type="number" @change="writeMM(item)">
+            <el-input size="medium" @focus="$unity.focusAllVal($event)" v-model.number="ab[item].setMM" type="number" @change="writeMM(item)">
               <template slot="prepend">设置位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
-            <el-input size="medium" :value="currentlyData[`${item}mm`] | plc2mm" disabled>
+            <el-input size="medium" :value="currentlyData[`${item}mm`] | plc2mm(item, deviceId)" disabled>
               <template slot="prepend">当前位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
@@ -129,17 +129,17 @@
       if (this.$store.state.global.PLC1State) {
         ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2058, data: true });
       }
-      if (this.$store.state.global.PLC1State) {
+      if (this.$store.state.global.PLC2State) {
         ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2058, data: true });
       }
       const s = window.manual.getAll[0];
       if (s.id) {
         this.device = window.deviceDB.getOne({ id: s.id });
-        this.deviceName = this.device.name;
       } if (window.deviceDB.getAll[0]) {
         this.device = window.deviceDB.getAll[0];
-        this.deviceName = this.device.name;
       }
+      this.deviceName = this.device.name;
+      this.deviceId = this.device.id;
     },
     computed: {
       patternStr() {
@@ -270,7 +270,7 @@
         ipcRenderer.send('wPLC1', { func: 'writeMultipleCoil', address: 2058, data: [0, 0] });
         ipcRenderer.send('wPLC1', { func: 'writeMultipleRegisters16', address: 4106, data: [0, 0, 0, 0] });
       }
-      if (this.$store.state.global.PLC1State) {
+      if (this.$store.state.global.PLC2State) {
         ipcRenderer.send('wPLC2', { func: 'writeMultipleCoil', address: 2058, data: [0, 0] });
         ipcRenderer.send('wPLC2', { func: 'writeMultipleRegisters16', address: 4106, data: [0, 0, 0, 0] });
       }
