@@ -6,3 +6,4 @@
 /src/renderer/components/0/0.vue
 /src/renderer/objJS/unitConversion.js
 /src/main/modbus/sendData.js
+/src/renderer/store/modules/global.js

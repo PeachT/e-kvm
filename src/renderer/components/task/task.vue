@@ -1,5 +1,5 @@
 <template>
-  <div class="wh100 task-record">
+  <div class="wh100 task-record" ref="task">
     <el-container class="wh100">
       <el-aside class="task-record-menu" width="224px">
         <task-menu ref="menu" :menuData="menuData" :childrenMenuData="childrenMenuData" :childrenMenuId.sync="childrenMenuId" :menuId.sync="menuId"
@@ -9,19 +9,27 @@
         <h1 v-show="!nowDataState">没有数据</h1>
         <el-tabs v-if="nowDataState">
           <el-tab-pane label="基础信息">
-            <base-top
-              :holeId.sync="nowData.holeId"
-              :structureId.sync="structureId"
-              :deviceId.sync="nowData.deviceId"
-              :bridgeName.sync="nowData.bridgeName"
-              :steelStrandId.sync="nowData.steelStrandId"
-              :data.sync="nowData.data"
-              :editState="editState" />
-            <base-group :groups="groups" :nowGroupName.sync="nowGroupName" v-if="groups" />
-            <base-tendon-data :taskData.sync="taskData" :deviceId="nowData.deviceId" v-if="nowGroupName" />
+            <div ref="top">
+              <base-top
+                :holeId.sync="nowData.holeId"
+                :structureId.sync="structureId"
+                :deviceId.sync="nowData.deviceId"
+                :bridgeName.sync="nowData.bridgeName"
+                :steelStrandId.sync="nowData.steelStrandId"
+                :data.sync="nowData.data"
+                :editState="editState" />
+            </div>
+            <div ref="group">
+              <base-group :groups="groups" :nowGroupName.sync="nowGroupName" v-if="groups" />
+            </div>
+            <div ref="tendon">
+              <base-tendon-data :taskData.sync="taskData" :deviceId="nowData.deviceId" v-if="nowGroupName" />
+            </div>
             <!-- 记录 -->
             <div v-if="taskData && 'curves' in taskData">
-              <base-record-data :taskData.sync="taskData" :deviceId="nowData.deviceId"/>
+              <div ref="record">
+                <base-record-data :taskData.sync="taskData" :deviceId="nowData.deviceId"/>
+              </div>
               <base-svg
                 :data="taskData.curves"
                 :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
@@ -35,13 +43,19 @@
             </div>
           </el-tab-pane>
           <el-tab-pane label="设备消息">
-            <device-info :deviceId="nowData.deviceId" />
+            <div ref="deviceInfo">
+              <device-info :deviceId="nowData.deviceId" />
+            </div>
           </el-tab-pane>
           <el-tab-pane label="钢绞线/混泥土">
-            <other-info :steelStrandId="nowData.steelStrandId" />
+            <div ref="otherInfo">
+              <other-info :steelStrandId="nowData.steelStrandId" :concretes.sync="nowData.concretes" />
+            </div>
           </el-tab-pane>
           <el-tab-pane label="用户信息">
-            <user-info />
+            <div ref="userInfo">
+              <user-info />
+            </div>
           </el-tab-pane>
         </el-tabs>
         <div class="tpl" v-if="nowDataState && nowData.id">
@@ -307,12 +321,11 @@
       console.time('c');
     },
     updated() {
-      // if (this.editState) {
-      //   this.disabled(null);
-      // } else {
-      //   this.disabled();
-      // }
-      console.timeEnd('c');
+      if (this.editState) {
+        this.disabled(null);
+      } else {
+        this.disabled();
+      }
     },
     data: () => ({
       // 创建为新任务
@@ -375,8 +388,12 @@
         console.log(nval);
         this.getChildrenMenuData();
       },
-      nowData() {
-        this.nowDataState = true;
+      nowData(nval) {
+        if (nval) {
+          this.nowDataState = true;
+        } else {
+          this.nowDataState = false;
+        }
       },
       // 张拉组切换
       nowGroupName(nval) {
@@ -475,6 +492,7 @@
           if (id) {
             this.nowData = this.$unity.copyObj(datas.filter(item => item.id === id)[0]);
             this.newTaskName = this.nowData.bridgeName;
+            window.deviceId = this.nowData.deviceId;
           }
         } catch (error) {}
         console.timeEnd('a');
@@ -486,10 +504,13 @@
       },
       add() {
         this.$message('添加');
-        this.nowDataState = true;
+        this.nowData = this.$unity.copyObj(baseData);
+        this.taskData = null;
+        this.nowGroupName = null;
+        this.structureId = null;
       },
       addOk() {
-        this.add();
+        this.nowDataState = true;
         this.$store.commit('addState', true);
         this.$store.commit('editState', true);
         this.menuId = null;
@@ -500,6 +521,8 @@
         data.id = null;
         delete data.meta;
         delete data.$loki;
+        delete data.record;
+        delete data.curves;
         this.nowData = data;
         this.newTaskState = false;
         console.log(this.nowData, data);
@@ -589,6 +612,8 @@
         }).then(() => {
           this.$store.commit('editState', false);
           this.$store.commit('addState', false);
+          this.nowData = null;
+          this.taskData = null;
           this.getMenuData();
           this.$message({
             type: 'info',
@@ -611,11 +636,25 @@
       },
       // 编辑禁止状态切换
       disabled(state = true) {
-        // this.$d3.selectAll('input').attr('disabled', state);
+        const input = this.$refs.task;
+        const top = this.$refs.top;
+        const group = this.$refs.group;
+        const tendon = this.$refs.tendon;
+        const record = this.$refs.record;
+        const deviceInfo = this.$refs.deviceInfo;
+        const userInfo = this.$refs.userInfo;
+        const otherInfo = this.$refs.otherInfo;
+        this.$d3.select(top).selectAll('input').attr('disabled', state);
+        this.$d3.select(group).selectAll('input').attr('disabled', null);
+        this.$d3.select(tendon).selectAll('input').attr('disabled', state);
+        this.$d3.select(record).selectAll('input').attr('disabled', true);
+        this.$d3.select(deviceInfo).selectAll('input').attr('disabled', true);
+        this.$d3.select(userInfo).selectAll('input').attr('disabled', true);
+        this.$d3.select(otherInfo).selectAll('input').attr('disabled', state);
+
       },
       // 创建为新的任务
       tplCreateFunc() {
-        console.log('创建为新的任务');
         this.addOk();
       },
       // 下载任务

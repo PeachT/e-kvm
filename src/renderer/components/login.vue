@@ -26,7 +26,10 @@
         <el-form label-width="50px" size="medium">
           <h1> 登录信息</h1>
           <el-form-item label="用 户">
-            <el-autocomplete style="width:100%;" v-model="user.name" :fetch-suggestions="querySearch" placeholder="请输入内容"></el-autocomplete>
+            <el-autocomplete style="width:100%;"
+              v-model="user.name"
+              :fetch-suggestions="querySearch"
+              placeholder="请输入用户名"></el-autocomplete>
           </el-form-item>
           <el-form-item label="密 码">
             <el-input v-model="user.pwd"></el-input>
@@ -183,7 +186,7 @@
         try {
           let Results = [];
           // const users = this.DBmain.getCollection('admin').find({ permissions: { $lt: 9 } });
-          const users = window.get({ permissions: { $lt: 9 } });
+          const users = window.adminDB.get({ permissions: { $lt: 9 } });
           Results = users.map((item) => {
             return { value: item.name };
           });
@@ -314,6 +317,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        box-shadow: 5px 5px 8px #ccc;
         .img {
           flex: 3;
           img{

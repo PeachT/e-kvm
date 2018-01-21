@@ -112,8 +112,9 @@
   justify-content: center;
   position: relative;
   // background-image: url()
+  background-color: rgba(0, 0, 0, 0.5);
   .items{
-    width: 90%;
+    width: 75%;
     height: 90%;
     z-index: 3;
     box-shadow: -1px -1px 1px 0 #ccc;

@@ -38,14 +38,16 @@
             <tr :class="item" v-for="(item, index) in stage" :key="index">
               <td>{{item}}</td>
               <td>{{abStage[currentlyState[`${item}`]]}}</td>
-              <td>{{currentlyData[`${item}mm`] | plc2mm}}</td>
-              <td>{{currentlyData[`${item}mpa`] | plc2mpa}}</td>
+              <td>{{currentlyData[`${item}mm`] | plc2mm(item, taskData.deviceId)}}</td>
+              <td>{{currentlyData[`${item}mpa`] | plc2mpa(item, taskData.deviceId)}}</td>
               <td>{{pressure.stagesMpa[item][PLCStage]}}</td>
               <td>单顶伸长量</td>
-              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">单顶偏差率</td>
-              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{nowData.task[item].LL}}</td>
-              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总伸长量</td>
-              <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总偏差率</td>
+              <template v-if="item === 'A1' || item === 'B1'">
+                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">单顶偏差率</td>
+                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{nowData.task[item].LL}}</td>
+                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总伸长量</td>
+                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总偏差率</td>
+              </template>
             </tr>
           </table>
         </div>
@@ -171,6 +173,7 @@ export default {
   }),
   beforeMount() {
     if (window.nowDB.getAll.length > 0) {
+      window.deviceId = this.taskData.deviceId;
       this.taskDownData.state = true;
       const uid = window.nowDB.getAll[0].uid; // 构件id
       this.girderName = window.girderDB.getOne({ id: uid }).name; // 获取构件名称
@@ -251,6 +254,14 @@ export default {
         B2mm: p2.B2mm,
       };
     },
+    currentlyX() {
+      const p1 = this.$store.state.global.PLC1X;
+      const p2 = this.$store.state.global.PLC2X;
+      return {
+        p1x: p1,
+        p2x: p2,
+      };
+    },
     // 压力曲线数据
     cMpa() {
       const d = {
@@ -323,58 +334,31 @@ export default {
       window.setTimeout(() => {
         console.log('1启动');
         const m = this.nowData.tensioningPattern; // 张拉泵顶组合
-        // this.$plc1.readInputStatue(1024, 1, (data) => {
-        //   const x0 = returnData(data)[0];
-        //   if (x0 === '1' && !this.concretesState) {
-        //     new Promise(
-        //       (resolve, reject) => {
-        //         this.$plc2.writeSingleCoil(2560, true, (data) => {
-        //           console.log('PLC返回写入单线圈：', data);
-        //         });
-        //         this.$plc1.writeSingleCoil(2560, true, (data) => {
-        //           console.log('PLC返回写入单线圈：', data);
-        //           resolve();
-        //         });
-        //       },
-        //     ).then(this.startFunc());
-        //   } else if (x0 === '1') {
-        //     this.$message.error('请输入浇筑日期！');
-        //   }
-        //   if (window.nowDB.getAll.length > 0 && this.taskDownData.state) {
-        //     this.x0();
-        //   }
-        // });
-        // 主站下载
-        ipcRenderer.send('rPLC1', { func: 'readInputStatue', address: 1025, data: 16, callback: 'tensionRun' });
-        ipcRenderer.on('tensionRun', (event, data) => {
-          const xs = returnData(data.callbackData);
-          const x0 = xs[0] || xs[15] ? 1 : 0;
-          if (x0) {
-            // 启动 这里要设置PLC启动. M520 => 2568
-            this.zTension = false;
-            this.cTension = true;
-            ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2568, data: true, callback: 'zTension' });
-            if (m === 1 || m === 3 || m === 4) {
-              this.cTension = false;
-              ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2568, data: true, callback: 'cTension' });
-            }
-            ipcRenderer.on('zTension', (event, data) => {
-              this.zTension = true;
-              if (this.zTension && this.cTension) {
-                this.startFunc();
-              }
-            });
-            ipcRenderer.on('cTension', (event, data) => {
-              this.cTension = true;
-              if (this.zTension && this.cTension) {
-                this.startFunc();
-              }
-            });
-          } else {
-            this.x0();
+        if (this.currentlyX.p1x[1] === '1') {
+          // 启动 这里要设置PLC启动. M520 => 2568
+          this.zTension = false;
+          this.cTension = true;
+          ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2568, data: true, callback: 'zTension' });
+          if (m === 1 || m === 3 || m === 4) {
+            this.cTension = false;
+            ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2568, data: true, callback: 'cTension' });
           }
-        });
-      }, 0);
+          ipcRenderer.on('zTension', (event, data) => {
+            this.zTension = true;
+            if (this.zTension && this.cTension) {
+              this.startFunc();
+            }
+          });
+          ipcRenderer.on('cTension', (event, data) => {
+            this.cTension = true;
+            if (this.zTension && this.cTension) {
+              this.startFunc();
+            }
+          });
+        } else {
+          this.x0();
+        }
+      }, 100);
     },
     // 启动张拉
     startFunc() {

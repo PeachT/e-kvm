@@ -74,9 +74,10 @@ class Modbus {
       new Promise((resolve, reject) => {
         let b1 = false;
         let b2 = false;
+        let b3 = false;
         this.readCoilStatue(2048, 1, (data) => {
           b1 = true;
-          if (b1 && b2) {
+          if (b1 && b2 && b3) {
             resolve();
           }
         });
@@ -84,7 +85,15 @@ class Modbus {
           const d = returnData(data);
           this.toRenderer('realTime', d);
           b2 = true;
-          if (b1 && b2) {
+          if (b1 && b2 && b3) {
+            resolve();
+          }
+        });
+        this.readInputStatue(1024, 24, (data) => {
+          const d = returnData(data);
+          this.toRenderer('realTimeX', d);
+          b3 = true;
+          if (b1 && b2 && b3) {
             resolve();
           }
         });

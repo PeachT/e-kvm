@@ -13,12 +13,16 @@
       <h3>混泥土信息</h3>
       <div class="row-flex">
         <el-form-item :label="item[1]"
-          v-for="(item, index) in [['skqd', '试块编号'], ['skqd', '试块强度'], ['sjqd', '设计强度'],['','张拉时砼强度']]"
+          v-for="(item, index) in [['sampleNumber', '试块编号'], ['sampleStrength', '试块强度'], ['designStrength', '设计强度'],['tensioningStrengthNow','张拉时砼强度']]"
           :key="index">
-          <el-input ></el-input>
+          <el-input v-model="concretes[item[0]]"></el-input>
         </el-form-item>
         <el-form-item label="浇筑日期">
-          <el-date-picker style="width:100%;" type="date" placeholder="选择日期" ></el-date-picker>
+          <el-date-picker style="width:100%;" type="date" placeholder="选择日期"
+            :editable="false"
+            align="center"
+            value-format="yyyy-MM-dd"
+            v-model="concretes.castingDate"></el-date-picker>
         </el-form-item>
       </div>
     </el-form>
@@ -28,7 +32,7 @@
 <script>
 export default {
   name: 'otherInfo',
-  props: ['steelStrandId'],
+  props: ['steelStrandId', 'concretes'],
   computed: {
     nowData() {
       return window.steelStrandsDB.getOne({ id: this.steelStrandId });

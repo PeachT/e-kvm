@@ -4,7 +4,7 @@
     element-loading-text="没有可用的设备"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(0, 0, 0, 0.8)">
-    <div class="operation">
+    <div class="operation" v-show="!dab">
       <el-input size="medium"  @click.native="deviceState = true" :value="deviceName">
         <i slot="suffix" class="el-input__icon el-icon-news"></i>
         <template slot="prepend">泵顶组</template>
@@ -21,9 +21,12 @@
         <div class="item" v-for="(item, index) in patternStr.A" :key="index" v-show="shows.indexOf(item) > -1">
           <div class="i">
             <div class="title">{{item}}</div>
-            <el-input size="medium" @focus="$unity.focusAllVal($event)" v-model.number="ab[item].setMpa" type="number" @change="writeMpa(item)">
+            <el-input size="medium"
+              @focus="$unity.focusAllVal($event)"
+              v-model.number="ab[item].setMpa"
+              type="number" @change="writeMpa(item)">
               <template slot="prepend">设置压力</template>
-              <template slot="append">Mpa</template>
+              <template slot="append" >Mpa</template>
             </el-input>
             <el-input size="medium" :value="currentlyData[`${item}mpa`] | plc2mpa(item, deviceId)" disabled>
               <template slot="prepend">当前压力</template>
@@ -84,6 +87,7 @@
 
   export default {
     name: 'manual',
+    props: ['dId', 'dab'],
     components: {
       DeviceSelect,
     },
@@ -125,6 +129,13 @@
       };
     },
     beforeMount() {
+      let s = null;
+      if (this.dab) {
+        s = this.dId;
+        this.shows = [this.dab];
+      } else {
+        s = window.manual.getAll[0];
+      }
       this.sensor = window.systemDB.getOne({ name: 'sensor' });
       if (this.$store.state.global.PLC1State) {
         ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2058, data: true });
@@ -132,7 +143,6 @@
       if (this.$store.state.global.PLC2State) {
         ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2058, data: true });
       }
-      const s = window.manual.getAll[0];
       if (s.id) {
         this.device = window.deviceDB.getOne({ id: s.id });
       } if (window.deviceDB.getAll[0]) {
@@ -199,6 +209,9 @@
           B2mpa: p2.B2mpa,
           B2mm: p2.B2mm,
         };
+      },
+      diviceId(nval) {
+        window.deviceId = nval;
       },
     },
     methods: {
@@ -328,5 +341,11 @@ $border-color: #ccc;
       }
     }
   }
+}
+.deviceSet{
+  display: flex;
+}
+.w100{
+  width: 100%;
 }
 </style>

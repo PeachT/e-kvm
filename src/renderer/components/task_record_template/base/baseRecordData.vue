@@ -16,31 +16,31 @@
         <tr :class="item" v-for="(item, index) in patternStr" :key="index">
           <td>{{item}}</td>
           <td v-for="(i, index) in stageStr" :key="index">
-            <el-input :value="taskData.recird[item].Mpa[index] | plc2mpa">
+            <el-input :value="taskData.recird[item].Mpa[index] | plc2mpa(item, deviceId)">
               <i slot="suffix" class="el-input__icon">Mpa</i>
             </el-input>
             <el-input :value="taskData.recird[item].Mpa[index] | plc2kn(deviceId, item)">
               <i slot="suffix" class="el-input__icon">Kn</i>
             </el-input>
-            <el-input :value="taskData.recird[item].mm[index] | plc2mm">
+            <el-input :value="taskData.recird[item].mm[index] | plc2mm(item, deviceId)">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
           <!-- 回油至初张拉数据 -->
           <td>
-            <el-input :value="taskData.recird[item].initMpa | plc2mpa">
+            <el-input :value="taskData.recird[item].initMpa | plc2mpa(item, deviceId)">
               <i slot="suffix" class="el-input__icon">Mpa</i>
             </el-input>
             <el-input :value="taskData.recird[item].initMpa | plc2kn(deviceId, item)">
               <i slot="suffix" class="el-input__icon">Kn</i>
             </el-input>
-            <el-input :value="taskData.recird[item].initMM | plc2mm">
+            <el-input :value="taskData.recird[item].initMM | plc2mm(item, deviceId)">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
           <!-- 力筋回缩量 -->
           <td class="h3">
-            <el-input :value="taskData.recird[item].retractionMM | plc2mm">
+            <el-input :value="taskData.recird[item].retractionMM | plc2mm(item, deviceId)">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
@@ -89,7 +89,7 @@
     },
     computed: {
       LZ() {
-        return this.$Ounity.LZ(this.taskData.task, this.record, this.taskData.tensioningPattern);
+        return this.$Ounity.LZ(this.taskData);
       },
     },
     methods: {

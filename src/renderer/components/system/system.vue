@@ -11,34 +11,34 @@
       <h3 style="background-color: rgb(245, 247, 250);">{{item === 'z' ? '主站' : '从站'}}系统参数</h3>
       <div class="row-flex">
         <el-form-item label="压力上限">
-          <el-input type="number" v-model="plc[item].ceilingMpa">
+          <el-input type="number" v-model.number="plc[item].ceilingMpa">
             <i slot="suffix">Mpa</i>
           </el-input>
         </el-form-item>
         <el-form-item label="允许压力偏差">
-          <el-input type="number" v-model="plc[item].differencePressure">
+          <el-input type="number" v-model.number="plc[item].differencePressure">
             <i slot="suffix">Mpa</i>
           </el-input>
         </el-form-item>
         <el-form-item label="超设置压力">
-          <el-input type="number" v-model="plc[item].superSetPressure">
+          <el-input type="number" v-model.number="plc[item].superSetPressure">
             <i slot="suffix">Mpa</i>
           </el-input>
         </el-form-item>
         <el-form-item label="允许回程压力">
-          <el-input type="number" v-model="plc[item].returnPressure">
+          <el-input type="number" v-model.number="plc[item].returnPressure">
             <i slot="suffix">Mpa</i>
           </el-input>
         </el-form-item>
         <el-form-item label="油泵延时">
-          <el-input  type="number" v-model="plc[item].delay">
+          <el-input  type="number" v-model.number="plc[item].delay">
             <i slot="suffix">s</i>
           </el-input>
         </el-form-item>
       </div>
       <div class="row-flex">
         <el-form-item label="补压参数">
-          <el-input  type="number" v-model="plc[item].replenish">
+          <el-input  type="number" v-model.number="plc[item].replenish">
             <i slot="suffix">%</i>
           </el-input>
         </el-form-item>
@@ -53,22 +53,22 @@
       </div>
       <div class="row-flex">
         <el-form-item label="位移上限">
-          <el-input v-model="plc[item].ceilingMM"></el-input>
+          <el-input type="number" v-model.number="plc[item].ceilingMM"></el-input>
         </el-form-item>
         <el-form-item label="位移下限">
-          <el-input v-model="plc[item].lowerMM"></el-input>
+          <el-input type="number" v-model.number="plc[item].lowerMM"></el-input>
         </el-form-item>
         <el-form-item label="工作位移上限">
-          <el-input v-model="plc[item].WorkCeilingMM"></el-input>
+          <el-input type="number" v-model.number="plc[item].WorkCeilingMM"></el-input>
         </el-form-item>
         <el-form-item label="工作位移下限">
-          <el-input v-model="plc[item].WorkLowerMM"></el-input>
+          <el-input type="number" v-model.number="plc[item].WorkLowerMM"></el-input>
         </el-form-item>
       </div>
       <div class="row-flex">
         <div>
           <el-button style="float: right;" type="">刷新</el-button>
-          <el-button style="float: right;" type="" @click="plcSave(index +1)">保存</el-button>
+          <el-button style="float: right;" type="success" @click="plcSave(index +1)">保存</el-button>
         </div>
       </div>
     </el-form>
@@ -81,14 +81,14 @@
           { required: true, message: '参数不能为空'},
           { type: 'number', message: '参数必须为数字值'}
         ]">
-          <el-input v-model.number="control[item[1]]">
+          <el-input type="number" v-model.number="control[item[1]]">
             <i slot="suffix">%</i>
           </el-input>
         </el-form-item>
       </div>
       <div class="row-flex">
         <div>
-          <el-button style="float: right;" type="" @click="controlSave()">保存</el-button>
+          <el-button style="float: right;" type="success" @click="controlSave()">保存</el-button>
         </div>
       </div>
     </el-form>
@@ -114,7 +114,7 @@
       </div>
       <div class="row-flex">
         <div>
-          <el-button style="float: right;" type="" @click="sensorSave()">保存</el-button>
+          <el-button style="float: right;" type="success" @click="sensorSave()">保存</el-button>
         </div>
       </div>
     </el-form>
@@ -237,7 +237,6 @@
           this.$UC.mm2plc(data.WorkCeilingMM),
           this.$UC.mm2plc(data.WorkLowerMM),
         ];
-        console.log(data, datas);
         ipcRenderer.send(func, { func: 'writeMultipleRegisters16', address: 4596, data: datas, callback: 'wSysten' });
         ipcRenderer.on('wSysten', (event) => {
           this.plcFunc(id);

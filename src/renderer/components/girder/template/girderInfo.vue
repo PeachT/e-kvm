@@ -45,7 +45,8 @@
       :title="title"
       :visible.sync="editState"
       width="80%"
-      :before-close="editClose">
+      :before-close="editClose"
+      :show-close="false">
         <el-form :model="nowData" :rules="nowDataRules" ref="nowData" label-width="80px">
           <el-form-item label="孔号名称" prop="name">
             <el-input v-model="nowData.name"></el-input>

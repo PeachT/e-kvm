@@ -31,6 +31,10 @@
       ipcRenderer.on('realTime', (event, data) => {
         this.$store.dispatch(`PLC${data.id}Data`, data.data);
       });
+      // 实时数据获取X
+      ipcRenderer.on('realTimeX', (event, data) => {
+        this.$store.dispatch(`PLC${data.id}X`, data.data);
+      });
       // 连接成功
       ipcRenderer.on('lineOK', (event, data) => {
         this.$store.dispatch(`PLC${data.id}State`, true);

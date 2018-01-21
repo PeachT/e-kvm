@@ -19,7 +19,7 @@
               <el-input v-model="deviceName">
                 <i slot="suffix" class="el-input__icon el-icon-news"></i>
               </el-input>
-              <el-button>分组</el-button>
+              <el-button :disabled="manualGroupState" @click="manualGroup()">分组</el-button>
             </div>
           </el-form-item>
         </div>
@@ -28,7 +28,7 @@
             <el-input @focus="$unity.focusAllVal($event)" :value="bridgeName" @change="$emit('update:bridgeName', $event)"></el-input>
           </el-form-item>
           <el-form-item label="钢绞线">
-            <div class="row-flex" @click="steelStrandState = true">
+            <div class="row-flex" @click="steelStrandState = editState">
               <el-input @focus="$unity.focusAllVal($event)" v-model="steelStrand">
                 <i slot="suffix" class="el-input__icon el-icon-news"></i>
               </el-input>
@@ -113,6 +113,14 @@
         holeDetail: null,
       },
     }),
+    computed: {
+      manualGroupState() {
+        const d = this.deviceName ? 1 : 0;
+        const s = this.structure.name ? 1 : 0;
+        console.log(d, s, this.editState && d && s);
+        return !(this.editState && d && s);
+      },
+    },
     beforeMount() {
       this.holeDataFunc(this.holeId);
       this.deviceDataFunc(this.deviceId);
@@ -221,6 +229,9 @@
           groups.push(d);
         });
         this.$emit('update:data', groups);
+      },
+      manualGroup() {
+        console.log('手动分组');
       },
     },
   };

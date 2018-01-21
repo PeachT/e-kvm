@@ -12,20 +12,21 @@ const unity = {
    * @returns 返回压力（mpa）值
    */
   plc2mpa(data, ab, deviceId) {
-    const d = netage(data);
-    if (d < -100 || data === null) {
-      return '未连接传感器';
-    }
     const sensor = window.systemDB.getOne({ name: 'sensor' });
-    const device = window.deviceDB.getOne({ id: deviceId });
-    const mpa = Number(((d * sensor.pressure) / sensor.pressurePLC));
-    let correction = 1;
-    const s = Math.round(mpa / 5);
-    if (s >= 0) {
-      correction = device[ab].pressureCorrection[s];
+    if (ab) {
+      if (data < -100 || data === null) {
+        return '未连接传感器';
+      }
+      const device = window.deviceDB.getOne({ id: window.deviceId });
+      const mpa = Number(((data * sensor.pressure) / sensor.pressurePLC));
+      let correction = 0;
+      const s = parseInt(mpa / 5);
+      if (s >= 0) {
+        correction = device[ab].pressureCorrection[s];
+      }
+      return (mpa * Number(correction)).toFixed(sensor.toFixed);
     }
-    console.log(data, 's===', s, ab, '校正值', correction);
-    return (mpa * Number(correction)).toFixed(sensor.toFixed);
+    return ((data * sensor.pressure) / sensor.pressurePLC).toFixed(sensor.toFixed);
   },
   /**
    * 压力（Mpa）转plc
@@ -44,19 +45,21 @@ const unity = {
    * @returns 返回位移（mm）值
    */
   plc2mm(data, ab, deviceId) {
-    const d = netage(data);
-    if (d < -100 || data === null) {
-      return '未连接传感器';
-    }
     const sensor = window.systemDB.getOne({ name: 'sensor' });
-    const device = window.deviceDB.getOne({ id: deviceId });
-    const mm = Number(((d * sensor.displacement) / sensor.displacementPLC));
-    let correction = 1;
-    const s = Math.round(mm / 40);
-    if (s >= 0) {
-      correction = device[ab].displacementCorrection[s];
+    if (ab) {
+      if (data < -100 || data === null) {
+        return '未连接传感器';
+      }
+      const device = window.deviceDB.getOne({ id: window.deviceId });
+      const mm = Number(((data * sensor.displacement) / sensor.displacementPLC));
+      let correction = 0;
+      const s = parseInt(mm / 40);
+      if (s >= 0) {
+        correction = device[ab].displacementCorrection[s];
+      }
+      return (mm * correction).toFixed(sensor.toFixed);
     }
-    return (mm * correction).toFixed(sensor.toFixed);
+    return ((data * sensor.displacement) / sensor.displacementPLC).toFixed(sensor.toFixed);
   },
   /**
    * 位移(mm)转plc

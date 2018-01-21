@@ -21,8 +21,8 @@
         </el-form-item>
         <el-form-item label="回归方程">
           <el-radio-group v-model="nowData.equation">
-            <el-radio :label="true" border>F=aP+b F张拉控制应力KN</el-radio>
-            <el-radio :label="false" border>P=aF+b P张拉控制应力MPa</el-radio>
+            <el-radio v-if="nowData.equation" :label="true" border>F=aP+b F张拉控制应力KN</el-radio>
+            <el-radio v-if="!nowData.equation" :label="false" border>P=aF+b P张拉控制应力MPa</el-radio>
           </el-radio-group>
         </el-form-item>
 

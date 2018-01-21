@@ -1,3 +1,10 @@
+function netage(data) {
+  if (data > 32767) {
+    return parseInt((0xFFFF ^ data) + 1, 10) * -1;
+  }
+  return data;
+}
+
 const state = {
   path: '',
   showMenu: false,
@@ -20,6 +27,8 @@ const state = {
     B2mpa: null,
     B2mm: null,
   },
+  PLC1X: null,
+  PLC2X: null,
   operator: null,
   user: null,
   device: null,
@@ -54,16 +63,22 @@ const mutations = {
     state.PLC2State = data;
   },
   PLC1Data(state, data) {
-    state.PLC1Data.A1mpa = data[0];
-    state.PLC1Data.A1mm = data[1];
-    state.PLC1Data.B1mpa = data[2];
-    state.PLC1Data.B1mm = data[3];
+    state.PLC1Data.A1mpa = netage(data[0]);
+    state.PLC1Data.A1mm = netage(data[1]);
+    state.PLC1Data.B1mpa = netage(data[2]);
+    state.PLC1Data.B1mm = netage(data[3]);
   },
   PLC2Data(state, data) {
-    state.PLC2Data.A2mpa = data[0];
-    state.PLC2Data.A2mm = data[1];
-    state.PLC2Data.B2mpa = data[2];
-    state.PLC2Data.B2mm = data[3];
+    state.PLC2Data.A2mpa = netage(data[0]);
+    state.PLC2Data.A2mm = netage(data[1]);
+    state.PLC2Data.B2mpa = netage(data[2]);
+    state.PLC2Data.B2mm = netage(data[3]);
+  },
+  PLC1X(state, data) {
+    state.PLC1X = data;
+  },
+  PLC2X(state, data) {
+    state.PLC2X = data;
   },
   operator(state, data) {
     state.operator = data;
@@ -88,6 +103,12 @@ const actions = {
   },
   PLC2State(context, data) {
     context.commit('PLC2State', data);
+  },
+  PLC1X(context, data) {
+    context.commit('PLC1X', data);
+  },
+  PLC2X(context, data) {
+    context.commit('PLC2X', data);
   },
 };
 

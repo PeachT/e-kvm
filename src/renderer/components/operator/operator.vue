@@ -1,5 +1,5 @@
 <template>
-  <div class="wh100">
+  <div class="wh100" ref="operator">
     <el-container class="wh100">
       <el-aside style="border-right:1px solid #EDF2FC;" width="224px">
         <menu-two :menuData="menuData" :nowName.sync="nowName" @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel"></menu-two>
@@ -225,7 +225,8 @@
       },
       // 编辑禁止状态切换
       disabled(state = true) {
-        this.$d3.selectAll('input').attr('disabled', state);
+        const input = this.$refs.operator;
+        this.$d3.select(input).selectAll('input').attr('disabled', state);
       },
     },
   };

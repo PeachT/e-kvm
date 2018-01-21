@@ -1,5 +1,5 @@
 <template>
-  <div class="wh100">
+  <div class="wh100" ref="device">
     <el-container class="wh100">
       <el-aside style="border-right:1px solid #EDF2FC;" width="224px">
         <menu-two :menuData="menuData" :nowName.sync="nowName" @add="add" @edit="edit" @down="down" @del="del" @save="save" @cancel="cancel"></menu-two>
@@ -12,6 +12,7 @@
               <el-form-item label="设备名称" prop="name">
                 <el-input v-model="nowData.name" @focus="$unity.focusAllVal($event)"></el-input>
               </el-form-item>
+
               <el-form-item label="千斤顶型号">
                 <el-input @focus="$unity.focusAllVal($event)" v-model="nowData.liftingJackModel"></el-input>
               </el-form-item>
@@ -26,23 +27,26 @@
             </el-form-item>
             <el-tabs @focus="$unity.focusAllVal($event)" v-model="tabsActive" type="card">
               <el-tab-pane label="顶参数" name="a">
-                <div :class="item" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
-                  <h3 :class="item" style="background-color: rgb(245, 247, 250);">{{item}}顶参数</h3>
+                <div :class="{item, 'correction-active': correction.state && correction.ab === item}" v-for="(item, index) in ['A1', 'A2', 'B1', 'B2']" :key="index">
+                  <div class="title">
+                    <h3 :class="item">{{item}}顶参数</h3>
+                    <el-button :disabled="!editState" plain round style="height:40px;" @click="correctionFunc(item)">{{correction.state ? '完成' : '系数校正'}}</el-button>
+                  </div>
                   <!-- 位移校正 displacementCorrection -->
                   <div class="row-flex">
                     <el-form-item :label="i" v-for="(i, index) in ['20mm', '60mm', '100mm', '140mm', '180mm', '210m']" :key="index">
-                      <el-input  @click.native="setFunc(item, 'displacementCorrection', index)" :value="nowData[item].displacementCorrection[index]"></el-input>
+                      <el-input readonly="readonly" @click.native="setFunc(item, 'displacementCorrection', index)" :value="nowData[item].displacementCorrection[index]"></el-input>
                     </el-form-item>
                   </div>
                   <!-- 压力校正 pressureCorrection -->
                   <div class="row-flex mpa">
                     <el-form-item :label="i" v-for="(i, index) in ['2.5Mpa', '7.5Mpa', '12.5Mpa', '17.5Mpa', '22.5Mpa', '27.5Mpa']" :key="index">
-                      <el-input @click.native="setFunc(item, 'pressureCorrection', index)" v-model="nowData[item].pressureCorrection[index]"></el-input>
+                      <el-input readonly="readonly" @click.native="setFunc(item, 'pressureCorrection', index)" v-model="nowData[item].pressureCorrection[index]"></el-input>
                     </el-form-item>
                   </div>
                   <div class="row-flex map">
                     <el-form-item :label="i" v-for="(i, index) in ['32.5Mpa', '37.5Mpa', '42.5Mpa', '47.5Mpa', '52.5Mpa', '57.5Mpa']" :key="index">
-                      <el-input @click.native="setFunc(item, 'pressureCorrection', index + 6)" v-model="nowData[item].pressureCorrection[index + 6]"></el-input>
+                      <el-input readonly="readonly" @click.native="setFunc(item, 'pressureCorrection', index + 6)" v-model="nowData[item].pressureCorrection[index + 6]"></el-input>
                     </el-form-item>
                   </div>
                 </div>
@@ -82,7 +86,14 @@
                       <el-input type="number" v-model="nowData[item].b"></el-input>
                     </el-form-item> -->
                     <el-form-item label="标定日期">
-                      <el-date-picker v-model="nowData[item].demarcationDate" value-format="yyyy-MM-dd" align="right" style="width: auto;" type="date" placeholder="选择日期" :editable="false"></el-date-picker>
+                      <el-date-picker
+                      v-model="nowData[item].demarcationDate"
+                      value-format="yyyy-MM-dd"
+                      align="center"
+                      style="width: auto;" type="date"
+                      placeholder="选择日期"
+                      :editable="false"
+                      :clearable="false"></el-date-picker>
                     </el-form-item>
                   </div>
                 </div>
@@ -93,34 +104,40 @@
       </el-main>
     </el-container>
     <el-dialog
-      title="校正值计算"
+      :title="`校正值计算 · ${correction.ab} · ${correction.str}`"
       :visible="setState"
-      width="80%"
+      :show-close="false"
+      width="35%"
+      top="40"
+      :modal="true"
       >
       <el-form label-width="100px">
-        <div class="row-flex">
-          <el-form-item label="设备显示值" >
-            <el-input v-model="correction.a"></el-input>
-          </el-form-item>
-          <el-form-item label="实际测量值">
-            <el-input v-model="correction.b"></el-input>
-          </el-form-item>
-          <el-form-item label="系数">
-            <p hidden="hidden">{{correctionC}}</p>
-            <el-input v-model="correction.c"></el-input>
-          </el-form-item>
-        </div>
+        <!-- <el-tag size="medium" type="success">{{correction.ab}}--{{correction.str}}</el-tag> -->
+        <el-form-item label="实际测量值" >
+          <el-input autofocus type="number" @focus="$unity.focusAllVal($event)" v-model.number="correction.a"></el-input>
+        </el-form-item>
+        <el-form-item label="设备显示值">
+          <el-input type="number" @focus="$unity.focusAllVal($event)" v-model.number="correction.b"></el-input>
+        </el-form-item>
+        <el-form-item label="系数">
+          <p hidden="hidden">{{correctionC}}</p>
+          <el-input type="number" @focus="$unity.focusAllVal($event)" v-model.number="correction.c"></el-input>
+        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="setState = false">取 消</el-button>
         <el-button type="primary" @click="saveCorrection()">确 定</el-button>
       </span>
     </el-dialog>
+    <div class="device-manual" v-if="correction.state">
+      <manual class="main" :dId="nowData.id" :dab="correction.ab" @setFunc="setFunc"/>
+    </div>
   </div>
 </template>
 
 <script>
   import MenuTwo from '../menus/menuTow';
+  import Manual from '../manual/manual.vue';
 
   const baseData = {
     name: '',
@@ -173,7 +190,8 @@
   export default {
     name: 'device',
     components: {
-      MenuTwo: MenuTwo,
+      MenuTwo,
+      Manual,
     },
     computed: {
       // 编辑状态
@@ -185,6 +203,21 @@
       },
       correctionC() {
         this.correction.c = Number((this.correction.a / this.correction.b).toFixed(6));
+      },
+      currentlyData() {
+        const id = this.nowData.id;
+        const p1 = this.$store.state.global.PLC1Data;
+        const p2 = this.$store.state.global.PLC2Data;
+        return {
+          A1mpa: this.$UC.plc2mpa(p1.A1mpa, 'A1', id),
+          A1mm: this.$UC.plc2mm(p1.A1mm, 'A1', id),
+          B1mpa: this.$UC.plc2mpa(p1.B1mpa, 'B1', id),
+          B1mm: this.$UC.plc2mm(p1.B1mm, 'B1', id),
+          A2mpa: this.$UC.plc2mpa(p2.A2mpa, 'A2', id),
+          A2mm: this.$UC.plc2mm(p2.A2mm, 'A2', id),
+          B2mpa: this.$UC.plc2mpa(p2.B2mpa, 'B2', id),
+          B2mm: this.$UC.plc2mm(p2.B2mm, 'B2', id),
+        };
       },
     },
     beforeUpdate() {
@@ -199,7 +232,7 @@
       console.timeEnd('c');
     },
     beforeMount() {
-      this.nowData = baseData;
+      this.nowData = this.$unity.copyObj(baseData);
       this.getMenuData();
       console.log(this.menuData);
       if (this.menuData.length > 0) {
@@ -207,6 +240,9 @@
       }
     },
     data: () => ({
+      mmStr: ['20mm', '60mm', '100mm', '140mm', '180mm', '210m'],
+      mpaStr: ['2.5Mpa', '7.5Mpa', '12.5Mpa', '17.5Mpa', '22.5Mpa', '27.5Mpa',
+        '32.5Mpa', '37.5Mpa', '42.5Mpa', '47.5Mpa', '52.5Mpa', '57.5Mpa'],
       tabsActive: 'a',
       role: false,
       nowData: null,
@@ -224,6 +260,9 @@
         b: 0,
         c: 0,
         d: 0,
+        state: false,
+        ab: null,
+        str: null,
       },
     }),
     watch: {
@@ -364,20 +403,40 @@
           message: msg,
         });
       },
-      // operation
+      // 编辑禁用
       disabled(state = true) {
-        // this.$d3.selectAll('input').attr('disabled', state);
+        const input = this.$refs.device;
+        this.$d3.select(input).selectAll('input').attr('disabled', state);
       },
       // 校正计算
-      setFunc(item, item2, index) {
+      setFunc(ab, item2, index) {
+        if (!this.editState) {
+          return null;
+        }
         this.setState = true;
-        this.correction.item = item;
+        this.correction.ab = ab;
         this.correction.item2 = item2;
         this.correction.index = index;
+        if (item2 === 'displacementCorrection') {
+          this.correction.b = this.currentlyData[`${ab}mm`];
+          this.correction.str = this.mmStr[index];
+        } else {
+          this.correction.b = this.currentlyData[`${ab}mpa`];
+          this.correction.str = this.mpaStr[index];
+        }
       },
+      // 确认校正
       saveCorrection() {
-        this.nowData[this.correction.item][this.correction.item2][this.correction.index] = this.correction.c;
-        this.setState = false;
+        if (this.correction.c && this.correction.c < 1.2 && this.correction.c > 0.8) {
+          this.nowData[this.correction.ab][this.correction.item2][this.correction.index] = this.correction.c;
+          this.setState = false;
+        } else {
+          this.errorShow('校正值有误！校正值必须在 0.8 ~ 1.2 之间');
+        }
+      },
+      correctionFunc(ab) {
+        this.correction.ab = ab;
+        this.correction.state = !this.correction.state;
       }
     },
   };
@@ -391,6 +450,48 @@
   &>div{
     margin-right: 15px;
   }
+}
+.title{
+  height: 40px;
+  background-color: #dfe4ed;
+  margin-bottom: 5px;
+  box-shadow: 3px 2px 5px;
+  padding: 0 5px;
+  h3{
+    display: inline;
+    font-size: 24px;
+    line-height: 40px;
+  }
+  button{
+    float: right;
+  }
+}
+.device-manual{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  .operation{
+    height: 40px;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  .main{
+    height: 50%;
+  }
+}
+.correction-active{
+  position: fixed;
+  top: 52%;
+  left: 0;
+  z-index: 3;
+  width: 100%;
 }
 </style>
 
