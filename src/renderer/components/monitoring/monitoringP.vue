@@ -9,7 +9,7 @@
             <el-button :class="{'on': PLCState2}" :icon="PLCState2 ? 'el-icon-success' : 'el-icon-warning'">主站</el-button>
         </el-button-group>
       </el-header>
-      <el-main>
+      <el-main class="main">
         <home-menu class="root-menu" v-if="$store.state.global.showMenu"></home-menu>
         <div>
           <steps :stage="stageStr" :nowStage="nowStage" :times="nowData.task.time" :recirdTime="recird.time" :tAB="tABNumber"></steps>
@@ -32,24 +32,26 @@
               <td>{{currentlyData[`${item}mm`] | plc2mm(item)}}</td>
               <td>{{currentlyData[`${item}mpa`] | plc2mpa(item)}}</td>
               <td>{{pressure.stagesMpa[item][PLCStage]}}</td>
-              <td>单顶伸长量</td>
+              <td>{{LZ[`${item}dmm`]}}</td>
               <template v-if="item === 'A1' || item === 'B1'">
-                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">单顶偏差率</td>
+                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{LZ[`${item}deviation`]}}</td>
                 <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{nowData.task[item].LL}}</td>
-                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总伸长量</td>
-                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">总偏差率</td>
+                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{LZ[item].mm}}</td>
+                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{LZ[item].deviation}}</td>
               </template>
             </tr>
           </table>
         </div>
-        <div style="display: flex;" class="auto">
+        <div :style="{'height': svgh}" class="auto svg" ref="devSvg">
           <curves-svg
+            h="100%"
             ref="mpaCurves"
             :data="curves"
             :time="{start: recird.startDate, end: recird.endDate}"
             :tensioningPattern="nowData.tensioningPattern"
             refName="Mpa"/>
           <curves-svg
+            h="100%"
             ref="mmCurves"
             :data="curves"
             :time="{start: recird.startDate, end: recird.endDate}"
@@ -106,6 +108,8 @@ export default {
     HomeMenu,
   },
   data: () => ({
+    svgh: 0,
+    LZ: null,
     run: false, // 启动标示
     runT: true,
     menuShow: false,
@@ -161,8 +165,12 @@ export default {
     unloadS: false, // 卸荷监控
     monitorMpaS: false,
   }),
+  mounted() {
+    const svgMain = this.$refs.devSvg;
+    this.svgh = svgMain.clientHeight;
+  },
   beforeMount() {
-    console.log('11111111111111111111');
+    this.LZFunc();
     new Promise(this.ready0).then((val) => {
       console.log(val);
       return new Promise(this.DownPLC);
@@ -194,10 +202,28 @@ export default {
     currentlyData() {
       const p1 = this.$store.state.global.PLC1Data;
       const p2 = this.$store.state.global.PLC2Data;
+      const r = {
+        A1mpa: p1.A1mpa,
+        A1mm: p1.A1mm,
+        B1mpa: p1.B1mpa,
+        B1mm: p1.B1mm,
+        A2mpa: p2.A2mpa,
+        A2mm: p2.A2mm,
+        B2mpa: p2.B2mpa,
+        B2mm: p2.B2mm,
+      };
       if (this.run && this.runT) {
         this.runT = false;
         setTimeout(() => {
           this.runT = true;
+          if (this.nowStage < this.stageStr.length - 1) {
+            this.stage.forEach((item) => {
+              // 位移保存
+              this.recird[item].Mpa[this.PLCStage] = r[`${item}mpa`];
+              this.recird[item].mm[this.PLCStage] = r[`${item}mm`];
+            });
+            this.LZFunc();
+          }
           // 压力监控
           if (this.monitorMpaS) {
             new Promise(this.monitorMpa).then(() => {
@@ -216,16 +242,7 @@ export default {
           }
         }, 500);
       }
-      return {
-        A1mpa: p1.A1mpa,
-        A1mm: p1.A1mm,
-        B1mpa: p1.B1mpa,
-        B1mm: p1.B1mm,
-        A2mpa: p2.A2mpa,
-        A2mm: p2.A2mm,
-        B2mpa: p2.B2mpa,
-        B2mm: p2.B2mm,
-      };
+      return r;
     },
     // 压力曲线数据
     cMpa() {
@@ -242,6 +259,38 @@ export default {
     },
   },
   methods: {
+    // 伸长量偏差率
+    LZFunc() {
+      let lz = {
+        A1dmm: null,
+        A2dmm: null,
+        B1dmm: null,
+        B2dmm: null,
+        A1deviation: null,
+        B1deviation: null,
+        A1: {
+          mm: '没有数据',
+          deviation: null,
+        },
+        B1: {
+          mm: null,
+          deviation: null,
+        },
+      };
+      if (this.PLCStage >= 1) {
+        lz = this.$Ounity.LZ(this.nowData, this.recird);
+        console.log(this.recird);
+        const sensor = window.systemDB.getOne({ name: 'sensor' }); // 传感器
+        const fixed = sensor.toFixed;
+        if ('A1dmm' in lz && 'A2dmm' in lz) {
+          lz.A1deviation = (((lz.A1dmm - lz.A2dmm) / lz.A1dmm) * 100).toFixed(fixed);
+        }
+        if ('B1dmm' in lz && 'B2dmm' in lz) {
+          lz.B1deviation = (((lz.B1dmm - lz.B2dmm) / lz.B1dmm) * 100).toFixed(fixed);
+        }
+      }
+      this.LZ = lz;
+    },
     // 设置浇筑日期
     concretesFunc() {
       if (this.taskData.concretes.castingDate !== null) {
@@ -417,7 +466,6 @@ export default {
     // 压力监控
     monitorMpa(resolve, reject) {
       this.monitorMpaS = false;
-      console.log('2启动', this.tGet);
       const m = this.nowData.tensioningPattern; // 张拉模式
       const n = this.abStage.length - 1; // 单顶的状态
       const mpas = this.pressure.plcPressure; // 阶段压力
@@ -426,7 +474,6 @@ export default {
         if (this.currentlyData[`${item}mpa`] >= mpas[item][stage]) {
           if (this[`t${item}`] === null) {
             this[`t${item}`] = setTimeout(() => {
-              console.log(item, '3启动');
               this.currentlyState[item] = this.abStage.length - 2;
               this[`s${item}`] = true;
             }, 1500);
@@ -477,7 +524,6 @@ export default {
     time() {
       window.setTimeout(() => {
         const PLCStage = this.PLCStage;
-        console.log(this.tABNumber, this.nowData.task.time[PLCStage]);
         this.tABNumber += 1;
         // 保压时间保存
         this.recird.time[PLCStage] = this.tABNumber;
@@ -527,9 +573,34 @@ export default {
       const m = this.nowData.tensioningPattern; // 张拉模式
       this.zUnload = false;
       this.cUnload = true;
+
+      // 卸荷压力
+      const zData = [0, 0]; // 下载到主站的数据
+      const cData = [0, 0]; // 下载到从站的数据
+      this.stage.forEach((item) => {
+        // if (this.currentlyData[`${item}mpa`] <= this.recird[item].Mpa[0]) {
+        switch (item) {
+          case 'A1':
+            zData[0] = this.recird[item].Mpa[0];
+            break;
+          case 'B1':
+            zData[1] = this.recird[item].Mpa[0];
+            break;
+          case 'A2':
+            cData[0] = this.recird[item].Mpa[0];
+            break;
+          case 'B2':
+            cData[1] = this.recird[item].Mpa[0];
+            break;
+          default:
+            break;
+        }
+      });
+      ipcRenderer.send('wPLC1', { func: 'writeMultipleRegisters16', address: 4508, data: zData });
       ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2569, data: true, callback: 'zUnload' });
       if (m === 1 || m === 3 || m === 4) {
         this.cUnload = false;
+        ipcRenderer.send('wPLC1', { func: 'writeMultipleRegisters16', address: 4508, data: zData });
         ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2569, data: true, callback: 'cUnload' });
       }
       ipcRenderer.on('zUnload', (event, data) => {
@@ -556,6 +627,8 @@ export default {
           this[`tunload${item}`] = setTimeout(() => {
             console.log('5启动');
             this[`unload${item}`] = true;
+            this.recird[item].initMpa = this.currentlyData[`${item}mpa`];
+            this.recird[item].initMM = this.currentlyData[`${item}mm`];
             clearTimeout(this[`tunload${item}`]);
           }, 1500);
         } else {
@@ -630,8 +703,10 @@ export default {
     },
     // 完成数据保存
     successFunc() {
-      ipcRenderer.send('wPLC1', { func: 'writeMultipleCoil', address: [0, 0], data: false });
-      ipcRenderer.send('wPLC2', { func: 'writeMultipleCoil', address: [0, 0], data: false });
+      ipcRenderer.send('wPLC1', { func: 'writeMultipleCoil', address: 2568, data: [0, 0] });
+      ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2570, data: true });
+      ipcRenderer.send('wPLC2', { func: 'writeMultipleCoil', address: 2568, data: [0, 0] });
+      ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2570, data: true });
       // 张拉完成曲线定时器清除
       this.run = false;
       clearTimeout(this.tcurves);
@@ -660,6 +735,14 @@ export default {
 <style lang="scss" scoped>
 @import '../../css/variable.scss';
 
+.main {
+  display: flex;
+  flex-direction: column;
+  .svg{
+    flex: auto;
+    display: flex;
+  }
+}
 table{
   text-align: center;
   border: 0;

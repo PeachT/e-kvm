@@ -1,5 +1,6 @@
 <template>
   <div ref="svg" class="svg" @click="show"
+  :style="{'height' : `${h}`}"
     v-loading="showState"
     element-loading-text="查看曲线"
     element-loading-spinner="el-icon-view"
@@ -10,7 +11,7 @@
 <script>
 export default {
   name: 'd3svg',
-  props: ['data', 'time', 'tensioningPattern', 'refName'],
+  props: ['data', 'time', 'tensioningPattern', 'refName', 'h'],
   data() {
     return {
       colors: {
@@ -29,6 +30,7 @@ export default {
       y: null,
       stageStr: null,
       showState: true,
+      svg: null,
     };
   },
   mounted() {
@@ -44,6 +46,13 @@ export default {
     show() {
       if (this.showState) {
         this.stageStr = this.$Ounity.abModel(this.tensioningPattern);
+        const svgMain = this.$refs.svg;
+        const width = svgMain.clientWidth;
+        const height = svgMain.clientHeight;
+        this.width = width - 70;
+        this.height = height - 70;
+        this.svg.attr('width', width)
+          .attr('height', height);
         this.initData();
       }
       this.showState = false;
@@ -66,6 +75,7 @@ export default {
       });
       this.x = svgg.append('g').attr('transform', `translate(0,${this.height})`);
       this.y = svgg.append('g');
+      this.svg = svg;
     },
     // 数据
     initData() {
@@ -122,7 +132,7 @@ export default {
 
 <style lang="scss" >
 .svg{
-  height: 500px;
+  // height: 500px;
   width: 100%;
   background-color: #E4E7ED;
   path{

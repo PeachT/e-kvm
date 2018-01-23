@@ -18,9 +18,7 @@ function abModel(model) {
  * @returns 偏差率%
  */
 function deviation(ll, lz) {
-  const sensor = window.systemDB.getOne({ name: 'sensor' }); // 传感器
-  const fixed = sensor.toFixed;
-  return (((lz - ll) / ll) * 100).toFixed(fixed);
+  return (((lz - ll) / ll) * 100);
 }
 /**
  * 单顶长量计算
@@ -32,12 +30,11 @@ function deviation(ll, lz) {
  */
 function dLZ(datas, NS, LQ, ab) {
   // 总伸长量LZ=(LK+L1-2L0)-NS-LQ
-  console.log(datas[datas.length - 1], datas[1], datas[0], NS, LQ);
-  return (
-    UC.plc2mm((datas[datas.length - 1], ab)
-    + UC.plc2mm(datas[1], ab))
-    - (2 * UC.plc2mm(datas[0], ab)))
-    - NS - LQ;
+  const LK = Number(UC.plc2mm(datas[datas.length - 1]));
+  const L1 = Number(UC.plc2mm(datas[1], ab));
+  const L0 = Number(UC.plc2mm(datas[0], ab));
+  console.log('1234====', LK, L1, L0, NS, LQ);
+  return ((LK + L1) - (2 * L0)) - Number(NS) - Number(LQ);
 }
 
 const unity = {
@@ -61,9 +58,16 @@ const unity = {
     return s[n];
   },
 
-  LZ(task) {
+  LZ(task, r = null) {
+    const sensor = window.systemDB.getOne({ name: 'sensor' }); // 传感器
+    const fixed = sensor.toFixed;
     const m = abModel(task.tensioningPattern);
-    console.log(task, m);
+    let recird = null;
+    if (!r) {
+      recird = task.recird;
+    } else {
+      recird = r;
+    }
     const lz = {
       A1: {
         mm: null,
@@ -79,19 +83,24 @@ const unity = {
       B: [0, 0],
     };
     m.forEach((item) => {
-      if (item === 'A1' || 'A2') {
-        dzl.A.push(dLZ(task.recird[item].mm, task.NS, task.LQ, item));
+      const d = dLZ(recird[item].mm, task.task[item].NS, task.task[item].LQ, item);
+      console.log(recird[item].mm, d);
+      if (r) {
+        lz[`${item}dmm`] = d.toFixed(fixed);
+      }
+      if (item === 'A1' || item === 'A2') {
+        dzl.A.push(d);
       } else {
-        dzl.B.push(dLZ(task.recird[item].mm, task.NS, task.LQ, item));
+        dzl.B.push(d);
       }
     });
-    lz.A1.mm = dzl.A.reduce((i, d) => i + d);
-    lz.B1.mm = dzl.B.reduce((i, d) => i + d);
-    if ('A1' in task) {
-      lz.A1.deviation = deviation(task.recird.A1.LL, lz.A1.mm);
+    lz.A1.mm = (dzl.A.reduce((i, d) => i + d)).toFixed(fixed);
+    lz.B1.mm = (dzl.B.reduce((i, d) => i + d)).toFixed(fixed);
+    if ('A1' in task.task) {
+      lz.A1.deviation = deviation(task.task.A1.LL, lz.A1.mm).toFixed(fixed);
     }
-    if ('B1' in task) {
-      lz.B1.deviation = deviation(task.recird.B1.LL, lz.B1.mm);
+    if ('B1' in task.task) {
+      lz.B1.deviation = deviation(task.task.B1.LL, lz.B1.mm).toFixed(fixed);
     }
     return lz;
   },

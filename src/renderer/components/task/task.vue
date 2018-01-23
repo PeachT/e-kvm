@@ -31,11 +31,13 @@
                 <base-record-data :taskData.sync="taskData" :deviceId="nowData.deviceId"/>
               </div>
               <base-svg
+                h="500px"
                 :data="taskData.curves"
                 :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
                 :tensioningPattern="taskData.tensioningPattern"
                 refName="Mpa"/>
               <base-svg
+                h="500px"
                 :data="taskData.curves"
                 :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
                 :tensioningPattern="taskData.tensioningPattern"
@@ -58,7 +60,7 @@
             </div>
           </el-tab-pane>
         </el-tabs>
-        <div class="tpl" v-if="nowDataState && nowData.id">
+        <div class="tpl" v-if="!editState && nowDataState && nowData.id">
           <el-button :type="taskDown.type" plain round style="height:40px;" @click="taskDownFunc(taskDown.state)">{{taskDown.title}}</el-button>
           <el-button plain round style="height:40px;" @click="newTaskState = true">创建新任务</el-button>
         </div>
