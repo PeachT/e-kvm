@@ -38,8 +38,8 @@
             <tr :class="item" v-for="(item, index) in stage" :key="index">
               <td>{{item}}</td>
               <td>{{abStage[currentlyState[`${item}`]]}}</td>
-              <td>{{currentlyData[`${item}mm`] | plc2mm(item, taskData.deviceId)}}</td>
-              <td>{{currentlyData[`${item}mpa`] | plc2mpa(item, taskData.deviceId)}}</td>
+              <td>{{currentlyData[`${item}mm`] | plc2mm(item)}}</td>
+              <td>{{currentlyData[`${item}mpa`] | plc2mpa(item)}}</td>
               <td>{{pressure.stagesMpa[item][PLCStage]}}</td>
               <td>单顶伸长量</td>
               <template v-if="item === 'A1' || item === 'B1'">
@@ -173,7 +173,6 @@ export default {
   }),
   beforeMount() {
     if (window.nowDB.getAll.length > 0) {
-      window.deviceId = this.taskData.deviceId;
       this.taskDownData.state = true;
       const uid = window.nowDB.getAll[0].uid; // 构件id
       this.girderName = window.girderDB.getOne({ id: uid }).name; // 获取构件名称
@@ -184,6 +183,7 @@ export default {
       this.stage = this.$Ounity.abModel(this.nowData.tensioningPattern); // 张拉模式
       this.stageStr = this.$Ounity.stage(this.nowData.stage, this.nowData.exceed); // 张拉阶段
       this.pressure = pressurePLC(this.nowData, this.taskData.deviceId); // 数据换算
+      window.deviceId = this.taskData.deviceId;
       const arrNull = [];
       this.nowData.task.time.forEach((item, index) => {
         arrNull.push(null);
@@ -212,7 +212,8 @@ export default {
           };
         }
       });
-      this.stageDownPLC(this.x0);
+      this.stageDownPLC();
+      this.x0();
       if (this.taskData.concretes.castingDate === null) {
         this.concretesState = true;
       }
@@ -332,7 +333,7 @@ export default {
     // 监控启动
     x0() {
       window.setTimeout(() => {
-        console.log('1启动');
+        console.log('1启动', this.currentlyX.p1x[1] === '1');
         const m = this.nowData.tensioningPattern; // 张拉泵顶组合
         if (this.currentlyX.p1x[1] === '1') {
           // 启动 这里要设置PLC启动. M520 => 2568
@@ -347,12 +348,14 @@ export default {
             this.zTension = true;
             if (this.zTension && this.cTension) {
               this.startFunc();
+              console.log('启动张拉1');
             }
           });
           ipcRenderer.on('cTension', (event, data) => {
             this.cTension = true;
             if (this.zTension && this.cTension) {
               this.startFunc();
+              console.log('启动张拉2');
             }
           });
         } else {
@@ -362,6 +365,7 @@ export default {
     },
     // 启动张拉
     startFunc() {
+      this.run = true;
       this.taskDownData.state = false;
       this.nowStage = 1;
       this.currentlyState.A1 = 1;
@@ -379,7 +383,7 @@ export default {
       this.$refs.mmCurves.show();
     },
     // 下载压力数据到PLC A=>D410=>4506 B=>D411
-    stageDownPLC(callback) {
+    stageDownPLC(callback = null) {
       const m = this.nowData.tensioningPattern; // 张拉泵顶组合
       const dowmZC = { // 下载完成回调名称
         z: `autoDown${m}Z`,
@@ -387,7 +391,6 @@ export default {
       };
       const mpas = this.pressure.plcPressure; // 转换的压力数据
       const stage = this.PLCStage; // 张拉阶段
-      console.log(mpas, mpas.A1[stage]);
       const zData = []; // 下载到主站的数据
       const cData = []; // 下载到从站的数据
       this.zDowm = true; // 主站下载完成标示
@@ -402,13 +405,17 @@ export default {
           this.cDowm = false;
         }
       });
+      console.log(zData, cData);
       // 主站下载
       if (m === 0 || m === 2 || m === 4) {
         ipcRenderer.send('wPLC1', { func: 'writeMultipleRegisters16', address: 4506, data: zData, callback: dowmZC.z });
         ipcRenderer.on(dowmZC.z, (event, data) => {
+          console.log(data);
           this.zDowm = true;
           if (this.zDowm && this.cDowm) {
-            callback();
+            if (callback) {
+              callback();
+            }
           }
         });
       }
@@ -418,35 +425,17 @@ export default {
         ipcRenderer.on(dowmZC.c, (event, data) => {
           this.cDowm = true;
           if (this.zDowm && this.cDowm) {
-            callback();
+            if (callback) {
+              callback();
+            }
           }
         });
       }
-      // if (m === 0 || m === 1 || m === 4) {
-      //   this.$plc1.writeSingleRegister16(4106, mpas.A1[stage], (data) => {
-      //     console.log('PLC返回写入16位多寄存器：', data);
-      //   });
-      // }
-      // if (m === 2 || m === 3 || m === 4) {
-      //   this.$plc1.writeSingleRegister16(4107, mpas.B1[stage], (data) => {
-      //     console.log('PLC返回写入16位多寄存器：', data);
-      //   });
-      // }
-      // if (m === 1 || m === 4) {
-      //   this.$plc2.writeSingleRegister16(4106, mpas.A2[stage], (data) => {
-      //     console.log('PLC返回写入16位多寄存器：', data);
-      //   });
-      // }
-      // if (m === 3 || m === 4) {
-      //   this.$plc2.writeSingleRegister16(4107, mpas.B2[stage], (data) => {
-      //     console.log('PLC返回写入16位多寄存器：', data);
-      //   });
-      // }
     },
     // 压力监控
     getPLC() {
       this.tGet = setTimeout(() => {
-        console.log('2启动');
+        console.log('2启动', this.tGet);
         const m = this.nowData.tensioningPattern; // 张拉模式
         const n = this.abStage.length - 1; // 单顶的状态
         const mpas = this.pressure.plcPressure; // 阶段压力
@@ -455,7 +444,7 @@ export default {
           if (this.currentlyData[`${item}mpa`] >= mpas[item][stage]) {
             if (this[`t${item}`] === null) {
               this[`t${item}`] = setTimeout(() => {
-                console.log('3启动');
+                console.log(item, '3启动');
                 this.currentlyState[item] = this.abStage.length - 2;
                 this[`s${item}`] = true;
               }, 1500);
@@ -498,28 +487,30 @@ export default {
             this.time();
             break;
           default:
-            this.getPLC();
+            if (this.run) {
+              this.getPLC();
+            }
             break;
         }
       }, 0);
     },
-    // 保压延时
+    // 保压
     time() {
       clearTimeout(this.tGet);
       this.tGet = null;
-      this.tAB = setInterval(() => {
-        console.log('8启动');
+      console.log('8-1启动');
+      // 延时清零
+      this.tABNumber = 0;
+      this.tAB = window.setInterval(() => {
+        console.log('8启动', this.stageStr.length, this.PLCStage);
         const PLCStage = this.PLCStage;
         this.tABNumber += 1;
         this.recird.time[PLCStage] = this.tABNumber;
         // 判断保压完成？
         if (this.tABNumber === this.nowData.task.time[PLCStage]) {
-          window.clearInterval(this.tAB);
-          this.tAB = null;
+          window.clearTimeout(this.tAB);
           // 下一阶段
           this.nowStage += 1;
-          // 延时清零
-          this.tABNumber = 0;
           this.stage.forEach((item) => {
             this.recird[item].Mpa[PLCStage] = this.currentlyData[`${item}mpa`];
             this.recird[item].mm[PLCStage] = this.currentlyData[`${item}mm`];
@@ -531,10 +522,9 @@ export default {
             this.currentlyState[`${item}`] = this.nowStage;
           });
           // 下一阶段
-          if (this.stageStr.length - 1 > this.nowStage) {
+          if (this.PLCStage < this.stageStr.length - 3) {
             this.PLCStage += 1;
             this.stageDownPLC(this.getPLC);
-            // this.getPLC();
             // 张拉完成
           } else {
             // 曲线保存
@@ -543,10 +533,10 @@ export default {
             const m = this.nowData.tensioningPattern; // 张拉模式
             this.zUnload = false;
             this.cUnload = true;
-            ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2971, data: true, callback: 'zUnload' });
+            ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2569, data: true, callback: 'zUnload' });
             if (m === 1 || m === 3 || m === 4) {
               this.cUnload = false;
-              ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2971, data: true, callback: 'cUnload' });
+              ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2569, data: true, callback: 'cUnload' });
             }
             ipcRenderer.on('zUnload', (event, data) => {
               this.zUnload = true;
@@ -560,18 +550,6 @@ export default {
                 this.unloadFunc();
               }
             });
-            // new Promise(
-            //   (resolve, reject) => {
-            //     this.$plc2.writeSingleCoil(2561, true, (data) => {
-            //       console.log('PLC返回写入单线圈：', data);
-            //     });
-            //     this.$plc1.writeSingleCoil(2561, true, (data) => {
-            //       console.log('PLC返回写入单线圈：', data);
-            //       resolve();
-            //     });
-            //   },
-            //   // 进入卸荷监控
-            // ).then(this.unloadFunc());
           }
         }
       }, 1000);
@@ -579,6 +557,7 @@ export default {
     // 卸荷监控
     unloadFunc() {
       window.setTimeout(() => {
+        clearTimeout(this.tAB);
         console.log('4启动');
         const m = this.nowData.tensioningPattern; // 张拉模式
         // const n = this.abStage.length - 1; // 单顶的状态
@@ -658,7 +637,10 @@ export default {
     },
     // 完成数据保存
     successFunc() {
+      ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2568, data: false });
+      ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2569, data: false });
       // 张拉完成曲线定时器清除
+      this.run = false;
       clearTimeout(this.tcurves);
       clearTimeout(this.tcurves1);
       this.curvesFunc(); // 曲线保存

@@ -17,7 +17,6 @@ function FC3_16(data) {
 function FC2(data) {
   // :01 02 01 00 FC
   const dataStr = data.slice(7, -4);
-  console.log(dataStr);
   const arrs = [];
   for (let index = 0; index < dataStr.length; index += 2) {
     arrs.push(...(Array.from(str2bit(parseInt(dataStr.slice(index, index + 2), 16)
@@ -30,6 +29,8 @@ function returnData16(data) {
   // : 01 03 0C 0064 0065 0066 0067 0068 0069 89
   const fc = parseInt(data.slice(3, 5), 16); // 操作命令
   switch (fc) {
+    case 1:
+      return FC2(data);
     case 2:
       return FC2(data);
     case 3:

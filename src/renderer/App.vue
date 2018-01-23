@@ -35,8 +35,13 @@
       ipcRenderer.on('realTimeX', (event, data) => {
         this.$store.dispatch(`PLC${data.id}X`, data.data);
       });
+      // 实时数据获取S
+      ipcRenderer.on('realTimeS', (event, data) => {
+        this.$store.dispatch(`PLC${data.id}S`, data.data);
+      });
       // 连接成功
       ipcRenderer.on('lineOK', (event, data) => {
+        console.log('连接', data);
         this.$store.dispatch(`PLC${data.id}State`, true);
       });
       // 连接中断

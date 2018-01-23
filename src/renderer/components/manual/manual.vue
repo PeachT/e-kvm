@@ -131,7 +131,7 @@
     beforeMount() {
       let s = null;
       if (this.dab) {
-        s = this.dId;
+        s.id = this.dId;
         this.shows = [this.dab];
       } else {
         s = window.manual.getAll[0];
@@ -143,9 +143,11 @@
       if (this.$store.state.global.PLC2State) {
         ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2058, data: true });
       }
-      if (s.id) {
-        this.device = window.deviceDB.getOne({ id: s.id });
-      } if (window.deviceDB.getAll[0]) {
+      if (this.dab) {
+        this.device = window.deviceDB.getOne({ id: this.dab });
+      } else if (window.deviceId) {
+        this.device = window.deviceDB.getOne({ id: window.deviceId });
+      } else {
         this.device = window.deviceDB.getAll[0];
       }
       this.deviceName = this.device.name;
@@ -153,7 +155,7 @@
     },
     computed: {
       patternStr() {
-        if (this.device) {
+        if (this.device.tensioningPattern.length > 0) {
           const p = this.device.tensioningPattern.sort();
           if (p.indexOf(4) !== -1) {
             return {
@@ -270,6 +272,7 @@
         this.ab[item].setMM = setMM;
         const mm = this.$UC.mm2plc(setMM);
         const func = (item === 'A1' || item === 'B1') ? 'wPLC1' : 'wPLC2';
+        console.log(mm);
         ipcRenderer.send(func, { func: 'writeMultipleRegisters16', address: address, data: [mm] });
       },
     },

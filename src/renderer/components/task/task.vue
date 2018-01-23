@@ -114,6 +114,7 @@
 
   // import BaseRecordData from '../task_record_template/base/baseRecordData.vue';
   import D3SvgLoading from '../task_record_template/base/d3SvgLoading.vue';
+import { POINT_CONVERSION_COMPRESSED } from 'constants';
   // import BaseSvg from '../task_record_template/d3svg';
 
   const BaseSvg = () => ({
@@ -521,8 +522,11 @@
         data.id = null;
         delete data.meta;
         delete data.$loki;
-        delete data.record;
-        delete data.curves;
+        data.data.forEach((item) => {
+          delete item.record;
+          delete item.curves;
+          item.state = 0;
+        });
         this.nowData = data;
         this.newTaskState = false;
         console.log(this.nowData, data);

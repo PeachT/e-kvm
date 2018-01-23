@@ -11,7 +11,7 @@ const Task = () => import('../components/task/task');
 const User = () => import('../components/user/user.vue');
 const Device = () => import('../components/device/device.vue');
 const Girder = () => import('../components/girder/girder.vue');
-const Monitoring = () => import('../components/monitoring/monitoring.vue');
+const Monitoring = () => import('../components/monitoring/monitoringP.vue');
 const Operator = () => import('../components/operator/operator.vue');
 const SteelStrand = () => import('../components/steelStrand/steelStrand.vue');
 const System = () => import('../components/system/system.vue');

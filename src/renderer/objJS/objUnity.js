@@ -9,6 +9,7 @@ function abModel(model) {
   const t = [['A1'], ['A1', 'A2'], ['B1'], ['B1', 'B2'], ['A1', 'A2', 'B1', 'B2']];
   return t[model];
 }
+
 /**
  * 总偏差率
  *
@@ -93,6 +94,29 @@ const unity = {
       lz.B1.deviation = deviation(task.recird.B1.LL, lz.B1.mm);
     }
     return lz;
+  },
+  /**
+ * 设备可用泵顶组
+ *
+ * @param {Arrar} data 0~4
+ * @returns 返回模式
+ */
+  devicePattern(model) {
+    const p = [];
+    if (model.indexOf(4) > -1) {
+      return ['A1', 'A2', 'B1', 'B2'];
+    }
+    if (model.indexOf(2) > -1) {
+      p.push(...['A1', 'A2']);
+    } else if (model.indexOf(1) > -1) {
+      p.push('A1');
+    }
+    if (model.indexOf(4) > -1) {
+      p.push(...['B1', 'B2']);
+    } else if (model.indexOf(3) > -1) {
+      p.push('B1');
+    }
+    return p;
   },
 };
 

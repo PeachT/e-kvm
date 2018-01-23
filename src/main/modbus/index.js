@@ -75,25 +75,37 @@ class Modbus {
         let b1 = false;
         let b2 = false;
         let b3 = false;
+        let b4 = false;
         this.readCoilStatue(2048, 1, (data) => {
           b1 = true;
-          if (b1 && b2 && b3) {
+          if (b1 && b2 && b3 && b4) {
             resolve();
           }
         });
+        // 位移压力值D0
         this.readRegisters16(4096, 4, (data) => {
           const d = returnData(data);
           this.toRenderer('realTime', d);
           b2 = true;
-          if (b1 && b2 && b3) {
+          if (b1 && b2 && b3 && b4) {
             resolve();
           }
         });
+        // X输入 X0
         this.readInputStatue(1024, 24, (data) => {
           const d = returnData(data);
           this.toRenderer('realTimeX', d);
           b3 = true;
-          if (b1 && b2 && b3) {
+          if (b1 && b2 && b3 && b4) {
+            resolve();
+          }
+        });
+        // 报警参数 S500
+        this.readCoilStatue(500, 40, (data) => {
+          const d = returnData(data);
+          this.toRenderer('realTimeS', d);
+          b4 = true;
+          if (b1 && b2 && b3 && b4) {
             resolve();
           }
         });
@@ -102,6 +114,7 @@ class Modbus {
       });
     }, 0);
   }
+  // 发送到渲染进程事件
   toRenderer(func, data = null) {
     if (this.path === '192.168.181.110') {
       global.mainWindow.webContents.send(func, { id: 1, data: data });
@@ -109,6 +122,7 @@ class Modbus {
       global.mainWindow.webContents.send(func, { id: 2, data: data });
     }
   }
+  // modbus发送数据拼接
   getCommand(fc, address, data) {
     return sendCommand(this.devId, fc, address, data);
   }
@@ -151,8 +165,12 @@ class Modbus {
     this.write(commandCode, next);
   }
   // FC16 "Preset Multiple Registers" 预置多个16位寄存器
+  // :0110 119A 0001 02 002F 12
+  // :0110 100B 0001 02 02C2 0D
+  // :0110 119A 0002 04 0028 0028 EE
   writeMultipleRegisters16(address, datas, next) {
     const commandCode = this.getCommand(16, address, datas);
+    console.log('fc16', commandCode);
     this.write(commandCode, next);
   }
 

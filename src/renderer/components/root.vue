@@ -5,8 +5,11 @@
         <span class="title">·{{$store.state.global.menuTitle}}·</span>
         <el-button class="btn-menu" type="primary" icon="el-icon-menu" @click="switchMenuFunc()"></el-button>
         <el-button-group class="btn-menu PLC">
-            <el-button :class="{'on': PLCState1}" :icon="PLCState1 ? 'el-icon-success' : 'el-icon-warning'">从站</el-button>
-            <el-button :class="{'on': PLCState2}" :icon="PLCState2 ? 'el-icon-success' : 'el-icon-warning'">主站</el-button>
+            <el-button :class="{'on': PLCState1}" :icon="PLCState1 ? 'el-icon-success' : 'el-icon-warning'">主站</el-button>
+            <el-button :class="{'on': PLCState2}" :icon="PLCState2 ? 'el-icon-success' : 'el-icon-warning'">从站</el-button>
+        </el-button-group>
+        <el-button-group class="btn-menu PLC">
+            <el-button @click="errorState = true" type="error" v-show="currentlyS">报警</el-button>
         </el-button-group>
       </el-header>
       <el-main>
@@ -16,19 +19,30 @@
         </transition>
       </el-main>
     </el-container>
+    <error :errorState.sync="errorState" />
   </div>
 </template>
 
 <script>
   import HomeMenu from './menus/menu.vue';
+  import Error from './error/error.vue';
   export default {
     name: 'root',
     components: {
       HomeMenu,
+      Error,
+    },
+    beforeMount() {
+      if (window.manual.getAll[0]) {
+        window.deviceId = window.manual.getAll[0].id;
+      } else {
+        window.deviceId = window.deviceDB.getAll[0].id;
+      }
     },
     data() {
       return {
         showMenu2: false,
+        errorState: false,
       };
     },
     computed: {
@@ -44,9 +58,19 @@
       editState() {
         return this.$store.state.global.editState || this.$store.state.global.addState;
       },
-      // addState() {
-      //   return
-      // },
+      currentlyS() {
+        const p1 = this.$store.state.global.PLC1S;
+        const p2 = this.$store.state.global.PLC2S;
+        let p1s = false;
+        let p2s = false;
+        if (this.PLCState1) {
+          p1s = p1.indexOf('1') > -1;
+        }
+        if (this.PLCState2) {
+          p2s = p2.indexOf('1') > -1;
+        }
+        return p1s || p2s;
+      },
     },
     watch: {
       showMenu(nval) {
@@ -62,9 +86,6 @@
     },
     methods: {
       switchMenuFunc() {
-        console.log(this.$store.state.global.editState || this.$store.state.global.addState,
-          this.$store.state.global.editState,
-          this.$store.state.global.addState);
         if (!this.editState) {
           this.$store.commit('showMenu', !this.showMenu);
         } else {

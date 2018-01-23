@@ -1,3 +1,4 @@
+// 十六位又符合整数
 function netage(data) {
   if (data > 32767) {
     return parseInt((0xFFFF ^ data) + 1, 10) * -1;
@@ -29,6 +30,8 @@ const state = {
   },
   PLC1X: null,
   PLC2X: null,
+  PLC1S: null,
+  PLC2S: null,
   operator: null,
   user: null,
   device: null,
@@ -80,6 +83,12 @@ const mutations = {
   PLC2X(state, data) {
     state.PLC2X = data;
   },
+  PLC1S(state, data) {
+    state.PLC1S = data;
+  },
+  PLC2S(state, data) {
+    state.PLC2S = data;
+  },
   operator(state, data) {
     state.operator = data;
   },
@@ -109,6 +118,12 @@ const actions = {
   },
   PLC2X(context, data) {
     context.commit('PLC2X', data);
+  },
+  PLC1S(context, data) {
+    context.commit('PLC1S', data);
+  },
+  PLC2S(context, data) {
+    context.commit('PLC2S', data);
   },
 };
 
