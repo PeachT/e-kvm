@@ -4,6 +4,7 @@
       title="设备选择"
       :visible="true"
       width="80%"
+      :before-close="close"
       >
       <div>
         设备选择
@@ -48,10 +49,13 @@ export default {
     okFunc() {
       if (this.data) {
         this.$emit('update:deviceId', this.data.id);
-        this.$emit('update:show', false);
+        this.close();
       } else {
         this.$message.error('请完成选择！');
       }
+    },
+    close() {
+      this.$emit('update:show', false);
     },
   },
 };

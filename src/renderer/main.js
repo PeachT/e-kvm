@@ -45,8 +45,8 @@ Vue.filter('plc2mpa', (val, ab, id) => {
 Vue.filter('plc2mm', (val, ab, id) => {
   return UnitConversion.plc2mm(val, ab, id);
 });
-Vue.filter('plc2kn', (val, deviceId, name) => {
-  return UnitConversion.plc2kn(val, deviceId, name);
+Vue.filter('plc2kn', (val, name) => {
+  return UnitConversion.plc2kn(val, name);
 });
 // 单顶伸长量
 Vue.filter('dLZ', (val, NS, LQ) => {

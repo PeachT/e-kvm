@@ -31,7 +31,14 @@ function pressure(data, deviceId) {
         stageMpa = (stageKN * Number(device[t].a)) + Number(device[t].b);
       }
       stagesMpa[t].push(stageMpa.toFixed(fixed));
-      plcPressure[t].push(Math.round(p * stageMpa));
+      // 获取校正系数转换位PLC值
+      const s = parseInt(stageMpa / 5, 10);
+      let correction = 0;
+      if (s >= 0) {
+        correction = device[t].pressureCorrection[s];
+      }
+      const nmpa = stageMpa / correction;
+      plcPressure[t].push(Math.round(p * nmpa));
       return null;
     });
     return null;
@@ -44,11 +51,9 @@ function pressure(data, deviceId) {
   };
 }
 function pressurePLC(data, deviceId) {
-  const state = data.state; // 二次张拉
-  let plcPressure = null; // PLC应力
-  if (state === 0) {
-    plcPressure = pressure(data, deviceId);
-  }
+  // const state = data.state; // 二次张拉
+  // let plcPressure = null; // PLC应力
+  const plcPressure = pressure(data, deviceId);
   return plcPressure;
 }
 

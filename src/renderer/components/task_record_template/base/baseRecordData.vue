@@ -16,13 +16,13 @@
         <tr :class="item" v-for="(item, index) in patternStr" :key="index">
           <td>{{item}}</td>
           <td v-for="(i, index) in stageStr" :key="index">
-            <el-input :value="taskData.recird[item].Mpa[index] | plc2mpa(item, deviceId)">
+            <el-input :value="recird[item].Mpa[index]">
               <i slot="suffix" class="el-input__icon">Mpa</i>
             </el-input>
-            <el-input :value="taskData.recird[item].Mpa[index] | plc2kn(deviceId, item)">
+            <el-input :value="recird[item].kn[index]">
               <i slot="suffix" class="el-input__icon">Kn</i>
             </el-input>
-            <el-input :value="taskData.recird[item].mm[index] | plc2mm(item, deviceId)">
+            <el-input :value="recird[item].mm[index]">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
@@ -31,7 +31,7 @@
             <el-input :value="taskData.recird[item].initMpa | plc2mpa(item, deviceId)">
               <i slot="suffix" class="el-input__icon">Mpa</i>
             </el-input>
-            <el-input :value="taskData.recird[item].initMpa | plc2kn(deviceId, item)">
+            <el-input :value="taskData.recird[item].initMpa | plc2kn(item)">
               <i slot="suffix" class="el-input__icon">Kn</i>
             </el-input>
             <el-input :value="taskData.recird[item].initMM | plc2mm(item, deviceId)">
@@ -78,13 +78,49 @@
     data: () => ({
       patternStr: [],
       stageStr: [],
+      recird: {
+        startDate: null,
+        endDate: null,
+        A1: {
+          Mpa: [], // 压力
+          kn: [],
+          mm: [], // 位移
+          initMpa: null, // 回到初张拉压力
+          initMM: null, // 回到初张拉位移
+          retractionMM: null, // 力筋回缩量
+        },
+        A2: {
+          Mpa: [], // 压力
+          kn: [],
+          mm: [], // 位移
+          initMpa: null, // 回到初张拉压力
+          initMM: null, // 回到初张拉位移
+        },
+        B1: {
+          Mpa: [], // 压力
+          mm: [], // 位移
+          kn: [],
+          initMpa: null, // 回到初张拉压力
+          initMM: null, // 回到初张拉位移
+          retractionMM: null, // 力筋回缩量
+        },
+        B2: {
+          Mpa: [], // 压力
+          kn: [],
+          mm: [], // 位移
+          initMpa: null, // 回到初张拉压力
+          initMM: null, // 回到初张拉位移
+        },
+      },
     }),
     beforeMount() {
       this.get();
+      this.recirdFunc();
     },
     watch: {
       taskData() {
         this.get();
+        this.recirdFunc();
       },
     },
     computed: {
@@ -96,8 +132,22 @@
       get() {
         if (this.deviceId !== '') {
           this.patternStr = this.$Ounity.abModel(this.taskData.tensioningPattern); // 张拉模式
-          this.stageStr = this.$Ounity.stage(this.taskData.stage, this.taskData.exceed); // 张拉阶段
+          this.stageStr = this.$Ounity.stage(this.taskData); // 张拉阶段
         }
+      },
+      recirdFunc() {
+        const recird = this.taskData.recird;
+        console.log('122222222222', recird);
+        const timeFormat = this.$d3.timeFormat('%Y-%m-%d %H:%M:%S');
+        this.recird.startDate = timeFormat(recird.startDate);
+        this.recird.endDate = timeFormat(recird.endDate);
+        this.patternStr.forEach((item) => {
+          recird[item].Mpa.forEach((n, i) => {
+            this.recird[item].Mpa[i] = this.$UC.plc2mpa(n, item);
+            this.recird[item].kn[i] = (this.$UC.plc2kn(n, item));
+            this.recird[item].mm[i] = this.$UC.plc2mm(recird[item].mm[i], item);
+          });
+        });
       },
     },
   };

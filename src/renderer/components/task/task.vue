@@ -61,6 +61,7 @@
           </el-tab-pane>
         </el-tabs>
         <div class="tpl" v-if="!editState && nowDataState && nowData.id">
+          <el-button plain round style="height:40px;" @click="excel()">导出Excel</el-button>
           <el-button :type="taskDown.type" plain round style="height:40px;" @click="taskDownFunc(taskDown.state)">{{taskDown.title}}</el-button>
           <el-button plain round style="height:40px;" @click="newTaskState = true">创建新任务</el-button>
         </div>
@@ -116,7 +117,7 @@
 
   // import BaseRecordData from '../task_record_template/base/baseRecordData.vue';
   import D3SvgLoading from '../task_record_template/base/d3SvgLoading.vue';
-import { POINT_CONVERSION_COMPRESSED } from 'constants';
+  import { POINT_CONVERSION_COMPRESSED } from 'constants';
   // import BaseSvg from '../task_record_template/d3svg';
 
   const BaseSvg = () => ({
@@ -245,6 +246,7 @@ import { POINT_CONVERSION_COMPRESSED } from 'constants';
     ],
   };
   const pressurePLC = require('../../objJS/matrixing').default.pressurePLC;
+  const ejsExcel = require('../../ejsExcel/ejsExcel').default.ex;
   export default {
     name: 'task',
     components: {
@@ -711,6 +713,10 @@ import { POINT_CONVERSION_COMPRESSED } from 'constants';
           // pressure: pressure,
         });
         console.log(this.taskDownData);
+      },
+      // 导出Excel
+      excel() {
+        ejsExcel();
       },
     },
   };

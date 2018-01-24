@@ -24,6 +24,7 @@ function createWindow() {
     height: 563,
     useContentSize: true,
     width: 1000,
+    // frame: false, // 隐藏菜单栏
     // 允许访问本地文件 测试图片可以显示
     webPreferences: {
       webSecurity: false,
@@ -53,9 +54,7 @@ app.on('activate', () => {
   }
 });
 
-// 网络连接成功！连接设备
-ipcMain.on('WIFIonline', () => {
-  global.netLine = true;
+function runModbus() {
   if (!plc2) {
     plc2 = new Modbus('192.168.181.111');
   } else if (plc2.GState) {
@@ -66,6 +65,11 @@ ipcMain.on('WIFIonline', () => {
   } else if (plc1.GState) {
     mainWindow.webContents.send('lineOK', { id: 1 });
   }
+}
+// 网络连接成功！连接设备
+ipcMain.on('WIFIonline', () => {
+  global.netLine = true;
+  runModbus();
 });
 // 网络连接失败！断开设备
 ipcMain.on('WIFIoffline', () => {

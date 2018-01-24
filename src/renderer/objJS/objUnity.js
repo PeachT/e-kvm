@@ -33,7 +33,7 @@ function dLZ(datas, NS, LQ, ab) {
   const LK = Number(UC.plc2mm(datas[datas.length - 1]));
   const L1 = Number(UC.plc2mm(datas[1], ab));
   const L0 = Number(UC.plc2mm(datas[0], ab));
-  console.log('1234====', LK, L1, L0, NS, LQ);
+  console.log('数据', ab, datas);
   return ((LK + L1) - (2 * L0)) - Number(NS) - Number(LQ);
 }
 
@@ -48,14 +48,15 @@ const unity = {
    * @param {boolean} [exceed=false] 超张拉
    * @returns
    */
-  stage(n, exceed = false) {
+  stage(data, state = false) {
     const s = [['初张拉', '阶段一', '终张拉'], ['初张拉', '阶段一', '阶段二', '终张拉'], ['初张拉', '阶段一', '阶段二', '阶段三', '终张拉']];
-    if (exceed) {
-      const r = s[n];
-      r.push('超张拉');
-      return r;
+    let sok = s[data.stage];
+    if (data.two && data.state === 0 && state) {
+      sok = ['初张拉', '阶段一', '阶段二'];
+    } else if (data.exceed) {
+      sok.push('超张拉');
     }
-    return s[n];
+    return sok;
   },
 
   LZ(task, r = null) {
@@ -63,7 +64,7 @@ const unity = {
     const fixed = sensor.toFixed;
     const m = abModel(task.tensioningPattern);
     let recird = null;
-    if (!r) {
+    if (r === null) {
       recird = task.recird;
     } else {
       recird = r;
@@ -84,7 +85,6 @@ const unity = {
     };
     m.forEach((item) => {
       const d = dLZ(recird[item].mm, task.task[item].NS, task.task[item].LQ, item);
-      console.log(recird[item].mm, d);
       if (r) {
         lz[`${item}dmm`] = d.toFixed(fixed);
       }

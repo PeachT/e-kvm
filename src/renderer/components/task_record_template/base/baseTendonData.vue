@@ -147,7 +147,7 @@
         return { a: arr[0], b: arr[1] };
       },
       stageStr() {
-        return this.$Ounity.stage(this.taskData.stage, this.taskData.exceed);
+        return this.$Ounity.stage(this.taskData);
       },
       PatternStr() {
         return this.$Ounity.abModel(this.taskData.tensioningPattern);

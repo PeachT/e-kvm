@@ -14,14 +14,7 @@ class Modbus {
     client.connect(502, path);
     client.setTimeout(timeout);
     client.on('error', (error) => {
-      // PLCError(`${this.path}连接错误`);
       this.toRenderer('lineError', '连接错误');
-      if (global.netLine) {
-        this.reconnect();
-      }
-      // if (global.netLine) {
-      //   this.reconnect();
-      // }
     });
     client.on('data', (data) => {
       const func = this.func.shift();
@@ -34,11 +27,11 @@ class Modbus {
       }
     });
     client.on('connect', () => {
+      this.GState = true;
       this.reconnectState = false;
-      this.toRenderer('lineError', '连接成功');
+      // this.toRenderer('lineError', '连接成功');
       this.toRenderer('lineOK');
       this.init();
-      this.GState = true;
       clearTimeout(this.tReconnent);
     });
     client.on('timeout', () => {
@@ -46,27 +39,28 @@ class Modbus {
       this.toRenderer('lineError', '连接超时');
       this.GState = false;
       this.reconnectState = true;
-      // this.tReconnent = setTimeout(() => {
-      //   if (global.netLine && !this.GState) {
-      //     this.reconnect();
-      //   }
-      // }, 3000);
+      client.destroy();
+      setTimeout(() => {
+        if (this.client === null) {
+          this.reconnect();
+        }
+      }, 10000);
+    });
+    client.on('close', () => {
+      this.toRenderer('lineError', '完全关闭！');
+      this.client = null;
     });
     this.path = path;
     this.timeout = timeout;
     this.devId = devId;
     this.reconnectTimeout = reconnectTimeout;
     this.client = client;
-    this.huitiao = null;
+    this.reNnber = 0;
     this.func = [];
   }
   reconnect() {
     // PLCError(`${this.path}正在重新启动...`);
     this.toRenderer('lineError', '正在重新启动。。。');
-    if (this.reconnectState || this.client.readyState !== 'open') {
-      this.reconnectState = false;
-    }
-    this.client = null;
     this.constructor(this.path);
   }
   init() {

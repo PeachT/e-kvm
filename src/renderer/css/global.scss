@@ -96,13 +96,13 @@ body,
 @each $name, $color in (A1, #ff3333), (A2, #ff33cc), (B1, #00cc33), (B2, #00cccc) {
   .#{$name}{
     color: $color;
-    .el-input--small .el-input__inner{
+    .el-input--small .el-input__inner, .el-input--medium .el-input__inner{
       color: $color;
     }
   }
 }
 // 输入框样式
-.el-input--small .el-input__inner{
+.el-input--small .el-input__inner, .el-input--medium .el-input__inner{
   font-size: 20px;
   padding-left: 5px;
 }

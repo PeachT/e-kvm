@@ -130,7 +130,7 @@
       </span>
     </el-dialog>
     <div class="device-manual" v-if="correction.state">
-      <manual class="main" :dId="nowData.id" :dab="correction.ab" @setFunc="setFunc"/>
+      <manual class="main" :did="nowData.id" :dab="correction.ab" @setFunc="setFunc"/>
     </div>
   </div>
 </template>
@@ -201,6 +201,7 @@
       addState() {
         return this.$store.state.global.addState;
       },
+      // 实时计算校正数据
       correctionC() {
         this.correction.c = Number((this.correction.a / this.correction.b).toFixed(6));
       },
@@ -347,9 +348,10 @@
             let errorMsg = '数据插入出错！';
             try {
               // 添加
+              nowData.tensioningPattern = Array.from(nowData.tensioningPattern).sort();
+              console.log(nowData.tensioningPattern);
               if (this.addState) {
                 nowData.id = this.$unity.timeId();
-                nowData.tensioningPattern = nowData.tensioningPattern.sort();
                 if (window.deviceDB.insert(nowData, { name: nowData.name })) {
                   this.$message.error('设备已经存在！请重新输入！');
                   return;

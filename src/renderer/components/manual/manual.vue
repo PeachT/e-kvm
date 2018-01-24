@@ -16,54 +16,30 @@
         <el-checkbox :label="item" v-for="(item, index) in patternStr.AB" :key="index" border></el-checkbox>
       </el-checkbox-group>
     </div>
-    <div class="gloups" >
-      <div class="gloup" v-if="patternStr.A.length > 0" v-show="shows.indexOf('A1') > -1 || shows.indexOf('A2') > -1">
-        <div class="item" v-for="(item, index) in patternStr.A" :key="index" v-show="shows.indexOf(item) > -1">
-          <div class="i">
+    <div class="gloups">
+      <div class="gloup" v-for="(items, abi) in patternStr.ABs" :key="abi">
+        <div class="item"  v-for="(item, index) in items" :key="index" v-show="shows.indexOf(item) > -1">
+          <div class="i" :class="item">
             <div class="title">{{item}}</div>
-            <el-input size="medium"
+            <el-input size="medium" :class="item"
               @focus="$unity.focusAllVal($event)"
               v-model.number="ab[item].setMpa"
               type="number" @change="writeMpa(item)">
               <template slot="prepend">设置压力</template>
               <template slot="append" >Mpa</template>
             </el-input>
-            <el-input size="medium" :value="currentlyData[`${item}mpa`] | plc2mpa(item, deviceId)" disabled>
+            <el-input size="medium" id="disabled"
+              :value="currentlyData[`${item}mpa`] | plc2mpa(item, deviceId)" >
               <template slot="prepend">当前压力</template>
               <template slot="append">Mpa</template>
             </el-input>
-            <el-input size="medium" @focus="$unity.focusAllVal($event)" v-model.number="ab[item].setMM" type="number" @change="writeMM(item)">
+            <el-input size="medium"
+              @focus="$unity.focusAllVal($event)"
+              v-model.number="ab[item].setMM" type="number" @change="writeMM(item)">
               <template slot="prepend">设置位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
-            <el-input size="medium" :value="currentlyData[`${item}mm`] | plc2mm(item, deviceId)" disabled>
-              <template slot="prepend">当前位移</template>
-              <template slot="append">mm&nbsp;</template>
-            </el-input>
-            <!-- <el-input size="medium">
-              <template slot="prepend">速度s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</template>
-              <template slot="append">mm&nbsp;</template>
-            </el-input> -->
-          </div>
-        </div>
-      </div>
-      <div class="gloup" v-if="patternStr.B.length > 0" v-show="shows.indexOf('B1') > -1 || shows.indexOf('B2') > -1">
-        <div class="item" v-for="(item, index) in patternStr.B" :key="index" v-show="shows.indexOf(item) > -1">
-          <div class="i">
-            <div class="title">{{item}}</div>
-            <el-input size="medium" @focus="$unity.focusAllVal($event)" v-model.number="ab[item].setMpa" type="number" @change="writeMpa(item)" >
-              <template slot="prepend">设置压力</template>
-              <template slot="append">Mpa</template>
-            </el-input>
-            <el-input size="medium" :value="currentlyData[`${item}mpa`] | plc2mpa(item, deviceId)" disabled>
-              <template slot="prepend">当前压力</template>
-              <template slot="append">Mpa</template>
-            </el-input>
-            <el-input size="medium" @focus="$unity.focusAllVal($event)" v-model.number="ab[item].setMM" type="number" @change="writeMM(item)">
-              <template slot="prepend">设置位移</template>
-              <template slot="append">mm&nbsp;</template>
-            </el-input>
-            <el-input size="medium" :value="currentlyData[`${item}mm`] | plc2mm(item, deviceId)" disabled>
+            <el-input size="medium" :value="currentlyData[`${item}mm`] | plc2mm(item, deviceId)" id="disabled">
               <template slot="prepend">当前位移</template>
               <template slot="append">mm&nbsp;</template>
             </el-input>
@@ -87,7 +63,7 @@
 
   export default {
     name: 'manual',
-    props: ['dId', 'dab'],
+    props: ['did', 'dab'],
     components: {
       DeviceSelect,
     },
@@ -129,13 +105,6 @@
       };
     },
     beforeMount() {
-      let s = null;
-      if (this.dab) {
-        s.id = this.dId;
-        this.shows = [this.dab];
-      } else {
-        s = window.manual.getAll[0];
-      }
       this.sensor = window.systemDB.getOne({ name: 'sensor' });
       if (this.$store.state.global.PLC1State) {
         ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2058, data: true });
@@ -144,14 +113,18 @@
         ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2058, data: true });
       }
       if (this.dab) {
-        this.device = window.deviceDB.getOne({ id: this.dab });
+        this.shows = [this.dab];
+        this.device = window.deviceDB.getOne({ id: this.did });
       } else if (window.deviceId) {
         this.device = window.deviceDB.getOne({ id: window.deviceId });
-      } else {
-        this.device = window.deviceDB.getAll[0];
       }
+      console.log(this.dab, this.did, this.device);
       this.deviceName = this.device.name;
       this.deviceId = this.device.id;
+    },
+    mounted() {
+      const input = this.$refs.disabled;
+      this.$d3.selectAll('#disabled').attr('disabled', true);
     },
     computed: {
       patternStr() {
@@ -162,33 +135,37 @@
               AB: ['A1', 'A2', 'B1', 'B2'],
               A: ['A1', 'A2'],
               B: ['B1', 'B2'],
+              ABs: [['A1', 'A2'], ['B1', 'B2']],
             };
           }
           const ps = {
             AB: [],
             A: [],
             B: [],
+            ABs: [],
           };
           p.map((item) => {
             ps.AB.push(item);
             switch (item) {
               case 0:
-                ps.A.push('A1');
+                ps.A = ['A1'];
                 break;
               case 1:
-                ps.A.push('A2');
+                ps.A = ['A1', 'A2'];
                 break;
               case 2:
-                ps.B.push('B1');
+                ps.B = ['B1'];
                 break;
               case 3:
-                ps.B.push('B2');
+                ps.B = ['B1', 'B2'];
                 break;
               default:
                 break;
             }
             return null;
           });
+          ps.AB = [...ps.A, ...ps.B];
+          ps.ABs = [ps.A, ps.B];
           return ps;
         }
         this.dataState = true;
@@ -244,7 +221,7 @@
         setMpa = setMpa > this.sensor.pressurePLC ? this.sensor.pressure : setMpa;
         setMpa = setMpa < 0 ? 0 : setMpa;
         this.ab[item].setMpa = setMpa;
-        const mpa = this.$UC.mpa2plc(setMpa);
+        const mpa = this.$UC.mpa2plc(setMpa, item);
         const func = (item === 'A1' || item === 'B1') ? 'wPLC1' : 'wPLC2';
         ipcRenderer.send(func, { func: 'writeMultipleRegisters16', address: address, data: [mpa] });
       },

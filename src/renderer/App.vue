@@ -41,13 +41,24 @@
       });
       // 连接成功
       ipcRenderer.on('lineOK', (event, data) => {
-        console.log('连接', data);
+        this.$notify.success({
+          showClose: true,
+          duration: 0,
+          title: '成功',
+          message: `PLC${data.id}${data.data}`,
+        });
         this.$store.dispatch(`PLC${data.id}State`, true);
       });
       // 连接中断
       ipcRenderer.on('lineError', (event, data) => {
         this.$store.dispatch(`PLC${data.id}State`, false);
-        console.error(data); // prints "pong"
+        this.$notify.error({
+          showClose: true,
+          duration: 0,
+          title: '错误',
+          message: `PLC${data.id}${data.data}`,
+        });
+        // ipcRenderer.send('mudbusError', data.id);
       });
     },
     watch: {

@@ -34,9 +34,16 @@ const unity = {
    * @param {Number} data 压力（mpa）值
    * @returns 返回plc值
    */
-  mpa2plc(data) {
+  mpa2plc(mpa, ab) {
     const sensor = window.systemDB.getOne({ name: 'sensor' });
-    return Math.round((data * sensor.pressurePLC) / sensor.pressure);
+    const device = window.deviceDB.getOne({ id: window.deviceId });
+    let correction = 0;
+    const s = parseInt(mpa / 5);
+    if (s >= 0) {
+      correction = device[ab].pressureCorrection[s];
+    }
+    const nmpa = mpa / correction;
+    return Math.round((nmpa * sensor.pressurePLC) / sensor.pressure);
   },
   /**
    * plc转位移（mm）
@@ -67,9 +74,15 @@ const unity = {
    * @param {Number} data 位移（mm）值
    * @returns 返回plc值
    */
-  mm2plc(data) {
+  mm2plc(mm) {
     const sensor = window.systemDB.getOne({ name: 'sensor' });
-    return Math.round((data * sensor.displacementPLC) / sensor.displacement);
+    const device = window.deviceDB.getOne({ id: window.deviceId });
+    const s = parseInt(mm / 40);
+    if (s >= 0) {
+      correction = device[ab].displacementCorrection[s];
+    }
+    const nmm = mm / correction;
+    return Math.round((nmm * sensor.displacementPLC) / sensor.displacement);
   },
   /**
    * PLC压力值转百分比
@@ -113,14 +126,13 @@ const unity = {
    * PLC值到KN
    *
    * @param {any} plcData PLC值
-   * @param {any} deviceId 设备id
    * @param {any} name 顶名称
    * @returns 返回KN
    */
-  plc2kn(plcData, deviceId, name) {
+  plc2kn(plcData, name) {
     const sensor = window.systemDB.getOne({ name: 'sensor' }); // 传感器
     const fixed = sensor.toFixed;
-    const device = window.deviceDB.getOne({ id: deviceId }); // 设备
+    const device = window.deviceDB.getOne({ id: window.deviceId }); // 设备
     const mpa = unity.plc2mpa(plcData);
     if (device.equation) {
       return ((mpa * device[name].a) + Number(device[name].b)).toFixed(fixed);
