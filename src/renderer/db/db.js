@@ -230,7 +230,7 @@ const Db = {
         const sys = $db.addCollection('system');
         sys.insert({
           name: 'sensor',
-          displacement: 255, // 位移传感器
+          displacement: 225, // 位移传感器
           displacementPLC: 2000,
           pressure: 60, // 压力传感器
           pressurePLC: 2000,

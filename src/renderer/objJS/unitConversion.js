@@ -11,7 +11,7 @@ const unity = {
    * @param {Number} data PLC值
    * @returns 返回压力（mpa）值
    */
-  plc2mpa(data, ab, deviceId) {
+  plc2mpa(data, ab = 'A1', deviceId) {
     const sensor = window.systemDB.getOne({ name: 'sensor' });
     if (ab) {
       if (data < -100 || data === null) {
@@ -51,7 +51,7 @@ const unity = {
    * @param {Object} data PLC值
    * @returns 返回位移（mm）值
    */
-  plc2mm(data, ab, deviceId) {
+  plc2mm(data, ab = 'A1', deviceId) {
     const sensor = window.systemDB.getOne({ name: 'sensor' });
     if (ab) {
       if (data < -100 || data === null) {

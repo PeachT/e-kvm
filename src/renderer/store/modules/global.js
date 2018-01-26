@@ -30,11 +30,16 @@ const state = {
   },
   PLC1X: null,
   PLC2X: null,
+  PLC1550: null,
+  PLC2550: null,
   PLC1S: null,
   PLC2S: null,
   operator: null,
   user: null,
   device: null,
+  systen: {
+    WorkCeilingMM: 0,
+  }
 };
 
 const mutations = {
@@ -83,6 +88,12 @@ const mutations = {
   PLC2X(state, data) {
     state.PLC2X = data;
   },
+  PLC1550(state, data) {
+    state.PLC1550 = data;
+  },
+  PLC2550(state, data) {
+    state.PLC2550 = data;
+  },
   PLC1S(state, data) {
     state.PLC1S = data;
   },
@@ -97,6 +108,9 @@ const mutations = {
   },
   device(state, data) {
     state.device = data;
+  },
+  systen(state, data) {
+    state.systen = data;
   },
 };
 
@@ -119,11 +133,20 @@ const actions = {
   PLC2X(context, data) {
     context.commit('PLC2X', data);
   },
+  PLC1550(context, data) {
+    context.commit('PLC1550', data);
+  },
+  PLC2550(context, data) {
+    context.commit('PLC2550', data);
+  },
   PLC1S(context, data) {
     context.commit('PLC1S', data);
   },
   PLC2S(context, data) {
     context.commit('PLC2S', data);
+  },
+  systen(context, data) {
+    context.commit('systen', data);
   },
 };
 

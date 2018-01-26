@@ -136,6 +136,40 @@
         }
       },
       recirdFunc() {
+        this.recird = {
+          startDate: null,
+          endDate: null,
+          A1: {
+            Mpa: [], // 压力
+            kn: [],
+            mm: [], // 位移
+            initMpa: null, // 回到初张拉压力
+            initMM: null, // 回到初张拉位移
+            retractionMM: null, // 力筋回缩量
+          },
+          A2: {
+            Mpa: [], // 压力
+            kn: [],
+            mm: [], // 位移
+            initMpa: null, // 回到初张拉压力
+            initMM: null, // 回到初张拉位移
+          },
+          B1: {
+            Mpa: [], // 压力
+            mm: [], // 位移
+            kn: [],
+            initMpa: null, // 回到初张拉压力
+            initMM: null, // 回到初张拉位移
+            retractionMM: null, // 力筋回缩量
+          },
+          B2: {
+            Mpa: [], // 压力
+            kn: [],
+            mm: [], // 位移
+            initMpa: null, // 回到初张拉压力
+            initMM: null, // 回到初张拉位移
+          },
+        };
         const recird = this.taskData.recird;
         console.log('122222222222', recird);
         const timeFormat = this.$d3.timeFormat('%Y-%m-%d %H:%M:%S');

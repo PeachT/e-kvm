@@ -2,8 +2,8 @@
   <div>
     <el-form
       label-width="100px"
-      v-loading="!PLCState1"
-      element-loading-text="请连接设备获取参数"
+      v-loading="(item === 'z' && !PLCState1 ) || (item === 'c' && !PLCState2) "
+      :element-loading-text=" deviceState ? '请连接设备获取参数': '请创建设备！'"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
       class="plcLoad"
@@ -169,29 +169,34 @@
     }),
     computed: {
       PLCState1() {
-        return this.$store.state.global.PLC1State;
+        return this.$store.state.global.PLC1State && this.deviceState;
       },
       PLCState2() {
-        return this.$store.state.global.PLC2State;
+        return this.$store.state.global.PLC2State && this.deviceState;
+      },
+      deviceState() {
+        return window.deviceId;
       },
     },
     beforeMount() {
       this.getSys();
-      if (this.$store.state.global.PLC1State) {
-        this.plcFunc(1);
-      }
-      if (this.$store.state.global.PLC2State) {
-        this.plcFunc(2);
+      if (window.deviceId) {
+        if (this.$store.state.global.PLC1State) {
+          this.plcFunc(1);
+        }
+        if (this.$store.state.global.PLC2State) {
+          this.plcFunc(2);
+        }
       }
     },
     watch: {
       PLCState1(nval) {
-        if (nval) {
+        if (nval && window.deviceId) {
           this.plcFunc(1);
         }
       },
       PLCState2(nval) {
-        if (nval) {
+        if (nval && window.deviceId) {
           this.plcFunc(2);
         }
       },
@@ -203,6 +208,7 @@
         ipcRenderer.on('systen', (event, data) => {
           const plc = data.id === 1 ? 'z' : 'c';
           const datas = returnData16(data.callbackData);
+          this.$store.dispatch('systen', datas[12]);
           this.plc[plc] = {
             ceilingMpa: this.$UC.plc2mpa(datas[0]), // 上限
             differencePressure: this.$UC.plc2mpa(datas[1]), // 下限

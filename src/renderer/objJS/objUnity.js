@@ -33,7 +33,7 @@ function dLZ(datas, NS, LQ, ab) {
   const LK = Number(UC.plc2mm(datas[datas.length - 1]));
   const L1 = Number(UC.plc2mm(datas[1], ab));
   const L0 = Number(UC.plc2mm(datas[0], ab));
-  console.log('数据', ab, datas);
+  // console.log('数据', ab, datas);
   return ((LK + L1) - (2 * L0)) - Number(NS) - Number(LQ);
 }
 

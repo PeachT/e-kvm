@@ -26,6 +26,9 @@
 <script>
   import HomeMenu from './menus/menu.vue';
   import Error from './error/error.vue';
+  const returnData16 = require('../modbus-tcp/returnData').default.returnData16;
+  const { ipcRenderer } = require('electron');
+
   export default {
     name: 'root',
     components: {
@@ -33,10 +36,15 @@
       Error,
     },
     beforeMount() {
-      if (window.manual.getAll[0]) {
+      if (window.manual.getAll[0].id) {
         window.deviceId = window.manual.getAll[0].id;
-      } else {
+      } else if (window.deviceDB.getAll[0]) {
         window.deviceId = window.deviceDB.getAll[0].id;
+      }
+      if (this.PLCState1) {
+        this.plcFunc(1);
+      } else if (this.PLCState2) {
+        this.plcFunc(2);
       }
     },
     data() {
@@ -63,13 +71,16 @@
         const p2 = this.$store.state.global.PLC2S;
         let p1s = false;
         let p2s = false;
-        if (this.PLCState1) {
+        if (this.PLCState1 && p1) {
           p1s = p1.indexOf('1') > -1;
         }
-        if (this.PLCState2) {
+        if (this.PLCState2 && p2) {
           p2s = p2.indexOf('1') > -1;
         }
         return p1s || p2s;
+      },
+      systen() {
+        return this.$store.state.global.systen.WorkCeilingMM;
       },
     },
     watch: {
@@ -83,6 +94,16 @@
         }
         this.showMenu2 = true;
       },
+      PLCState1(nval) {
+        if (nval) {
+          this.plcFunc(1);
+        }
+      },
+      PLCState2(nval) {
+        if (nval && !this.PLCState1) {
+          this.plcFunc(2);
+        }
+      },
     },
     methods: {
       switchMenuFunc() {
@@ -91,6 +112,30 @@
         } else {
           this.$message.error('请先完成编辑操作！');
         }
+      },
+      plcFunc(id) {
+        const func = id === 1 ? 'rPLC1' : 'rPLC2';
+        ipcRenderer.send(func, { func: 'readRegisters16', address: 4596, data: 20, callback: 'systen' });
+        ipcRenderer.on('systen', (event, data) => {
+          // const plc = data.id === 1 ? 'z' : 'c';
+          const datas = returnData16(data.callbackData);
+          const systen = {
+            WorkCeilingMM: datas[12],
+          };
+          this.$store.dispatch('systen', systen);
+          // this.plc[plc] = {
+          //   ceilingMpa: datas[0], // 上限
+          //   differencePressure: datas[1], // 下限
+          //   superSetPressure: datas[2], // 超设置压力
+          //   returnPressure: datas[3], // 回程压力
+          //   delay: datas[4], // 油泵延时s
+          //   replenish: datas[5], // 补压压力%
+          //   ceilingMM: datas[10], // 位移上限
+          //   lowerMM: datas[11], // 位移下限
+          //   WorkCeilingMM: datas[12], // 位移工作上限
+          //   WorkLowerMM: datas[13], // 位移工作下限
+          // };
+        });
       },
     },
   };

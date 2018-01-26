@@ -7,3 +7,4 @@
 /src/renderer/objJS/unitConversion.js
 /src/main/modbus/sendData.js
 /src/renderer/store/modules/global.js
+/src/renderer/components/task_record_template/base/baseTop/manualDevice.vue

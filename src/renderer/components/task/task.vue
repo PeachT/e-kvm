@@ -288,6 +288,12 @@
       PLCState2() {
         return this.$store.state.global.PLC2State;
       },
+      PLC550() {
+        return {
+          p1: this.$store.state.global.PLC1550,
+          p2: this.$store.state.global.PLC2550,
+        };
+      },
       taskDownDataAll() {
         let s = false;
         if (taskDownData.dwon) {
@@ -319,8 +325,6 @@
     },
     beforeMount() {
       this.getMenuData();
-      console.log(this.$store.state.global.menuTitle);
-      console.log(this.nowData, this.taskData);
     },
     beforeUpdate() {
       console.time('c');
@@ -333,6 +337,8 @@
       }
     },
     data: () => ({
+      //手动分组
+      manualDeviceState: false,
       // 创建为新任务
       newTaskName: null,
       // 梁数据

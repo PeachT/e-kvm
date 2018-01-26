@@ -30,7 +30,7 @@ class Modbus {
       this.GState = true;
       this.reconnectState = false;
       // this.toRenderer('lineError', '连接成功');
-      this.toRenderer('lineOK');
+      this.toRenderer('lineOK', this.time);
       this.init();
       clearTimeout(this.tReconnent);
     });
@@ -40,11 +40,13 @@ class Modbus {
       this.GState = false;
       this.reconnectState = true;
       client.destroy();
-      setTimeout(() => {
-        if (this.client === null) {
-          this.reconnect();
-        }
-      }, 10000);
+      if (global.netLine) {
+        setTimeout(() => {
+          if (this.client === null && global.netLine) {
+            this.reconnect();
+          }
+        }, 10000);
+      }
     });
     client.on('close', () => {
       this.toRenderer('lineError', '完全关闭！');
@@ -57,6 +59,7 @@ class Modbus {
     this.client = client;
     this.reNnber = 0;
     this.func = [];
+    this.time = new Date().getTime();
   }
   reconnect() {
     // PLCError(`${this.path}正在重新启动...`);
@@ -85,10 +88,10 @@ class Modbus {
             resolve();
           }
         });
-        // X输入 X0
-        this.readInputStatue(1024, 24, (data) => {
+        // 读取自动暂停
+        this.readCoilStatue(2598, 8, (data) => {
           const d = returnData(data);
-          this.toRenderer('realTimeX', d);
+          this.toRenderer('realTime550', d);
           b3 = true;
           if (b1 && b2 && b3 && b4) {
             resolve();

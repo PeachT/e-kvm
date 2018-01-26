@@ -32,8 +32,9 @@
         this.$store.dispatch(`PLC${data.id}Data`, data.data);
       });
       // 实时数据获取X
-      ipcRenderer.on('realTimeX', (event, data) => {
-        this.$store.dispatch(`PLC${data.id}X`, data.data);
+      ipcRenderer.on('realTime550', (event, data) => {
+        const b = data.data[0] === '1';
+        this.$store.dispatch(`PLC${data.id}550`, b);
       });
       // 实时数据获取S
       ipcRenderer.on('realTimeS', (event, data) => {
@@ -54,7 +55,7 @@
         this.$store.dispatch(`PLC${data.id}State`, false);
         this.$notify.error({
           showClose: true,
-          duration: 0,
+          duration: 5000,
           title: '错误',
           message: `PLC${data.id}${data.data}`,
         });

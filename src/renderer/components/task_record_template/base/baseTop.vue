@@ -15,8 +15,8 @@
             </div>
           </el-form-item>
           <el-form-item label="设 备">
-            <div class="row-flex" @click="deviceState = editState">
-              <el-input v-model="deviceName">
+            <div class="row-flex" >
+              <el-input v-model="deviceName" @click.native="deviceState = editState">
                 <i slot="suffix" class="el-input__icon el-icon-news"></i>
               </el-input>
               <el-button :disabled="manualGroupState" @click="manualGroup()">分组</el-button>
@@ -29,7 +29,7 @@
           </el-form-item>
           <el-form-item label="钢绞线">
             <div class="row-flex" @click="steelStrandState = editState">
-              <el-input @focus="$unity.focusAllVal($event)" v-model="steelStrand">
+              <el-input v-model="steelStrand">
                 <i slot="suffix" class="el-input__icon el-icon-news"></i>
               </el-input>
             </div>
@@ -49,6 +49,12 @@
     <div v-if="deviceState">
       <device-select :show.sync="deviceState" @deviceDataFunc="deviceDataFunc"></device-select>
     </div>
+    <manual-device
+      v-if="manualDeviceState"
+      :show.sync="manualDeviceState"
+      :khs="group.holeDetail.split(',')"
+      :deviceName="deviceName"
+      @groupData="groupData"/>
   </div>
 </template>
 
@@ -56,6 +62,7 @@
   import StructureSelect from './baseTop/structureSelect.vue';
   import SteelStrandSelect from './baseTop/steelStrandSelect.vue';
   import DeviceSelect from './baseTop/deviceSelect.vue';
+  import manualDevice from '../base/baseTop/manualDevice.vue';
 
   // 张拉组数据
   const group = {
@@ -88,6 +95,7 @@
       StructureSelect,
       SteelStrandSelect,
       DeviceSelect,
+      manualDevice,
     },
     props: [
       'holeId',
@@ -99,6 +107,8 @@
       'editState',
     ],
     data: () => ({
+      // 手动分组
+      manualDeviceState: false,
       structureSelectState: false,
       structure: {
         name: '',
@@ -197,6 +207,7 @@
         }
       },
       groupData(data) {
+        console.log('222222222222222', data);
         const groups = [];
         data.forEach((item) => {
           const d = this.$unity.copyObj(group);
@@ -231,6 +242,7 @@
         this.$emit('update:data', groups);
       },
       manualGroup() {
+        this.manualDeviceState = true;
         console.log('手动分组');
       },
     },

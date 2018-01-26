@@ -18,25 +18,31 @@
       <div class="row-flex">
         <el-form-item label="设备/孔号" >
           <div class="row-flex">
-            <el-input v-model="device.name" disabled></el-input>
-            <el-input v-model="groupAB.a" disabled>
+            <el-input :value="device.name" disabled></el-input>
+            <el-input :value="groupAB.a" disabled v-show="groupAB.a">
               <i slot="suffix" class="el-input__icon">A组</i>
             </el-input>
-            <el-input v-model="groupAB.b" disabled>
+            <el-input :value="groupAB.b" disabled v-show="groupAB.b">
               <i slot="suffix" class="el-input__icon">B组</i>
             </el-input>
           </div>
         </el-form-item>
-        <el-form-item label="张拉工艺">
+        <el-form-item label="张拉工艺" v-show="!('recird' in taskData)">
           <el-select v-model="taskData.stage" placeholder="请选择" style="width:100%;" @change="stageFunc()">
             <el-option v-for="(item, index) in ['3段', '4段', '5段']" :key="index" :label="item" :value="index">
             </el-option>
           </el-select>
         </el-form-item>
-        <div class="el-checkbox-group" style="display: flex; justify-content: center;">
+        <div v-show="!('recird' in taskData)" class="el-checkbox-group" style="display: flex; justify-content: center;">
           <el-checkbox v-model="taskData.two" :label="true" border @change="stageFunc()">二次张拉</el-checkbox>
           <el-checkbox v-model="taskData.exceed" :label="true" border @change="stageFunc()">超张拉</el-checkbox>
         </div>
+        <el-form-item label="开始时间" v-if="'recird' in taskData">
+          <el-input :value="recirdDate.startDate"></el-input>
+        </el-form-item>
+        <el-form-item label="结束时间" v-if="'recird' in taskData">
+          <el-input :value="recirdDate.endDate"></el-input>
+        </el-form-item>
       </div>
     <!-- 张拉数据 -->
       <table class="tendon-item" width="100%">
@@ -50,7 +56,7 @@
         <tr>
           <td>张拉阶段</td>
           <td v-for="(item) in matrixing.stages.length" :key="item">
-            <el-input v-model.number="taskData.task.stage[item-1]" type="number">
+            <el-input @focus="$unity.focusAllVal($event)" v-model.number="taskData.task.stage[item-1]" type="number">
               <i slot="suffix" class="el-input__icon">%</i>
             </el-input>
           </td>
@@ -151,6 +157,18 @@
       },
       PatternStr() {
         return this.$Ounity.abModel(this.taskData.tensioningPattern);
+      },
+      recirdDate() {
+        if ('recird' in this.taskData) {
+          const timeFormat = this.$d3.timeFormat('%Y-%m-%d %H:%M:%S');
+          const startDate = timeFormat(this.taskData.recird.startDate);
+          const endDate = timeFormat(this.taskData.recird.endDate);
+          return {
+            startDate: startDate,
+            endDate: endDate,
+          };
+        }
+        return null;
       },
     },
     methods: {

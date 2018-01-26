@@ -79,8 +79,9 @@ export default {
   },
   beforeMount() {
     const device = window.deviceDB.getOne({ id: window.deviceId });
-    console.log(device);
-    this.showAB = this.$Ounity.devicePattern(device.tensioningPattern);
+    if (device) {
+      this.showAB = this.$Ounity.devicePattern(device.tensioningPattern);
+    }
   },
   methods: {
     handleClose(done) {
