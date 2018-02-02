@@ -8,3 +8,4 @@
 /src/main/modbus/sendData.js
 /src/renderer/store/modules/global.js
 /src/renderer/components/task_record_template/base/baseTop/manualDevice.vue
+/src/renderer/components/monitoring/monitoringP.vue

@@ -4,6 +4,7 @@
       title="钢绞线选择"
       :visible="true"
       width="80%"
+      :show-close="false"
       >
       <div>
         构件选择
@@ -42,12 +43,10 @@ export default {
   },
   beforeMount() {
     this.datas = window.steelStrandsDB.reverseGetAll();
-    console.log('01010202', this.datas);
   },
   methods: {
     okFunc() {
       if (this.nowData) {
-        console.log(this.nowData.id);
         this.$emit('steelStrandDataFunc', this.nowData.id);
         this.$emit('update:show', false);
       } else {

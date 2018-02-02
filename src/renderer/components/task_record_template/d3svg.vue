@@ -1,10 +1,20 @@
 <template>
-  <div ref="svg" class="svg" @click="show"
-  :style="{'height' : `${h}`}"
+  <div class="wh100 svgMain"
+    @click="show"
     v-loading="showState"
     element-loading-text="查看曲线"
     element-loading-spinner="el-icon-view"
     element-loading-background="rgba(0, 0, 0, 0.8)">
+    <div class="operation">
+      <h1>{{refName === 'Mpa' ? '压力曲线Mpa' : '位移曲线mm'}}</h1>
+      <el-checkbox-group v-model="showPathState" size="mini" :min="1">
+        <el-checkbox :label="item"  v-for="(item, index) in stageStr" :key="index" @change="showPath($event, item)"></el-checkbox>
+      </el-checkbox-group>
+    </div>
+    <div ref="svg" class="svg"
+    :style="{'height' : `${h}`}"
+      >
+    </div>
   </div>
 </template>
 
@@ -31,37 +41,35 @@ export default {
       stageStr: null,
       showState: true,
       svg: null,
+      showPathState: null,
     };
   },
   mounted() {
-    this.stageStr = this.$Ounity.abModel(this.tensioningPattern);
     this.init();
   },
   watch: {
     data() {
       this.showState = true;
+      // this.init();
     },
   },
   methods: {
     show() {
       if (this.showState) {
-        this.stageStr = this.$Ounity.abModel(this.tensioningPattern);
-        const svgMain = this.$refs.svg;
-        const width = svgMain.clientWidth;
-        const height = svgMain.clientHeight;
-        this.width = width - 70;
-        this.height = height - 70;
-        this.svg.attr('width', width)
-          .attr('height', height);
+        this.init();
         this.initData();
       }
       this.showState = false;
     },
     // 创建画布
     init() {
+      this.stageStr = this.$Ounity.abModel(this.tensioningPattern);
+      this.showPathState = this.stageStr;
       const svgMain = this.$refs.svg;
+      svgMain.innerHTML = null;
       const width = svgMain.clientWidth;
-      const height = svgMain.clientHeight;
+      // const height = svgMain.clientHeight;
+      const height = this.h;
       this.width = width - 70;
       this.height = height - 70;
       const svg = this.$d3.select(svgMain)
@@ -126,23 +134,43 @@ export default {
       this.x.call(axisX);
       this.y.call(axisY);
     },
+    showPath(e, ab) {
+      const n = e ? 2 : 0;
+      this[ab].style('stroke-width', n);
+    },
   },
 };
 </script>
 
 <style lang="scss" >
-.svg{
-  // height: 500px;
-  width: 100%;
-  background-color: #E4E7ED;
-  path{
-    fill: none;
-    stroke: blue;
-    stroke-width: 2;
+.svgMain{
+  .svg{
+    // height: 500px;
+    width: 100%;
+    background-color: #E4E7ED;
+    path{
+      fill: none;
+      stroke: blue;
+      stroke-width: 2;
+    }
   }
   .el-loading-spinner{
     i, p{
       font-size: 48px;
+    }
+  }
+  position: relative;
+  .operation{
+    position: absolute;
+    top: 5px;
+    left: 45px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    h1{
+      position: absolute;
+      left: 0;
     }
   }
 }

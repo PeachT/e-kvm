@@ -207,7 +207,6 @@
         }
       },
       groupData(data) {
-        console.log('222222222222222', data);
         const groups = [];
         data.forEach((item) => {
           const d = this.$unity.copyObj(group);
@@ -215,18 +214,18 @@
           d.tensioningPattern = item.tensioningPattern;
           switch (item.tensioningPattern) {
             case 0:
-              d.task.A1 = ab;
+              d.task.A1 = this.$unity.copyObj(ab);
               break;
             case 1:
-              d.task.A1 = ab;
-              d.task.A2 = ab2;
+              d.task.A1 = this.$unity.copyObj(ab);
+              d.task.A2 = this.$unity.copyObj(ab2);
               break;
             case 2:
-              d.task.B1 = ab;
+              d.task.B1 = this.$unity.copyObj(ab);
               break;
             case 3:
-              d.task.B1 = ab;
-              d.task.B2 = ab2;
+              d.task.B1 = this.$unity.copyObj(ab);
+              d.task.B2 = this.$unity.copyObj(ab2);
               break;
             case 4:
               d.task.A1 = this.$unity.copyObj(ab);

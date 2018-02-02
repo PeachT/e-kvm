@@ -1,9 +1,19 @@
 // 十六位又符合整数
 function netage(data) {
   if (data > 32767) {
-    return parseInt((0xFFFF ^ data) + 1, 10) * -1;
+    return parseInt((0xFFFF ^ data) + 1, 10) * - 1;
   }
   return data;
+}
+function Sbit(data) {
+  if (data > 0) {
+    const z = '0000000000000000';
+    const arr = Array.from(data.toString(2).padStart(16, z)).reverse();
+    // const arr2 = Array.from(data[1].toString(2).padStart(16, z));
+    // return [...arr1, ...arr2].reverse();
+    return arr;
+  }
+  return 0;
 }
 
 const state = {
@@ -32,8 +42,14 @@ const state = {
   PLC2X: null,
   PLC1550: null,
   PLC2550: null,
-  PLC1S: null,
-  PLC2S: null,
+  PLC1S: {
+    A: 0,
+    B: 0,
+  },
+  PLC2S: {
+    A: 0,
+    B: 0,
+  },
   operator: null,
   user: null,
   device: null,
@@ -95,10 +111,12 @@ const mutations = {
     state.PLC2550 = data;
   },
   PLC1S(state, data) {
-    state.PLC1S = data;
+    state.PLC1S.A = Sbit(data[0]);
+    state.PLC1S.B = Sbit(data[1]);
   },
   PLC2S(state, data) {
-    state.PLC2S = data;
+    state.PLC2S.A = Sbit(data[0]);
+    state.PLC2S.B = Sbit(data[1]);
   },
   operator(state, data) {
     state.operator = data;

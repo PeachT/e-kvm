@@ -4,6 +4,7 @@
       title="设备选择"
       :visible="true"
       width="80%"
+      :show-close="false"
       >
       <div>
         设备选择

@@ -32,7 +32,7 @@ function createWindow() {
   });
   mainWindow.loadURL(winURL);
   if (process.env.NODE_ENV === 'development') {
-    BrowserWindow.addDevToolsExtension('C:/Users/peach/AppData/Local/Google/Chrome/User Data/Default/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/4.0.1_0');
+    BrowserWindow.addDevToolsExtension('C:/Users/peach/AppData/Local/Google/Chrome/User Data/Default/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/4.1.1_0');
   }
   global.mainWindow = mainWindow;
   mainWindow.on('closed', () => {

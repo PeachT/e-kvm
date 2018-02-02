@@ -34,7 +34,7 @@ const unity = {
    * @param {Number} data 压力（mpa）值
    * @returns 返回plc值
    */
-  mpa2plc(mpa, ab) {
+  mpa2plc(mpa, ab = 'A1') {
     const sensor = window.systemDB.getOne({ name: 'sensor' });
     const device = window.deviceDB.getOne({ id: window.deviceId });
     let correction = 0;
@@ -59,9 +59,9 @@ const unity = {
       }
       const device = window.deviceDB.getOne({ id: window.deviceId });
       const mm = Number(((data * sensor.displacement) / sensor.displacementPLC));
-      let correction = 0;
+      let correction = 1;
       const s = parseInt(mm / 40);
-      if (s >= 0) {
+      if (s >= 0 && s < 6) {
         correction = device[ab].displacementCorrection[s];
       }
       return (mm * correction).toFixed(sensor.toFixed);
@@ -74,11 +74,12 @@ const unity = {
    * @param {Number} data 位移（mm）值
    * @returns 返回plc值
    */
-  mm2plc(mm) {
+  mm2plc(mm, ab = 'A1') {
     const sensor = window.systemDB.getOne({ name: 'sensor' });
     const device = window.deviceDB.getOne({ id: window.deviceId });
     const s = parseInt(mm / 40);
-    if (s >= 0) {
+    let correction = 1;
+    if (s >= 0 && s < 6) {
       correction = device[ab].displacementCorrection[s];
     }
     const nmm = mm / correction;

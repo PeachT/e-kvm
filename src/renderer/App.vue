@@ -34,6 +34,7 @@
       // 实时数据获取X
       ipcRenderer.on('realTime550', (event, data) => {
         const b = data.data[0] === '1';
+        // console.log(`PLC${data.id}550`, b);
         this.$store.dispatch(`PLC${data.id}550`, b);
       });
       // 实时数据获取S

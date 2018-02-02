@@ -71,11 +71,11 @@
         const p2 = this.$store.state.global.PLC2S;
         let p1s = false;
         let p2s = false;
-        if (this.PLCState1 && p1) {
-          p1s = p1.indexOf('1') > -1;
+        if (this.PLCState1 && (p1.A || p1.B)) {
+          p1s = true;
         }
-        if (this.PLCState2 && p2) {
-          p2s = p2.indexOf('1') > -1;
+        if (this.PLCState2 && (p2.A || p2.B)) {
+          p2s = true;
         }
         return p1s || p2s;
       },
@@ -121,6 +121,7 @@
           const datas = returnData16(data.callbackData);
           const systen = {
             WorkCeilingMM: datas[12],
+            WorkLowerMM: datas[13],
           };
           this.$store.dispatch('systen', systen);
           // this.plc[plc] = {

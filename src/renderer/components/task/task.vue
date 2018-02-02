@@ -31,13 +31,14 @@
                 <base-record-data :taskData.sync="taskData" :deviceId="nowData.deviceId"/>
               </div>
               <base-svg
-                h="500px"
+                h="500"
                 :data="taskData.curves"
                 :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
                 :tensioningPattern="taskData.tensioningPattern"
                 refName="Mpa"/>
+                <br>
               <base-svg
-                h="500px"
+                h="500"
                 :data="taskData.curves"
                 :time="{start: taskData.recird.startDate, end: taskData.recird.endDate}"
                 :tensioningPattern="taskData.tensioningPattern"
@@ -62,7 +63,12 @@
         </el-tabs>
         <div class="tpl" v-if="!editState && nowDataState && nowData.id">
           <el-button plain round style="height:40px;" @click="excel()">导出Excel</el-button>
-          <el-button :type="taskDown.type" plain round style="height:40px;" @click="taskDownFunc(taskDown.state)">{{taskDown.title}}</el-button>
+          <el-button
+            :type="taskDown.type"
+            plain round
+            style="height:40px;"
+            @click="taskDownFunc(taskDown.state)"
+            >{{taskDown.title}}</el-button>
           <el-button plain round style="height:40px;" @click="newTaskState = true">创建新任务</el-button>
         </div>
       </el-main>
@@ -90,16 +96,15 @@
         <h3>设备连接状态</h3>
         <div :class="{'yes': PLCState1}" v-show="taskDownData.plc1"><i class="el-icon-success"></i>主站</div>
         <div :class="{'yes': PLCState2}" v-show="taskDownData.plc2"><i class="el-icon-success"></i>从站</div>
-        <h3>数据下载状态</h3>
-        <div :class="{'yes': taskDownData.A1}" v-show="taskDownData.A1show"><i :class="{'el-icon-success' : taskDownData.A1, 'el-icon-loading': !taskDownData.A1}"></i>{{taskDownData.A1? '下载完成': '下载中...'}}</div>
-        <div :class="{'yes': taskDownData.A2}" v-show="taskDownData.A2show"><i :class="{'el-icon-success' : taskDownData.A2, 'el-icon-loading': !taskDownData.A2}"></i>{{taskDownData.A2? '下载完成': '下载中...'}}</div>
-        <div :class="{'yes': taskDownData.B1}" v-show="taskDownData.B1show"><i :class="{'el-icon-success' : taskDownData.B1, 'el-icon-loading': !taskDownData.B1}"></i>{{taskDownData.B1? '下载完成': '下载中...'}}</div>
-        <div :class="{'yes': taskDownData.B2}" v-show="taskDownData.B2show"><i :class="{'el-icon-success' : taskDownData.B2, 'el-icon-loading': !taskDownData.B2}"></i>{{taskDownData.B2? '下载完成': '下载中...'}}</div>
-        <h3 :class="{'yes': taskDownDataAll}">{{taskDownDataAll? '全部下载完成！' : '下载中...'}}</h3>
+        <div :class="{'yes': !currentlyS.p1A}" ><i class="el-icon-success"></i>A1报警</div>
+        <div :class="{'yes': !currentlyS.p1B}" ><i class="el-icon-success"></i>B1报警</div>
+        <div :class="{'yes': !currentlyS.p2A}" ><i class="el-icon-success"></i>A2报警</div>
+        <div :class="{'yes': !currentlyS.p2B}" ><i class="el-icon-success"></i>B2报警</div>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        <el-button @click="taskDownData.state = false">取 消</el-button>
+        <el-button @click="taskDownFunc(taskDown.state)">重新下载</el-button>
+        <!-- <el-button type="primary" @click="dialogVisible = false">确 定</el-button> -->
       </span>
     </el-dialog>
   </div>
@@ -294,33 +299,16 @@
           p2: this.$store.state.global.PLC2550,
         };
       },
-      taskDownDataAll() {
-        let s = false;
-        if (taskDownData.dwon) {
-          s = (taskDownData.A1show === taskDownData.A1) &&
-          (taskDownData.A2show === taskDownData.A2) &&
-          (taskDownData.B1show === taskDownData.B1) &&
-          (taskDownData.B2show === taskDownData.B2);
-        }
-        if (s) {
-          this.$message.success('下载完成');
-          setTimeout(() => {
-            this.taskDownData.state = false;
-            this.taskDownData.plc1 = false;
-            this.taskDownData.plc2 = false;
-            this.taskDownData.dwon = false;
-            this.taskDownData.A1 = false;
-            this.taskDownData.A2 = false;
-            this.taskDownData.B1 = false;
-            this.taskDownData.B2 = false;
-            this.taskDownData.A1show = false;
-            this.taskDownData.A2show = false;
-            this.taskDownData.B1show = false;
-            this.taskDownData.B2show = false;
-            this.$router.push('/monitoring');
-          }, 100);
-        }
-        return s;
+      currentlyS() {
+        const p1 = this.$store.state.global.PLC1S;
+        const p2 = this.$store.state.global.PLC2S;
+        return {
+          p1A: p1.A !== 0,
+          p1B: p1.B !== 0,
+          p2A: p2.A !== 0,
+          p2B: p2.B !== 0,
+          p: p1.A !== 0 || p1.B !== 0 || p2.A !== 0 || p2.B !== 0,
+        };
       },
     },
     beforeMount() {
@@ -337,6 +325,8 @@
       }
     },
     data: () => ({
+      MpaShow: false,
+      mmShow: false,
       //手动分组
       manualDeviceState: false,
       // 创建为新任务
@@ -411,7 +401,7 @@
         if (nval) {
           this.taskData = this.nowData.data.filter(item => item.name === nval)[0];
           const state = this.groups.filter(item => item.name === this.nowGroupName)[0].state;
-          const titles = ['张  拉', '重新张拉', '二次张拉', '重新张拉'];
+          const titles = ['张  拉', '重新张拉', '二次张拉', '继续张拉'];
           const types = ['primary', 'danger', 'warning', 'danger'];
           this.taskDown = {
             state: state,
@@ -533,7 +523,7 @@
         delete data.meta;
         delete data.$loki;
         data.data.forEach((item) => {
-          delete item.record;
+          delete item.recird;
           delete item.curves;
           item.state = 0;
         });
@@ -673,52 +663,70 @@
       },
       // 下载任务
       taskDownFunc(state) {
-        try {
-          window.nowDB.c.chain().find().remove();
-          // $db.save();
-          window.nowDB.db.save();
-        } catch (error) {
-          console.error(error);
-        }
+        this.taskDownData.state = true;
         const taskData = this.taskData;
         const tensioningPattern = taskData.tensioningPattern; // 泵顶组合
+        let b = false;
+        console.log(this.currentlyS);
         switch (tensioningPattern) {
           case 0:
             this.taskDownData.plc1 = true;
-            if (!this.PLCState1) {
+            if (!this.PLCState1 || this.currentlyS.p1A) {
               this.$message.error('设备连接有误！');
-              return;
+              b = true;
             }
             break;
           case 2:
             this.taskDownData.plc2 = true;
-            if (!this.PLCState2) {
+            if (!this.PLCState2 || this.currentlyS.p2B) {
               this.$message.error('设备连接有误！');
-              return;
+              b = true;
             }
             break;
           case 1:
+            this.taskDownData.plc1 = true;
+            this.taskDownData.plc2 = true;
+            if ((!this.PLCState1 && !this.PLCState2) || this.currentlyS.p1A || this.currentlyS.p2A) {
+              this.$message.error('设备连接有误！');
+              b = true;
+            }
+            break;
           case 3:
+            this.taskDownData.plc1 = true;
+            this.taskDownData.plc2 = true;
+            if ((!this.PLCState1 && !this.PLCState2) || this.currentlyS.p1B || this.currentlyS.p2B) {
+              this.$message.error('设备连接有误！');
+              b = true;
+            }
+            break;
           case 4:
             this.taskDownData.plc1 = true;
             this.taskDownData.plc2 = true;
-            if (!this.PLCState1 && !this.PLCState2) {
+            if ((!this.PLCState1 && !this.PLCState2) || this.currentlyS.p) {
               this.$message.error('设备连接有误！');
-              return;
+              b = true;
             }
             break;
           default:
             break;
         }
-        this.taskDownData.state = true;
-        this.taskDownData.dwon = true;
-        window.nowDB.insert({
-          uid: this.menuId,
-          id: this.childrenMenuId,
-          name: this.nowGroupName,
-          // pressure: pressure,
-        });
-        console.log(this.taskDownData);
+        if (!b) {
+          try {
+            window.nowDB.c.chain().find().remove();
+            window.nowDB.db.save();
+          } catch (error) {
+            console.error(error);
+          }
+          this.taskDownData.dwon = true;
+          window.nowDB.insert({
+            uid: this.menuId,
+            id: this.childrenMenuId,
+            name: this.nowGroupName,
+          });
+          this.$router.push('/monitoring');
+          this.taskDownData.state = false;
+          console.log(this.taskDownData);
+        }
       },
       // 导出Excel
       excel() {

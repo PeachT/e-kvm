@@ -66,14 +66,16 @@ export default {
       };
       const p1 = this.$store.state.global.PLC1S;
       const p2 = this.$store.state.global.PLC2S;
-      if (this.PLCState1) {
-        r.A1 = p1.slice(0, 20);
-        r.A2 = p1.slice(20, 40);
-      }
-      if (this.PLCState2) {
-        r.B1 = p2.slice(0, 20);
-        r.B2 = p2.slice(20, 40);
-      }
+      try {
+        if (this.PLCState1 && (p1.A || p1.B)) {
+          r.A1 = p1.A;
+          r.A2 = p1.B;
+        }
+        if (this.PLCState2 && (p2.A || p2.B)) {
+          r.B1 = p2.A;
+          r.B2 = p2.B;
+        }
+      } catch (error) {}
       return r;
     },
   },

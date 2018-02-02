@@ -34,24 +34,26 @@
               <td>{{pressure.stagesMpa[item][PLCStage]}}</td>
               <td>{{LZ[`${item}dmm`]}}</td>
               <template v-if="item === 'A1' || item === 'B1'">
-                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{LZ[`${item}deviation`]}}</td>
-                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{nowData.task[item].LL}}</td>
-                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{LZ[item].mm}}</td>
-                <td rowspan="2" v-if="item === 'A1' || item === 'B1'">{{LZ[item].deviation}}</td>
+                <td rowspan="2">{{LZ[`${item}deviation`]}}</td>
+                <td rowspan="2">{{nowData.task[item].LL}}</td>
+                <td rowspan="2">{{LZ[item].mm}}</td>
+                <td rowspan="2">{{LZ[item].deviation}}</td>
               </template>
             </tr>
           </table>
         </div>
-        <div :style="{'height': svgh}" class="auto svg" ref="devSvg">
+        <div class="auto svg" ref="devSvg">
           <curves-svg
-            h="100%"
+            v-if="svgh"
+            :h="svgh"
             ref="mpaCurves"
             :data="curves"
             :time="{start: recird.startDate, end: recird.endDate}"
             :tensioningPattern="nowData.tensioningPattern"
             refName="Mpa"/>
           <curves-svg
-            h="100%"
+            v-if="svgh"
+            :h="svgh"
             ref="mmCurves"
             :data="curves"
             :time="{start: recird.startDate, end: recird.endDate}"
@@ -65,6 +67,7 @@
       title="张拉"
       :visible="taskDownData.state"
       width="60%"
+      top="30%"
       >
       <div>
         可以张拉
@@ -74,38 +77,208 @@
             <el-form-item :label="item[1]"
               v-for="(item, index) in [['sampleNumber', '试块编号'], ['sampleStrength', '试块强度'], ['designStrength', '设计强度'],['tensioningStrengthNow','张拉时砼强度']]"
               :key="index">
-              <el-input v-model="taskData.concretes[item[0]]"></el-input>
+              <el-input @focus="$unity.focusAllVal($event)" v-model="taskData.concretes[item[0]]"></el-input>
             </el-form-item>
             <el-form-item label="浇筑日期">
               <el-date-picker style="width:100%;" type="date" placeholder="选择日期" v-model="taskData.concretes.castingDate" @change="concretesFunc()"></el-date-picker>
             </el-form-item>
           </div>
-          <p>{{concretesState ? '请设置浇筑日期！' : '可以启动张拉'}}</p>
         </el-form>
+        <el-form label-width="85">
+          <h3>张拉控制</h3>
+          <div class="row-flex">
+            <el-form-item label="张拉平衡">
+              <el-input @focus="$unity.focusAllVal($event)" v-model.number="balance" type="number"></el-input>
+            </el-form-item>
+            <el-form-item label="补压系数">
+              <el-select v-model="supMM" placeholder="补压系数">
+                <el-option
+                  v-for="item in [1, 0.99, 0.98, 0.97]"
+                  :key="item"
+                  :label="item"
+                  :value="item">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </div>
+          <div class="row-flex">
+            <el-form-item label="位移工作上限">
+              <el-input-number
+                v-model="WorkCeilingMM"
+                :min="mmMin"
+                :max="mmMax"
+                type="number"
+                @focus="$unity.focusAllVal($event)"></el-input-number>
+              <!-- <el-input @focus="$unity.focusAllVal($event)" v-model.number="WorkCeilingMM" type="number"></el-input> -->
+            </el-form-item>
+            <el-form-item label="回顶位移下限">
+              <el-input-number
+                v-model="returnMM"
+                :min="mmMin"
+                :max="mmMax"
+                type="number"
+                @focus="$unity.focusAllVal($event)"></el-input-number>
+            </el-form-item>
+          </div>
+        </el-form>
+        <p>{{concretesState ? '请设置浇筑日期！' : '可以启动张拉'}}</p>
       </div>
       <span slot="footer" class="dialog-footer">
+        <el-button type="danger" @click="cancel()">取消张拉</el-button>
         <el-button type="success" @click="startReady()">启动张拉</el-button>
-        <el-button @click="cancel()">取消张拉</el-button>
       </span>
     </el-dialog>
+    <!-- 暂停 -->
     <el-dialog
       title="暂停"
       :visible="pause"
-      width="60%"
+      width="50%"
+      top="30%"
       >
+      <el-form label-width="85">
+        <h3>张拉控制</h3>
+        <div class="row-flex">
+          <el-form-item label="张拉平衡">
+            <el-input @focus="$unity.focusAllVal($event)" v-model.number="balance" type="number"></el-input>
+          </el-form-item>
+          <el-form-item label="补压系数">
+            <el-select v-model="supMM" placeholder="补压系数">
+              <el-option
+                v-for="item in [1, 0.99, 0.98, 0.97]"
+                :key="item"
+                :label="item"
+                :value="item">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </div>
+        <div class="row-flex">
+          <el-form-item label="位移工作上限">
+            <el-input-number
+              v-model="WorkCeilingMM"
+              :min="mmMin"
+              :max="mmMax"
+              type="number"
+              @focus="$unity.focusAllVal($event)"></el-input-number>
+            <!-- <el-input @focus="$unity.focusAllVal($event)" v-model.number="WorkCeilingMM" type="number"></el-input> -->
+          </el-form-item>
+          <el-form-item label="回顶位移下限">
+            <el-input-number
+              v-model="returnMM"
+              :min="mmMin"
+              :max="mmMax"
+              type="number"
+              @focus="$unity.focusAllVal($event)"></el-input-number>
+          </el-form-item>
+        </div>
+      </el-form>
+      <p>{{currentlyS}}</p>
+      <div v-if="bjs.length > 0">
+        <div v-for="ab in stage" :key="ab" v-if="ab in bjs[bjs.length -1]">
+          <div v-if="bjs[bjs.length -1][ab]" >
+            <h1 :class="ab">{{ab}}</h1>
+            <el-alert
+              v-for="(item, index) in errorStr"
+              :key="index"
+              v-show="bjs[bjs.length -1][ab][index] == 1"
+              :title="item[0]"
+              :type="currentlyS ? 'error' : 'success'"
+              :description="item[1]"
+              :closable="false"
+              show-icon>
+            </el-alert>
+          </div>
+        </div>
+        <div v-if="'p1' in bjs[bjs.length -1]">
+          <el-alert
+            title="主站手动暂停！"
+            type="error"
+            :closable="false"
+            show-icon>
+          </el-alert>
+        </div>
+        <div v-if="'p2' in bjs[bjs.length -1]">
+          <el-alert
+            title="从站手动暂停！"
+            type="error"
+            :closable="false"
+            show-icon>
+          </el-alert>
+        </div>
+      </div>
+      <div>
+        <el-alert
+          v-if="!PLCState1"
+          title="主站通常错误！"
+          type="error"
+          :closable="false"
+          show-icon>
+        </el-alert>
+        <el-alert
+          v-if="!PLCState2"
+          title="从站通常错误！"
+          type="error"
+          :closable="false"
+          show-icon>
+        </el-alert>
+      </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="success" @click="pauseExit()">保存退出</el-button>
-        <el-button type="success" @click="pauseRun()">继续张拉</el-button>
+        <el-button type="danger" @click="noExit()">不保存退出</el-button>
+        <el-button type="warning" @click="pauseExit()">保存退出</el-button>
+        <el-button type="success" @click="pauseRun()" v-show="pauseRunState">继续张拉</el-button>
       </span>
     </el-dialog>
+    <!-- 超位移报警 -->
     <el-dialog
       title="超位移报警"
       :visible="exceedMMState"
-      width="60%"
+      width="50%"
+      top="30%"
       >
+      <el-form label-width="85">
+        <h3>张拉控制</h3>
+        <div class="row-flex">
+          <el-form-item label="张拉平衡">
+            <el-input @focus="$unity.focusAllVal($event)" v-model.number="balance" type="number"></el-input>
+          </el-form-item>
+          <el-form-item label="补压系数">
+            <el-select v-model="supMM" placeholder="补压系数">
+              <el-option
+                v-for="item in [1, 0.99, 0.98, 0.97]"
+                :key="item"
+                :label="item"
+                :value="item">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </div>
+        <div class="row-flex">
+          <el-form-item label="位移工作上限">
+            <el-input-number
+              v-model="WorkCeilingMM"
+              :min="mmMin"
+              :max="mmMax"
+              type="number"
+              @focus="$unity.focusAllVal($event)"></el-input-number>
+            <!-- <el-input @focus="$unity.focusAllVal($event)" v-model.number="WorkCeilingMM" type="number"></el-input> -->
+          </el-form-item>
+          <el-form-item label="回顶位移下限">
+            <el-input-number
+              v-model="returnMM"
+              :min="mmMin"
+              :max="mmMax"
+              type="number"
+              @focus="$unity.focusAllVal($event)"></el-input-number>
+          </el-form-item>
+        </div>
+      </el-form>
+      <!-- <span>工作位移上限</span>
+      <el-input @focus="$unity.focusAllVal($event)" v-model.number="WorkCeilingMM" type="number"></el-input> -->
+      <!-- <span>回顶位移下限</span>
+      <el-input @focus="$unity.focusAllVal($event)" v-model.number="returnMM" type="number"></el-input> -->
       <span slot="footer" class="dialog-footer">
-        <el-button type="success" @click="exceedReturn()">回顶</el-button>
-        <el-button type="success" @click="exceedRun()">继续张拉</el-button>
+        <el-button type="primary" @click="exceedReturn()" >回顶</el-button>
+        <el-button type="success" @click="exceedRun()" :disabled="!exceedReturnMMState">继续张拉</el-button>
       </span>
     </el-dialog>
   </div>
@@ -128,8 +301,9 @@ export default {
     HomeMenu,
   },
   data: () => ({
-    svgh: 0,
-    LZ: null,
+    supMM: 0.99, // 补压系数
+    svgh: 0, // svgdom高度
+    LZ: null, // 单顶伸长量，总伸长量，偏差率
     run: false, // 启动标示
     runT: true,
     menuShow: false,
@@ -148,6 +322,7 @@ export default {
         castingDate: null, // '浇筑日期',
       },
     },
+    basenowData: null,
     nowData: null,
     stage: [],
     pressure: null,
@@ -194,13 +369,50 @@ export default {
     repeatedlyB1: false,
     repeatedlyB2: false,
     exceedMMState: false, // 超位移
-    pause: false,
+    pause: false, // 暂停
+    // 压力到达确认
+    sA1: false,
+    sA2: false,
+    sB1: false,
+    sB2: false,
+    // 张拉平衡
+    balance: 5,
+    balanceA1: false,
+    balanceA2: false,
+    balanceB1: false,
+    balanceB2: false,
+    // 位移工作上限
+    mmMax: 0,
+    WorkCeilingMM: 190,
+    exceedReturnState: false, // 位移下限
+    returnMM: 50, // 回顶位移
+    mmMin: 50, // 位移下限
+    exceedReturnMMState: false, // 回顶完成
+    // 报警
+    bj: {
+      A1: null,
+      A2: null,
+      B1: null,
+      B2: null,
+    },
+    bjs: [],
+    errorStr: [
+      ['超系统压力上限！', ''],
+      ['超设置设置压力', ''],
+      ['超系统位移上限！', ''],
+      ['超系统位移下限', ''],
+      ['位移未连接', ''],
+      ['压力未连接', ''],
+    ],
   }),
   mounted() {
     const svgMain = this.$refs.devSvg;
     this.svgh = svgMain.clientHeight;
   },
   beforeMount() {
+    this.mmMax = parseInt(this.$UC.plc2mm(this.$store.state.global.systen.WorkCeilingMM));
+    this.WorkCeilingMM = this.mmMax;
+    this.mmMin = parseInt(this.$UC.plc2mm(this.$store.state.global.systen.WorkLowerMM));
     this.LZFunc();
     new Promise(this.ready0).then((val) => {
       console.log(val);
@@ -210,21 +422,62 @@ export default {
     });
   },
   watch: {
+    // 极限报警
+    currentlyS(nval) {
+      if (nval) {
+        const p1 = this.$store.state.global.PLC1S;
+        const p2 = this.$store.state.global.PLC2S;
+        const p = {
+          A1: p1.A,
+          B1: p1.B,
+          A2: p2.A,
+          B2: p2.B,
+        };
+        this.bjs.push(p);
+      }
+    },
+    // 手动暂停
     p1550(nval) {
       if (nval) {
-        this.pause = true;
-        ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2598, data: true });
-        const m = this.nowData.tensioningPattern; // 张拉模式
-        if (m === 1 || m === 3 || m === 4) {
-          ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2598, data: true });
+        if (!this.p2550 && !this.currentlyS) {
+          this.bjs.push( {p1: true });
         }
+        this.pauseFunc();
       }
     },
     p2550(nval) {
-      if (nval) {
-        this.pause = true;
-        ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2598, data: true });
+      const m = this.nowData.tensioningPattern; // 张拉模式
+      if (nval && (m === 1 || m === 3 || m === 4)) {
+        if (!this.p1550 && !this.currentlyS) {
+          this.bjs.push( {p2: true });
+        }
+        this.pauseFunc();
       }
+    },
+    // 掉线
+    PLCState1(nval) {
+      if (!nval) {
+        this.pauseFunc();
+      }
+    },
+    PLCState2(nval) {
+      const m = this.nowData.tensioningPattern; // 张拉模式
+      if (!nval && (m === 1 || m === 3 || m === 4)) {
+        this.pauseFunc();
+      }
+    },
+    // 张拉平衡
+    balanceA1(nval) {
+      this.balanceOut('wPLC1', 2571, nval);
+    },
+    balanceA2(nval) {
+      this.balanceOut('wPLC2', 2571, nval);
+    },
+    balanceB1(nval) {
+      this.balanceOut('wPLC1', 2572, nval);
+    },
+    balanceB2(nval) {
+      this.balanceOut('wPLC2', 2572, nval);
     },
   },
   computed: {
@@ -246,11 +499,6 @@ export default {
       }
       arr.push('卸荷', '回程', '等待保压', '保压中...');
       return arr;
-    },
-    // 位移上限
-    WorkCeilingMM() {
-      // this.$store.state.global.systen.WorkCeilingMM
-      return this.$store.state.global.systen.WorkCeilingMM;
     },
     // 实时压力位移数据
     currentlyData() {
@@ -274,31 +522,29 @@ export default {
       if (this.run && this.runT) {
         this.runT = false;
         setTimeout(() => {
-          if (this.run) {
+          if (this.run && !this.pause) {
             this.runT = true;
+            // 位移保存
             if (this.nowStage < this.stageStr.length - 1) {
               this.stage.forEach((item) => {
+                this.mmSave(item, r);
                 // 实时位移保存
-                if (this.repeatedly && this[`repeatedly${item}`]) {
-                  this.recird[item].Mpa[this.PLCStage] = r[`${item}mpa`];
-                  const length = this.nowData.recird[item].mm.length - 1;
-                  const mm = this.nowData.recird[item].mm[length] + (r[`${item}mm0`] - this.repeatedlyMM[item]);
-                  this.recird[item].mm[this.PLCStage] = mm;
-                } else if (!this.repeatedly) {
-                  this.recird[item].Mpa[this.PLCStage] = r[`${item}mpa`];
-                  this.recird[item].mm[this.PLCStage] = r[`${item}mm`];
-                }
               });
               this.LZFunc();
             }
             // 压力监控
             if (this.monitorMpaS) {
               new Promise(this.monitorMpa).then(() => {
-                console.log('压力监控');
                 if (this.repeatedly && !this.repeatedlyOK) {
-                  console.log('多次张拉压力监控');
+                  // 多次张拉压力监控
                   this.repeatedlyFunc();
                 }
+                // 超位移监控
+                // this.stage.forEach((item) => {
+                //   if (this.WorkCeilingMM < this.$UC.plc2mm(r[`${item}mm0`], item)) {
+                //     this.exceedMM();
+                //   }
+                // });
                 this.monitorMpaS = true;
               });
             } else if (this.unloadS) { // 卸荷监控
@@ -306,39 +552,56 @@ export default {
                 this.unloadS = true;
               });
             }
+            // 实时曲线采集
             if (this.curvesTime1S) {
               new Promise(this.curvesTime1).then(() => {
                 this.curvesTime1S = true;
               });
             }
-            this.stage.forEach((item) => {
-              if (this.WorkCeilingMM < r[`${item}mm0`]) {
-                this.exceedMM();
-              }
-            });
           }
         }, 500);
       }
+      // 回顶监控
+      if (this.exceedReturnState) {
+        this.exceedReturnMM(r);
+      }
       return r;
     },
-    // 压力曲线数据
-    cMpa() {
-      const d = {
-        A1: [],
-        A2: [],
-        B1: [],
-        B2: [],
-      };
-      this.stage.forEach((item) => {
-        d[item] = this.curves[`${item}Mpa`];
-      });
-      return d;
-    },
+    // 一号暂停
     p1550() {
       return this.$store.state.global.PLC1550;
     },
+    // 二号暂停
     p2550() {
       return this.$store.state.global.PLC2550;
+    },
+    // 继续张拉按钮
+    pauseRunState() {
+      try {
+        const m = this.nowData.tensioningPattern; // 张拉模式
+        if (m === 1 || m === 3 || m === 4) {
+          if (this.PLCState2 && this.PLCState1 && !this.currentlyS) {
+            return true;
+          }
+        } else if (this.PLCState1){
+          return true;
+        }
+        return false;
+      } catch (error) {
+
+      }
+    },
+    // 报警
+    currentlyS() {
+      const p1 = this.$store.state.global.PLC1S;
+      const p2 = this.$store.state.global.PLC2S;
+      let b = false;
+      if (p1.A || p1.B || p2.A || p2.B) {
+        console.log('极限报警！！！');
+        this.pauseFunc();
+        b = true;
+      }
+      return b;
     },
   },
   methods: {
@@ -380,40 +643,37 @@ export default {
         this.concretesState = false;
       }
     },
-    // 取消张拉
-    cancel() {
-      try {
-        window.nowDB.c.chain().find().remove();
-        // $db.save();
-        window.nowDB.db.save();
-      } catch (error) {
-        console.error(error);
-      }
-      console.log(window.nowDB.getAll);
-      this.$router.push('/menu');
-    },
     // 准备张拉处理
     ready0(resolve, reject) {
       if (window.nowDB.getAll.length > 0) {
-        this.taskDownData.state = true;
-        const uid = window.nowDB.getAll[0].uid; // 构件id
-        this.girderName = window.girderDB.getOne({ id: uid }).name; // 获取构件名称
-        const id = window.nowDB.getAll[0].id; // 梁id
-        const name = window.nowDB.getAll[0].name; // 组名称
-        this.taskData = window.tensioningDB.getCollection(uid).findOne({ id: id }); // 梁数据
-        this.nowData = this.taskData.data.filter(item => item.name === name)[0]; // 组数据
-        this.pressure = pressurePLC(this.nowData, this.taskData.deviceId); // 数据换算
-        this.two = this.nowData.two && this.nowData.state === 0; // 二次张拉
-        this.repeatedly = this.nowData.state > 0; // 多次张拉
-        this.stage = this.$Ounity.abModel(this.nowData.tensioningPattern); // 张拉模式
-        this.stageStr = this.$Ounity.stage(this.nowData, true); // 张拉阶段
-        window.deviceId = this.taskData.deviceId;
+        if (!this.exceedMMState) {
+          this.taskDownData.state = true;
+        }
+        if (this.nowData === null) {
+          const uid = window.nowDB.getAll[0].uid; // 构件id
+          this.girderName = window.girderDB.getOne({ id: uid }).name; // 获取构件名称
+          const id = window.nowDB.getAll[0].id; // 梁id
+          const name = window.nowDB.getAll[0].name; // 组名称
+          this.taskData = window.tensioningDB.getCollection(uid).findOne({ id: id }); // 梁数据
+          this.basenowData = this.taskData.data.filter(item => item.name === name)[0]; // 组数据
+          this.nowData = this.$unity.copyObj(this.basenowData);
+          this.pressure = pressurePLC(this.nowData, this.taskData.deviceId); // 数据换算
+          this.two = this.nowData.two && this.nowData.state === 0; // 二次张拉
+          this.repeatedly = this.nowData.state > 0; // 多次张拉
+          this.stage = this.$Ounity.abModel(this.nowData.tensioningPattern); // 张拉模式
+          this.stageStr = this.$Ounity.stage(this.nowData, true); // 张拉阶段
+          window.deviceId = this.taskData.deviceId;
+        } else {
+          this.repeatedly = true;
+        }
         if (!this.repeatedly) {
           const arrNull = [];
           // 记录数据结构
           this.nowData.task.time.forEach((item, index) => {
             arrNull.push(null);
           });
+          this.recird.startDate = null;
+          this.recird.endDate = null;
           this.recird.time = [...arrNull];
           this.stage.forEach((item) => {
             this.curves[`${item}Mpa`] = [];
@@ -468,43 +728,50 @@ export default {
       };
       const mpas = this.pressure.plcPressure; // 转换的压力数据
       const stage = this.PLCStage; // 张拉阶段
-      const zData = [0, 0]; // 下载到主站的数据
-      const cData = [0, 0]; // 下载到从站的数据
-      this.zDowm = true; // 主站下载完成标示
+      const zData = [0, 0, 0, 0]; // 下载到主站的数据
+      const cData = [0, 0, 0, 0]; // 下载到从站的数据
+      this.zDowm = false; // 主站下载完成标示
       this.cDowm = true; // 从站下载完成标示
       // 数据拼接
       this.stage.forEach((item) => {
         switch (item) {
           case 'A1':
-            zData[0] = mpas[item][stage];
+            zData[0] = parseInt(mpas[item][stage] * this.supMM);
+            zData[2] = mpas[item][stage];
             break;
           case 'B1':
-            zData[1] = mpas[item][stage];
+            zData[1] = parseInt(mpas[item][stage] * this.supMM);
+            zData[3] = mpas[item][stage];
             break;
           case 'A2':
-            cData[0] = mpas[item][stage];
+            cData[0] = parseInt(mpas[item][stage] * this.supMM);
+            cData[2] = mpas[item][stage];
             break;
           case 'B2':
-            cData[1] = mpas[item][stage];
+            cData[1] = parseInt(mpas[item][stage] * this.supMM);
+            cData[3] = mpas[item][stage];
             break;
           default:
             break;
         }
       });
       // 主站下载
-      ipcRenderer.send('wPLC1', { func: 'writeMultipleRegisters16', address: 4506, data: zData, callback: dowmZC.z });
+      ipcRenderer.send('wPLC1', { func: 'writeMultipleRegisters16', address: 4504, data: zData, callback: dowmZC.z });
       ipcRenderer.on(dowmZC.z, (event, data) => {
         this.zDowm = true;
         if (this.zDowm && this.cDowm) {
+          console.log(zData, cData);
           resolve('数据下载完成！');
         }
       });
       // 从站下载
       if (m === 1 || m === 3 || m === 4) {
-        ipcRenderer.send('wPLC2', { func: 'writeMultipleRegisters16', address: 4506, data: cData, callback: dowmZC.c });
+        this.cDowm = false;
+        ipcRenderer.send('wPLC2', { func: 'writeMultipleRegisters16', address: 4504, data: cData, callback: dowmZC.c });
         ipcRenderer.on(dowmZC.c, (event, data) => {
           this.cDowm = true;
           if (this.zDowm && this.cDowm) {
+            console.log(zData, cData);
             resolve('数据下载完成！');
           }
         });
@@ -535,20 +802,39 @@ export default {
     },
     // 启动张拉
     runFunc() {
+      // 判断多次张拉是否过初张拉
+      if (this.repeatedly) {
+        if (this.PLCStage === 0) {
+          this.repeatedlyOK = true;
+          this.mpaDownPLC(4510);
+        } else {
+          this.repeatedlyOK = false;
+        }
+      }
       this.run = true;
       this.taskDownData.state = false;
-      this.nowStage = this.nowStage === 0 ? 1 : this.nowStage;
-      this.currentlyState.A1 = 1;
-      this.currentlyState.A2 = 1;
-      this.currentlyState.B1 = 1;
-      this.currentlyState.B2 = 1;
+      console.log('123123213213213', this.nowStage);
+      if (!this.nowStage) {
+        this.nowStage = 1;
+        this.currentlyState.A1 = 1;
+        this.currentlyState.A2 = 1;
+        this.currentlyState.B1 = 1;
+        this.currentlyState.B2 = 1;
+      }
       // 初始位移
       this.stage.forEach((item) => {
-        this.init[`${item}mm`] = this.currentlyData[`${item}mm`];
+        this.init[`${item}mm`] = this.currentlyData[`${item}mm0`];
+        this[`repeatedly${item}`] = false;
+        this[`t2${item}`] = null;
+        if (this.PLCStage === 0) {
+          this.repeatedlyMM[item] = this.currentlyData[`${item}mm0`];
+        }
       });
       // 保存开始时间
-      this.recird.startDate = this.$unity.timeMs();
-      // this.mmBase =
+      if (this.recird.startDate === null) {
+        this.recird.startDate = this.$unity.timeMs();
+      }
+      // this.mmBase = 1517279423116 1517279332008
       this.$message.success('开始张拉！！');
       new Promise((resolve, reject) => {
         this.stage.forEach((item) => {
@@ -566,6 +852,8 @@ export default {
       });
       this.monitorMpaS = true;
       this.curvesTime1S = true;
+      console.log('ssssss', this.taskData);
+      // console.log('sssssss', this.recird.endDate, this.recird.startDate);
     },
     // 压力监控
     monitorMpa(resolve, reject) {
@@ -575,16 +863,44 @@ export default {
       const mpas = this.pressure.plcPressure; // 阶段压力
       const stage = this.PLCStage; // plc当前阶段
       this.stage.forEach((item) => {
-        if (this.currentlyData[`${item}mpa`] >= mpas[item][stage]) {
-          if (this[`t${item}`] === null) {
+        const setMpa = parseInt(mpas[item][stage] * this.supMM);
+        console.log('压力', this.currentlyData[`${item}mpa`], setMpa);
+        if (this.currentlyData[`${item}mpa`] >= setMpa) {
+          if (!this[`t${item}`]) {
             this[`t${item}`] = setTimeout(() => {
-              this.currentlyState[item] = this.abStage.length - 2;
-              this[`s${item}`] = true;
+              if (this.currentlyData[`${item}mpa`] >= setMpa) {
+                this.currentlyState[item] = this.abStage.length - 2;
+                this[`s${item}`] = true;
+              } else{
+                this[`t${item}`] = null;
+              }
             }, 1500);
           }
         } else {
+          if (this.WorkCeilingMM < this.$UC.plc2mm(this.currentlyData[`${item}mm0`], item)) {
+            this.exceedMM();
+          }
           clearTimeout(this[`t${item}`]);
           this[`t${item}`] = null;
+        }
+        let repeatedly =  true;
+        if (this.repeatedly) {
+          repeatedly = this.repeatedlyOK;
+        }
+        if (repeatedly && this.repeatedlyOK && this.balance !== 0 && !this.sA1 && !this.sA2 && !this.sB1 && !this.sB2) {
+          let b = false;
+          for (const item2 of this.stage) {
+            if (this[`balance${item}`] && item !== item2 && this.LZ[`${item}dmm`] > this.LZ[`${item2}dmm`]) {
+              b = true;
+              break;
+            } else if (!this[`balance${item}`] && (this.LZ[`${item}dmm`] - this.LZ[`${item2}dmm`]) > this.balance) {
+              b = true;
+              break;
+            }
+          }
+          this[`balance${item}`] = b;
+        } else {
+          this[`balance${item}`] = false;
         }
       });
       switch (true) {
@@ -633,24 +949,27 @@ export default {
       let ok = true; // 全部确认完成
       this.stage.forEach((item) => {
         if (this.currentlyData[`${item}mpa`] >= mpas[item]) {
-          if (this[`t2${item}`] === null) {
+          if (!this[`t2${item}`]) {
             this[`t2${item}`] = setTimeout(() => {
-              this.currentlyState[item] = this.abStage.length - 2;
-              this.repeatedlyMM[item] = this.currentlyData[`${item}mm0`];
-              this[`repeatedly${item}`] = true;
-            }, 1500);
+              // this.currentlyState[item] = this.abStage.length - 2;
+              if (this.currentlyData[`${item}mpa`] >= mpas[item]) {
+                this.repeatedlyMM[item] = this.currentlyData[`${item}mm0`];
+                this[`repeatedly${item}`] = true;
+              } else{
+                this[`t2${item}`] = null;
+              }
+            }, 5000);
           }
         } else {
           clearTimeout(this[`t2${item}`]);
           this[`t2${item}`] = null;
         }
         // 全部确认判断
-        if (this[`repeatedly${item}`]) {
-          this.currentlyState[`${item}`] = n;
-        } else {
+        if (!this[`repeatedly${item}`] && ok) {
           ok = false;
         }
       });
+      console.log('多次张拉监控', ok);
       if (ok) {
         this.repeatedlyOK = true;
         this.mpaDownPLC(4510);
@@ -681,8 +1000,7 @@ export default {
       this.nowStage += 1;
       // 数据保存
       this.stage.forEach((item) => {
-        this.recird[item].Mpa[PLCStage] = this.currentlyData[`${item}mpa`];
-        this.recird[item].mm[PLCStage] = this.currentlyData[`${item}mm`];
+        this.mmSave(item);
         // 保压状态解除
         this[`s${item}`] = false;
         // 保压定时器清楚
@@ -690,11 +1008,16 @@ export default {
         // 顶阶段
         this.currentlyState[`${item}`] = this.nowStage;
       });
+      // 曲线保存
+      this.Savecurves();
       // 下一阶段
       if (this.PLCStage < this.stageStr.length - 3) {
         this.PLCStage += 1;
         new Promise(this.DownPLC).then((val) => {
+          console.log(val);
           this.monitorMpaS = true;
+        }).catch(() => {
+          console.error('下载错误');
         });
         // 张拉完成
       } else {
@@ -703,8 +1026,6 @@ export default {
     },
     // 全部保压完成
     allsuccessTime() {
-      // 曲线保存
-      this.Savecurves();
       // 卸荷执行
       const m = this.nowData.tensioningPattern; // 张拉模式
       this.zUnload = false;
@@ -714,7 +1035,6 @@ export default {
       const zData = [0, 0]; // 下载到主站的数据
       const cData = [0, 0]; // 下载到从站的数据
       this.stage.forEach((item) => {
-        // if (this.currentlyData[`${item}mpa`] <= this.recird[item].Mpa[0]) {
         switch (item) {
           case 'A1':
             zData[0] = this.recird[item].Mpa[0];
@@ -761,11 +1081,18 @@ export default {
       this.stage.forEach((item) => {
         if (this.currentlyData[`${item}mpa`] <= this.recird[item].Mpa[0]) {
           this[`tunload${item}`] = setTimeout(() => {
-            console.log('5启动');
-            this[`unload${item}`] = true;
-            this.recird[item].initMpa = this.currentlyData[`${item}mpa`];
-            this.recird[item].initMM = this.currentlyData[`${item}mm`];
-            clearTimeout(this[`tunload${item}`]);
+            console.log(item, '卸荷完成');
+            if (this.currentlyData[`${item}mpa`] <= this.recird[item].Mpa[0]) {
+              this[`unload${item}`] = true;
+              this.recird[item].initMpa = this.currentlyData[`${item}mpa`];
+              if (this.repeatedly) {
+                this.recird[item].initMM = this.nowData.recird[item].mm[length] + (this.currentlyData[`${item}mm0`] - this.repeatedlyMM[item]);;
+              } else {
+                this.recird[item].initMM = this.currentlyData[`${item}mm`];
+              }
+            } else {
+              clearTimeout(this[`tunload${item}`]);
+            }
           }, 1500);
         } else {
           clearTimeout(this[`tunload${item}`]);
@@ -809,7 +1136,7 @@ export default {
     curvesTime() {
       setTimeout(() => {
         console.log('曲线保存');
-        if (this.run) {
+        if (this.run && !this.pause) {
           this.Savecurves();
           this.curvesTime();
         }
@@ -840,6 +1167,7 @@ export default {
     // 超位移
     exceedMM() {
       this.exceedMMState = true;
+      this.pause = true;
       ipcRenderer.send('wPLC1', { func: 'writeMultipleCoil', address: 2568, data: [0, 0] });
       const m = this.nowData.tensioningPattern; // 张拉模式
       if (m === 1 || m === 3 || m === 4) {
@@ -848,26 +1176,88 @@ export default {
     },
     // 超位移回顶
     exceedReturn() {
-      this.successFunc();
+      if (!this.exceedReturnState) {
+        this.successFunc();
+        this.exceedReturnState = true;
+      }
+      this.stage.forEach((item) => {
+        switch (item) {
+          case 'A1':
+            ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2089, data: true });
+            break;
+          case 'A2':
+            ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2089, data: true });
+            break;
+          case 'B1':
+            ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2099, data: true });
+            break;
+          case 'B2':
+            ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2099, data: true });
+            break;
+          default:
+            break;
+        }
+      });
     },
     // 超位移继续运行
     exceedRun() {
-      this.exceedMMState = false;
       this.runT = true;
+      this.pause = false;
+      this.exceedReturnState = false;
+      this.exceedReturnMMState = false;
+      ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2598, data: false });
+      const m = this.nowData.tensioningPattern; // 张拉模式
+      if (m === 1 || m === 3 || m === 4) {
+        ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2598, data: false });
+      }
       console.log('超位移继续运行');
-      this.ready0();
-      this.DownPLC();
-      this.startReady();
+      new Promise(this.ready0).then((val) => {
+        console.log(val);
+        return new Promise(this.DownPLC);
+      }).then((val) => {
+        console.log(val);
+        this.startReady();
+      });
       console.log('超位移继续运行2');
+      this.exceedMMState = false;
+    },
+    // 超位移回顶监控
+    exceedReturnMM(r) {
+      let b = true;
+      this.stage.forEach((item) => {
+        if (this.$UC.plc2mm(r[`${item}mm0`], item) < this.returnMM + 2) {
+          console.log('回顶监控', this.$UC.plc2mm(r[`${item}mm0`], item), this.returnMM);
+          switch (item) {
+            case 'A1':
+              ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2089, data: false });
+              break;
+            case 'A2':
+              ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2089, data: false });
+              break;
+            case 'B1':
+              ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2099, data: false });
+              break;
+            case 'B2':
+              ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2099, data: false });
+              break;
+            default:
+              break;
+          }
+        } else {
+          b = false;
+        }
+      });
+      this.exceedReturnMMState = b;
     },
     // 完成数据保存
     successFunc() {
       // 张拉完成曲线定时器清除
       if (this.run) {
+        this.recird.endDate = this.$unity.timeMs();
         this.run = false;
         this.Savecurves(); // 曲线保存
-        this.nowData.recird = this.recird; // 张拉数据
-        this.nowData.curves = this.curves; // 曲线数据
+        this.nowData.recird = this.$unity.copyObj(this.recird); // 张拉数据
+        this.nowData.curves = this.$unity.copyObj(this.curves); // 曲线数据
         if (this.exceedMMState || this.saveState) {
           this.nowData.state = 3; // 张拉状态 0未张拉 1张拉完成 2一次张拉完成 3张拉异常
         } else if (this.two) {
@@ -875,12 +1265,20 @@ export default {
         } else {
           this.nowData.state = 1;
         }
-        window.tensioningDB.getCollection(window.nowDB.getAll[0].uid).update(this.taskData);
-        window.tensioningDB.save();
-        this.$message.success('数据保存完成');
+        if (!this.exceedMMState) {
+          this.basenowData.recird = this.$unity.copyObj(this.nowData.recird);
+          this.basenowData.curves = this.$unity.copyObj(this.nowData.curves);
+          this.basenowData.state = this.$unity.copyObj(this.nowData.state);
+          window.tensioningDB.getCollection(window.nowDB.getAll[0].uid).update(this.taskData);
+          window.tensioningDB.save();
+          console.log(this.basenowData, this.nowData);
+          this.$message.success('数据保存完成');
+        } else {
+          this.$message.error('回顶数据保存完成！！！！！');
+        }
+        // 张拉完成跳转
         if (!this.exceedMMState || this.saveState) {
           this.$router.push('/menu');
-          // this.$store.commit('showMenu', !this.$store.state.global.showMenu);
           try {
             window.nowDB.c.chain().find().remove();
             // $db.save();
@@ -888,14 +1286,32 @@ export default {
           } catch (error) {
             console.error(error);
           }
+          // 回顶
+          ipcRenderer.send('wPLC1', { func: 'writeMultipleCoil', address: 2568, data: [0, 0] });
+          ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2570, data: true });
+          const m = this.nowData.tensioningPattern; // 张拉模式
+          if (m === 1 || m === 3 || m === 4) {
+            ipcRenderer.send('wPLC2', { func: 'writeMultipleCoil', address: 2568, data: [0, 0] });
+            ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2570, data: true });
+          }
         }
-        ipcRenderer.send('wPLC1', { func: 'writeMultipleCoil', address: 2568, data: [0, 0] });
-        ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2570, data: true });
-        const m = this.nowData.tensioningPattern; // 张拉模式
-        if (m === 1 || m === 3 || m === 4) {
-          ipcRenderer.send('wPLC2', { func: 'writeMultipleCoil', address: 2568, data: [0, 0] });
-          ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2570, data: true });
-        }
+        console.log('wwwww', this.taskData);
+      }
+    },
+    // 位移保存
+    mmSave(item, currentlyData = null) {
+      let r = currentlyData;
+      if (currentlyData === null) {
+        r = this.currentlyData;
+      }
+      if (this.repeatedly && this.repeatedlyOK) {
+        this.recird[item].Mpa[this.PLCStage] = r[`${item}mpa`];
+        const length = this.nowData.recird[item].mm.length - 1;
+        const mm = this.nowData.recird[item].mm[length] + (r[`${item}mm0`] - this.repeatedlyMM[item]);
+        this.recird[item].mm[this.PLCStage] = mm;
+      } else if (!this.repeatedly) {
+        this.recird[item].Mpa[this.PLCStage] = r[`${item}mpa`];
+        this.recird[item].mm[this.PLCStage] = r[`${item}mm`];
       }
     },
     mpaDownPLC(address, mpas = null) {
@@ -935,14 +1351,78 @@ export default {
       this.saveState = true;
       this.successFunc();
     },
+    // 暂停
+    pauseFunc() {
+      this.pause = true;
+      ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2598, data: true });
+      const m = this.nowData.tensioningPattern; // 张拉模式
+      if (m === 1 || m === 3 || m === 4) {
+        ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2598, data: true });
+      }
+    },
     // 暂停继续
     pauseRun() {
+      const nowStage = this.nowStage;
+      const length = this.stageStr.length;
+      console.log(nowStage, length)
+      switch (true) {
+        case nowStage < length - 1:
+          new Promise(this.DownPLC).then((val) => {
+            console.log(val);
+          }).catch(() => {
+            console.error('下载错误');
+          });
+          break;
+        case nowStage === length - 1:
+          this.allsuccessTime();
+          break;
+        default:
+          break;
+      }
       this.pause = false;
+      this.runT = true;
+      this.curvesTime();
       ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2598, data: false });
       const m = this.nowData.tensioningPattern; // 张拉模式
       if (m === 1 || m === 3 || m === 4) {
         ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2598, data: false });
       }
+    },
+    // 保存退出
+    pauseExit() {
+      this.saveExit();
+    },
+    // 平衡输出
+    balanceOut(func, address, data = false) {
+      ipcRenderer.send(func, { func: 'writeSingleCoil', address: address, data: data });
+    },
+    // noExit退出张拉
+    noExit() {
+      this.$alert('确定要放弃张拉？本次张拉数据将不保存！！', '取消张拉', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        callback: action => {
+          this.cancel();
+        }
+      });
+    },
+    // 取消张拉
+    cancel() {
+      try {
+        window.nowDB.c.chain().find().remove();
+        // $db.save();
+        window.nowDB.db.save();
+      } catch (error) {
+        console.error(error);
+      }
+      console.log(window.nowDB.getAll);
+      ipcRenderer.send('wPLC1', { func: 'writeSingleCoil', address: 2599, data: true });
+      const m = this.nowData.tensioningPattern; // 张拉模式
+      if (m === 1 || m === 3 || m === 4) {
+        ipcRenderer.send('wPLC2', { func: 'writeSingleCoil', address: 2599, data: true });
+      }
+      this.$router.push('/menu');
     },
   },
 };

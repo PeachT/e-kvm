@@ -11,32 +11,32 @@
       <h3 style="background-color: rgb(245, 247, 250);">{{item === 'z' ? '主站' : '从站'}}系统参数</h3>
       <div class="row-flex">
         <el-form-item label="压力上限">
-          <el-input type="number" v-model.number="plc[item].ceilingMpa">
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="plc[item].ceilingMpa">
             <i slot="suffix">Mpa</i>
           </el-input>
         </el-form-item>
         <el-form-item label="允许压力偏差">
-          <el-input type="number" v-model.number="plc[item].differencePressure">
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="plc[item].differencePressure">
             <i slot="suffix">Mpa</i>
           </el-input>
         </el-form-item>
         <el-form-item label="超设置压力">
-          <el-input type="number" v-model.number="plc[item].superSetPressure">
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="plc[item].superSetPressure">
             <i slot="suffix">Mpa</i>
           </el-input>
         </el-form-item>
         <el-form-item label="允许回程压力">
-          <el-input type="number" v-model.number="plc[item].returnPressure">
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="plc[item].returnPressure">
             <i slot="suffix">Mpa</i>
           </el-input>
         </el-form-item>
         <el-form-item label="油泵延时">
-          <el-input  type="number" v-model.number="plc[item].delay">
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="plc[item].delay">
             <i slot="suffix">s</i>
           </el-input>
         </el-form-item>
       </div>
-      <div class="row-flex">
+      <!-- <div class="row-flex">
         <el-form-item label="补压参数">
           <el-input  type="number" v-model.number="plc[item].replenish">
             <i slot="suffix">%</i>
@@ -50,19 +50,19 @@
         </el-form-item>
         <el-form-item label="">
         </el-form-item>
-      </div>
+      </div> -->
       <div class="row-flex">
         <el-form-item label="位移上限">
-          <el-input type="number" v-model.number="plc[item].ceilingMM"></el-input>
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="plc[item].ceilingMM"></el-input>
         </el-form-item>
         <el-form-item label="位移下限">
-          <el-input type="number" v-model.number="plc[item].lowerMM"></el-input>
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="plc[item].lowerMM"></el-input>
         </el-form-item>
         <el-form-item label="工作位移上限">
-          <el-input type="number" v-model.number="plc[item].WorkCeilingMM"></el-input>
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="plc[item].WorkCeilingMM"></el-input>
         </el-form-item>
         <el-form-item label="工作位移下限">
-          <el-input type="number" v-model.number="plc[item].WorkLowerMM"></el-input>
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="plc[item].WorkLowerMM"></el-input>
         </el-form-item>
       </div>
       <div class="row-flex">
@@ -81,7 +81,7 @@
           { required: true, message: '参数不能为空'},
           { type: 'number', message: '参数必须为数字值'}
         ]">
-          <el-input type="number" v-model.number="control[item[1]]">
+          <el-input @focus="$unity.focusAllVal($event)" type="number" v-model.number="control[item[1]]">
             <i slot="suffix">%</i>
           </el-input>
         </el-form-item>
@@ -101,7 +101,7 @@
           { required: true, message: '参数不能为空'},
           { type: 'number', message: '参数必须为数字值'}
         ]">
-          <el-input v-model.number="sensor[item[1]]" type="number"></el-input>
+          <el-input @focus="$unity.focusAllVal($event)" v-model.number="sensor[item[1]]" type="number"></el-input>
         </el-form-item>
       </div>
       <div class="row-flex" :rules="[
@@ -109,7 +109,7 @@
           { type: 'number', message: '参数必须为数字值'}
         ]">
         <el-form-item label="显示小数点位数">
-          <el-input v-model.number="sensor.toFixed" type="number"></el-input>
+          <el-input @focus="$unity.focusAllVal($event)" v-model.number="sensor.toFixed" type="number"></el-input>
         </el-form-item>
       </div>
       <div class="row-flex">
@@ -155,16 +155,16 @@
         },
       },
       control: {
-        deviationCeiling: null, // 运行总位移上限
-        deviationLower: null, // 允许总位移下限
-        balance: null, // 平衡控制
+        deviationCeiling: 0, // 运行总位移上限
+        deviationLower: 0, // 允许总位移下限
+        balance: 0, // 平衡控制
       },
       sensor: {
-        displacement: null, // 位移传感器
-        displacementPLC: null,
-        pressure: null, // 压力传感器
-        pressurePLC: null,
-        toFixed: null,
+        displacement: 0, // 位移传感器
+        displacementPLC: 0,
+        pressure: 0, // 压力传感器
+        pressurePLC: 0,
+        toFixed: 0,
       },
     }),
     computed: {

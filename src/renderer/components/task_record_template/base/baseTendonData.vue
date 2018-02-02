@@ -78,13 +78,13 @@
           </td>
           <!-- 工作长度 -->
           <td>
-            <el-input @focus="$unity.focusAllVal($event)" v-model="taskData.task[item].LQ">
+            <el-input @focus="$unity.focusAllVal($event)" v-model.number="taskData.task[item].LQ" type="number">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
           <!-- 内缩量均值 -->
           <td>
-            <el-input @focus="$unity.focusAllVal($event)" v-model="taskData.task[item].NS">
+            <el-input @focus="$unity.focusAllVal($event)" v-model.number="taskData.task[item].NS" type="number">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
@@ -93,7 +93,7 @@
             :rowspan="taskData.tensioningPattern !== 0 ? 2 : 1"
             :class="{'h': taskData.tensioningPattern !== 0}"
             v-if="item === 'A1'">
-            <el-input @focus="$unity.focusAllVal($event)" v-model="taskData.task[item].LL">
+            <el-input @focus="$unity.focusAllVal($event)" v-model.number="taskData.task[item].LL" type="number">
               <i slot="suffix" class="el-input__icon">mm{{item}}</i>
             </el-input>
           </td>
@@ -102,7 +102,7 @@
             :rowspan="taskData.tensioningPattern !== 2 ? 2 : 1"
             :class="{'h' : taskData.tensioningPattern !== 2}"
             v-if="item === 'B1'">
-            <el-input @focus="$unity.focusAllVal($event)" v-model="taskData.task[item].LL">
+            <el-input @focus="$unity.focusAllVal($event)" v-model.number="taskData.task[item].LL" type="number">
               <i slot="suffix" class="el-input__icon">mm{{item}}</i>
             </el-input>
           </td>
@@ -128,7 +128,14 @@
     props: ['taskData', 'deviceId'],
     data: () => ({
       value: '',
+      recirdDate: {
+        startDate: null,
+        endDate: null,
+      },
     }),
+    beforeMount() {
+      this.recirdDateFunc();
+    },
     computed: {
       matrixing() {
         if (this.deviceId !== '') {
@@ -158,17 +165,10 @@
       PatternStr() {
         return this.$Ounity.abModel(this.taskData.tensioningPattern);
       },
-      recirdDate() {
-        if ('recird' in this.taskData) {
-          const timeFormat = this.$d3.timeFormat('%Y-%m-%d %H:%M:%S');
-          const startDate = timeFormat(this.taskData.recird.startDate);
-          const endDate = timeFormat(this.taskData.recird.endDate);
-          return {
-            startDate: startDate,
-            endDate: endDate,
-          };
-        }
-        return null;
+    },
+    watch: {
+      taskData() {
+        this.recirdDateFunc();
       },
     },
     methods: {
@@ -199,6 +199,19 @@
           d.task.stage.push(110);
           d.task.time.push(300);
         }
+      },
+      recirdDateFunc() {
+        if ('recird' in this.taskData) {
+          const timeFormat = this.$d3.timeFormat('%Y-%m-%d %H:%M:%S');
+          const startDate = timeFormat(this.taskData.recird.startDate);
+          const endDate = timeFormat(this.taskData.recird.endDate);
+          const r = {
+            startDate: startDate,
+            endDate: endDate,
+          };
+          this.recirdDate = r;
+        }
+        return null;
       },
     },
   };

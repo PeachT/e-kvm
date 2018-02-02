@@ -73,7 +73,7 @@ class Modbus {
         let b2 = false;
         let b3 = false;
         let b4 = false;
-        this.readCoilStatue(2048, 1, (data) => {
+        this.writeSingleCoil(2048, true, (data) => {
           b1 = true;
           if (b1 && b2 && b3 && b4) {
             resolve();
@@ -98,7 +98,7 @@ class Modbus {
           }
         });
         // 报警参数 S500
-        this.readCoilStatue(500, 40, (data) => {
+        this.readRegisters16(4196, 2, (data) => {
           const d = returnData(data);
           this.toRenderer('realTimeS', d);
           b4 = true;

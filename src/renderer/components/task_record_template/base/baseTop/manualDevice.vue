@@ -1,6 +1,10 @@
 <template>
   <div>
-    <el-dialog title="设备选择" :visible="show" width="80%" :before-close="handleClose">
+    <el-dialog title="设备选择"
+      :visible="show"
+      width="80%"
+      :show-close="false"
+      >
       <div>
         <h3 v-if="selectKhs.length !== 0">未分组孔号</h3>
         <h3 v-else style="color: #67C23A">所有分组完成! 点击确定保存。</h3>
@@ -125,7 +129,6 @@
         this.$emit('update:show', false);
       },
       okFunc() {
-        console.log('111111111111111', this.groupOK);
         this.$emit('groupData', this.groupOK);
         this.close();
       },

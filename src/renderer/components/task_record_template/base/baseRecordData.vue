@@ -8,8 +8,6 @@
           <th v-for="(item, index) in stageStr" :key="index">{{item}}</th>
           <th >回油至初张拉</th>
           <th width="108px">力筋回缩量</th>
-          <!-- <th width="120px">工作长度</th>
-          <th width="120px">理论伸长量</th> -->
           <th width="108px">总伸长量</th>
           <th width="108px">伸长量偏差值</th>
         </tr>
@@ -40,18 +38,18 @@
           </td>
           <!-- 力筋回缩量 -->
           <td class="h3">
-            <el-input :value="taskData.recird[item].retractionMM | plc2mm(item, deviceId)">
+            <el-input :value="retractionMM[item]">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
           <!-- 总伸长量 -->
-          <td rowspan="2" class="h6" v-if="index===0 || index===2">
+          <td :rowspan="patternStr.length >1 ? 2: 1" :class="{'h6': patternStr.length >1, 'h3': patternStr.length === 1}" v-if="index===0 || index===2">
             <el-input :value="LZ[item].mm">
               <i slot="suffix" class="el-input__icon">mm</i>
             </el-input>
           </td>
           <!-- 伸长量偏差 -->
-          <td rowspan="2" class="h6" v-if="index===0 || index===2">
+          <td :rowspan="patternStr.length >1 ? 2: 1" :class="{'h6': patternStr.length >1, 'h3': patternStr.length === 1}" v-if="index===0 || index===2">
             <el-input :value="LZ[item].deviation">
               <i slot="suffix" class="el-input__icon">%</i>
             </el-input>
@@ -112,21 +110,30 @@
           initMM: null, // 回到初张拉位移
         },
       },
+      retractionMM: {
+        A1: null,
+        A2: null,
+        B1: null,
+        B2: null,
+      },
     }),
     beforeMount() {
       this.get();
       this.recirdFunc();
+      this.retraction();
     },
     watch: {
       taskData() {
         this.get();
         this.recirdFunc();
+        this.retraction();
       },
     },
     computed: {
       LZ() {
         return this.$Ounity.LZ(this.taskData);
       },
+
     },
     methods: {
       get() {
@@ -171,7 +178,6 @@
           },
         };
         const recird = this.taskData.recird;
-        console.log('122222222222', recird);
         const timeFormat = this.$d3.timeFormat('%Y-%m-%d %H:%M:%S');
         this.recird.startDate = timeFormat(recird.startDate);
         this.recird.endDate = timeFormat(recird.endDate);
@@ -181,6 +187,22 @@
             this.recird[item].kn[i] = (this.$UC.plc2kn(n, item));
             this.recird[item].mm[i] = this.$UC.plc2mm(recird[item].mm[i], item);
           });
+        });
+      },
+      retraction() {
+        // 力筋回缩量Sn=（LK-LM）-(1-σ0/σk)LQ
+        const sensor = window.systemDB.getOne({ name: 'sensor' });
+        const l = this.taskData;
+        const stage = this.$Ounity.abModel(l.tensioningPattern); // 张拉模式
+        stage.forEach((item) => {
+          const length = this.recird[item].mm.length - 1;
+          const LK = this.recird[item].mm[length];
+          const LM = this.$UC.plc2mm(l.recird[item].initMM, item);
+          const Q0 = this.recird[item].Mpa[0];
+          const Qk = this.recird[item].Mpa[length];
+          const LQ = l.task[item].LQ;
+          console.log(LK, LM, Q0, Qk, LQ);
+          this.retractionMM[item] = (((LK - LM) - (1 - (Q0 / Qk))) * LQ).toFixed(sensor.toFixed);
         });
       },
     },

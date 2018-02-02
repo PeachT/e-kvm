@@ -4,6 +4,7 @@
       title="构件孔选择"
       :visible="true"
       width="80%"
+      :show-close="false"
       >
       <div>
         构件选择
